@@ -1,6 +1,6 @@
 import React from 'react';
 import { loginWithGoogle } from '../authService';
-import pkg from '../../../package.json';
+import pkg from '../../package.json';
 
 export default function Login() {
   const handleLogin = async () => {
