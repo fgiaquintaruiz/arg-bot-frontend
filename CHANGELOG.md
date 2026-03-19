@@ -1,3 +1,11 @@
+## [1.8.150] - 2026-03-19
+### Fixed
+- Purged corrupted `node_modules` and reinstalled dependencies to resolve missing packages (e.g., rollup) caused by workspace separation.
+
+## [1.8.150] - 2026-03-19
+### Fixed
+- Purged corrupted `node_modules` and reinstalled dependencies to resolve missing packages (e.g., rollup) caused by workspace separation.
+
 ## [1.8.149] - 2026-03-19
 ### Changed
 - Flattened the `src/` directory structure by removing the redundant `client/` subfolder left over from the monorepo architecture.
