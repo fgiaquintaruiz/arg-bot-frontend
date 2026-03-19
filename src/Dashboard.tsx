@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { logout } from './authService';
-import pkg from '../../../package.json';
+import pkg from '../package.json';
 import { API_URL } from './config'; // <-- Importamos la URL centralizada
 
 import Calculator from './components/Calculator';

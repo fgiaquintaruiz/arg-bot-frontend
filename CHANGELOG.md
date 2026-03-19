@@ -1,3 +1,6 @@
+## [1.8.151] - 2026-03-19
+### Fixed
+- Updated relative import paths for `package.json` in `App.tsx` and `Dashboard.tsx` to reflect the newly flattened `src/` directory structure, resolving Vite build errors.
 ## [1.8.150] - 2026-03-19
 ### Fixed
 - Purged corrupted `node_modules` and reinstalled dependencies to resolve missing packages (e.g., rollup) caused by workspace separation.
