@@ -1,3 +1,12 @@
+## [1.8.153] - 2026-03-20
+### Changed
+- Migrated `authService.js` to `authService.ts` to enforce strict typing and maintain consistency across the React codebase.
+- 
+## [1.8.152] - 2026-03-20
+### Added
+- Added a robot emoji favicon in `index.html`.
+- Updated `BinanceConfig.tsx` to fetch and display the backend's public IP address for easier Binance API whitelisting.
+- 
 ## [1.8.151] - 2026-03-19
 ### Fixed
 - Updated relative import paths for `package.json` in `App.tsx` and `Dashboard.tsx` to reflect the newly flattened `src/` directory structure, resolving Vite build errors.

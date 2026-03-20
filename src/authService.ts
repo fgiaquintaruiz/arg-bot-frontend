@@ -1,10 +1,9 @@
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-// Import the centralized auth instance
+import { GoogleAuthProvider, signInWithPopup, signOut, User } from "firebase/auth";
 import { auth } from './firebaseConfig';
 
 const provider = new GoogleAuthProvider();
 
-export const loginWithGoogle = async () => {
+export const loginWithGoogle = async (): Promise<User> => {
   try {
     const result = await signInWithPopup(auth, provider);
     return result.user;
@@ -14,7 +13,7 @@ export const loginWithGoogle = async () => {
   }
 };
 
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
   try {
     await signOut(auth);
   } catch (error) {
