@@ -1,3 +1,10 @@
+## [1.8.158] - 2026-03-20
+### Added
+- Integrated comprehensive Terms and Conditions modal (`LegalModal.tsx`).
+### Changed
+- Replaced the term "Remesas" with "Transferencias internacionales".
+- Updated platform references to explicitly state "Buenbit by Nexo".
+- 
 ## [1.8.157] - 2026-03-20
 ### Changed
 - Added Updates modal to view roadmap and changelogs from inside and outside the app.
