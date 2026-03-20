@@ -1,3 +1,7 @@
+## [1.8.155] - 2026-03-20
+### Refactored
+- Extracted legal disclaimers and documentation from `Login.tsx` into a new `LandingDocs.tsx` component to improve maintainability.
+- 
 ## [1.8.153] - 2026-03-20
 ### Changed
 - Migrated `authService.js` to `authService.ts` to enforce strict typing and maintain consistency across the React codebase.
