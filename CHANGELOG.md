@@ -1,3 +1,7 @@
+## [1.8.157] - 2026-03-20
+### Changed
+- Added Updates modal to view roadmap and changelogs from inside and outside the app.
+- 
 ## [1.8.156] - 2026-03-20
 ### Changed
 - Redesigned `LandingDocs.tsx` with a friendlier UI (cards, better spacing, softer colors).
