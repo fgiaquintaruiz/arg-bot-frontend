@@ -1,3 +1,7 @@
+## [1.8.159] - 2026-03-20
+### Added
+- Added full Privacy Policy documentation to `LegalModal.tsx`.
+- 
 ## [1.8.158] - 2026-03-20
 ### Added
 - Integrated comprehensive Terms and Conditions modal (`LegalModal.tsx`).

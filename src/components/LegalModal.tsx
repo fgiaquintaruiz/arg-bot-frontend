@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 
-// Se exporta la constante para mantener limpio el componente
-export const TERMS_TEXT = `[PEGAR_AQUI_TODO_EL_TEXTO_DE_LOS_TERMINOS]`;
+// Se exportan las constantes para mantener limpio el componente visual
+export const TERMS_TEXT = `[PEGAR_AQUI_TODO_EL_TEXTO_DE_LOS_TERMINOS_DEL_MENSAJE_ANTERIOR]`;
+
+export const PRIVACY_TEXT = `[PEGAR_AQUI_TODO_EL_TEXTO_DE_PRIVACIDAD_DE_ESTE_MENSAJE]`;
 
 export default function LegalModal({ onClose, initialTab = 'terms' }: { onClose: () => void, initialTab?: 'terms' | 'privacy' }) {
     const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>(initialTab);
@@ -36,7 +38,7 @@ export default function LegalModal({ onClose, initialTab = 'terms' }: { onClose:
                 {/* Content Area */}
                 <div style={{ flex: 1, padding: '30px', overflowY: 'auto', backgroundColor: '#1e293b' }}>
                     <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#cbd5e1', lineHeight: '1.7', fontSize: '14px' }}>
-                        {activeTab === 'terms' ? TERMS_TEXT : 'Las Políticas de Privacidad se actualizarán en breve.'}
+                        {activeTab === 'terms' ? TERMS_TEXT : PRIVACY_TEXT}
                     </div>
                 </div>
 
