@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { logout } from './authService';
 import pkg from '../package.json';
-import { API_URL } from './config'; // <-- Importamos la URL centralizada
-
+import { API_URL } from './config';
 import Calculator from './components/Calculator';
 import BinanceConfig from './components/BinanceConfig';
 import Trade from './components/Trade';
@@ -18,7 +17,6 @@ export default function Dashboard({ user }: { user: any }) {
   const hasKeys = !!apiKey && !!apiSecret;
 
   useEffect(() => {
-    // Usamos API_URL directamente
     fetch(`${API_URL}/api/data`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
