@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { TERMS_TEXT } from '../constants/terms';
+import { PRIVACY_TEXT } from '../constants/privacy';
 
-// Se exportan las constantes para mantener limpio el componente visual
-export const TERMS_TEXT = `[PEGAR_AQUI_TODO_EL_TEXTO_DE_LOS_TERMINOS_DEL_MENSAJE_ANTERIOR]`;
+interface LegalModalProps {
+    onClose: () => void;
+    initialTab?: 'terms' | 'privacy';
+}
 
-export const PRIVACY_TEXT = `[PEGAR_AQUI_TODO_EL_TEXTO_DE_PRIVACIDAD_DE_ESTE_MENSAJE]`;
-
-export default function LegalModal({ onClose, initialTab = 'terms' }: { onClose: () => void, initialTab?: 'terms' | 'privacy' }) {
+export default function LegalModal({ onClose, initialTab = 'terms' }: LegalModalProps) {
     const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>(initialTab);
 
     const tabStyle = (tab: string) => ({

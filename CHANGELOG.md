@@ -1,3 +1,7 @@
+## [1.8.160] - 2026-03-20
+### Refactored
+- Extracted hardcoded legal texts into separate constant files (`terms.ts` and `privacy.ts`) to keep the `LegalModal` component clean and maintainable.
+- 
 ## [1.8.159] - 2026-03-20
 ### Added
 - Added full Privacy Policy documentation to `LegalModal.tsx`.
