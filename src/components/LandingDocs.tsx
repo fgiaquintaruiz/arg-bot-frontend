@@ -1,62 +1,99 @@
 import React from 'react';
 
 export default function LandingDocs() {
+    const cardStyle: React.CSSProperties = {
+        backgroundColor: '#1e293b', // Un azul oscuro más suave
+        padding: '30px',
+        borderRadius: '20px',
+        border: '1px solid #334155',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+        transition: 'transform 0.2s ease',
+    };
+
+    const titleStyle: React.CSSProperties = {
+        fontSize: '1.3rem',
+        marginTop: 0,
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontWeight: '600'
+    };
+
+    const pStyle: React.CSSProperties = {
+        color: '#cbd5e1',
+        lineHeight: '1.7',
+        fontSize: '15px',
+        marginBottom: '16px'
+    };
+
+    const listStyle: React.CSSProperties = {
+        color: '#cbd5e1',
+        lineHeight: '1.8',
+        fontSize: '15px',
+        paddingLeft: '0',
+        listStyleType: 'none',
+        margin: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+    };
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'left' }}>
 
-            {/* What does the app do? */}
-            <div style={{ backgroundColor: '#1e293b', padding: '25px', borderRadius: '16px', border: '1px solid #334155' }}>
-                <h2 style={{ fontSize: '1.4rem', marginTop: 0, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>⚡</span> ¿Cómo funciona ARGBOT?
+            {/* Card 1: Qué hace */}
+            <div style={cardStyle}>
+                <h2 style={{ ...titleStyle, color: '#60a5fa' }}>
+                    <span style={{ fontSize: '1.5rem' }}>⚡</span> ¿Cómo te ayuda ARGBOT?
                 </h2>
-                <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '15px' }}>
-                    Las plataformas tradicionales cobran comisiones ocultas y ofrecen un tipo de cambio desfavorable. ARGBOT soluciona esto <b>automatizando el mercado cripto</b>:
+                <p style={pStyle}>
+                    Olvidate de las comisiones ocultas y los tipos de cambio malos de las remesadoras tradicionales. Nosotros hacemos el trabajo pesado automatizando el mercado cripto por vos:
                 </p>
-                <ul style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '15px', paddingLeft: '20px' }}>
-                    <li><b>Cálculo exacto:</b> Utilizamos la API pública de <b>Buenbit</b> en tiempo real para calcular exactamente cuántos Euros necesitás para cubrir tu meta en Pesos Argentinos (ARS).</li>
-                    <li><b>Ejecución P2P:</b> Automatizamos la compra de USDC en Binance usando tus propios fondos en EUR.</li>
-                    <li><b>Retiros flexibles:</b> Aunque cotizamos con Buenbit, el bot puede enviar tus USDC a <b>cualquier billetera compatible con la red BEP20 (BSC)</b> que vos configures.</li>
-                    <li><b>Visión a futuro:</b> Actualmente optimizado para el corredor Europa ➡️ Argentina, con arquitectura preparada para expandirse a nuevos mercados globales.</li>
+                <ul style={listStyle}>
+                    <li>🎯 <b>Cálculo exacto:</b> Miramos el precio en tiempo real de Buenbit para decirte justo cuántos Euros necesitás enviar para que te lleguen los Pesos que querés.</li>
+                    <li>🤖 <b>Piloto automático:</b> El bot entra a Binance y compra los USDC usando tus propios Euros.</li>
+                    <li>💸 <b>A donde vos quieras:</b> Aunque usamos Buenbit de referencia, podés mandar tus USDC a cualquier billetera de la red BEP20 (Lemon, Buenbit, Fiwind, etc.).</li>
                 </ul>
             </div>
 
-            {/* Prerequisites & Binance Rules */}
-            <div style={{ backgroundColor: '#2d2013', padding: '25px', borderRadius: '16px', border: '1px solid #ff9800' }}>
-                <h2 style={{ fontSize: '1.4rem', marginTop: 0, color: '#ffb74d', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>⚠️</span> Requisitos Previos y Reglas de Depósito
+            {/* Card 2: Reglas claras */}
+            <div style={{...cardStyle, backgroundColor: '#2d2417', borderColor: '#78350f'}}>
+                <h2 style={{ ...titleStyle, color: '#fbbf24' }}>
+                    <span style={{ fontSize: '1.5rem' }}>⚠️</span> Antes de arrancar
                 </h2>
-                <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '15px', marginBottom: '10px' }}>
-                    Antes de utilizar la herramienta, el usuario <b>debe crear por su cuenta</b> sus perfiles en Binance y en su exchange local. Tené en cuenta las siguientes restricciones estrictas impuestas por Binance para el fondeo de Euros:
+                <p style={pStyle}>
+                    Para que todo fluya, necesitás tener tus propias cuentas en Binance y en tu exchange argentino. Además, Binance tiene un par de reglas de oro para cuando mandes tus Euros:
                 </p>
-                <ul style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '15px', paddingLeft: '20px', margin: 0 }}>
-                    <li>El nombre que aparezca en tu cuenta bancaria emisora <b>debe coincidir exactamente</b> con el nombre registrado en tu cuenta de Binance.</li>
-                    <li><b>No se admiten transferencias SWIFT.</b> Los fondos enviados a través de SWIFT serán rechazados por la red bancaria y tardarán hasta 2 semanas en ser devueltos al remitente. Usá exclusivamente transferencias SEPA.</li>
+                <ul style={listStyle}>
+                    <li>📝 <b>Tu nombre tiene que coincidir:</b> La cuenta bancaria desde donde mandás los Euros tiene que estar a tu mismo nombre que la cuenta de Binance.</li>
+                    <li>🛑 <b>Cero transferencias SWIFT:</b> Usá solo transferencias <b>SEPA</b>. Si mandás por SWIFT, el banco lo rebota y tu plata puede quedar trabada hasta 2 semanas.</li>
                 </ul>
             </div>
 
-            {/* Security & Legal Disclaimer */}
-            <div style={{ backgroundColor: '#17212b', padding: '25px', borderRadius: '16px', border: '1px solid #334155' }}>
-                <h2 style={{ fontSize: '1.4rem', marginTop: 0, color: '#f43f5e', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>🛡️</span> Transparencia, Seguridad y Términos Legales
+            {/* Card 3: Seguridad y Legales */}
+            <div style={cardStyle}>
+                <h2 style={{ ...titleStyle, color: '#f87171' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🛡️</span> Tu plata, tu seguridad
                 </h2>
-
-                <div style={{ color: '#94a3b8', lineHeight: '1.6', fontSize: '14px' }}>
-                    <p style={{ marginBottom: '12px' }}>
-                        <b style={{ color: '#cbd5e1' }}>1. Arquitectura "Non-Custodial" (Sin custodia):</b> ARGBOT es estrictamente una interfaz de automatización. <b>En ningún momento tomamos control, custodia, ni almacenamos tu dinero.</b> Tus API Keys de Binance se cifran y guardan exclusivamente en el <i>localStorage</i> de tu navegador. Nuestro servidor solo procesa las instrucciones en tránsito sin retener credenciales.
-                    </p>
-
-                    <p style={{ marginBottom: '12px' }}>
-                        <b style={{ color: '#cbd5e1' }}>2. Permisos mínimos y Whitelist:</b> Al generar tus llaves en Binance, solo debés habilitar "Lectura", "Spot/Margin Trading" y "Retiros". Exigimos el uso de la <b>Whitelist (Lista Blanca)</b> de direcciones IP en Binance, lo que garantiza que, incluso en un escenario de vulnerabilidad extrema, los retiros solo puedan ir a tus propias billeteras pre-aprobadas.
-                    </p>
-
-                    <p style={{ marginBottom: '12px' }}>
-                        <b style={{ color: '#cbd5e1' }}>3. Independencia corporativa:</b> ARGBOT es una herramienta independiente y no posee asociación, patrocinio, ni relación legal con plataformas como Binance, Buenbit, Lemon, Remitly, Western Union o similares. Las marcas mencionadas son propiedad de sus respectivos dueños y se nombran a título netamente informativo.
-                    </p>
-
-                    <p style={{ margin: 0 }}>
-                        <b style={{ color: '#cbd5e1' }}>4. Exención de responsabilidad (Cláusula "As-Is"):</b> El servicio se provee "tal cual". El usuario asume la responsabilidad total de mantener la seguridad de sus dispositivos, de las claves de API generadas y de la exactitud de las direcciones de retiro introducidas. ARGBOT no se hace responsable por bloqueos de cuentas de terceros, errores de tipeo en direcciones blockchain, ni fluctuaciones imprevistas del mercado criptográfico.
-                    </p>
-                </div>
+                <ul style={listStyle}>
+                    <li>
+                        <b style={{ color: '#fff' }}>1. Nosotros no tocamos tus fondos:</b>
+                        <br />ARGBOT es un control remoto, no un banco. No guardamos tu plata ni tus contraseñas. Tus claves de Binance quedan encriptadas solo en tu compu/celular.
+                    </li>
+                    <li>
+                        <b style={{ color: '#fff' }}>2. Permisos mínimos y candado IP:</b>
+                        <br />El bot solo necesita permisos para leer, hacer trade y retirar. Al usar la "Lista Blanca" de Binance con la IP de nuestro servidor, te asegurás de que los retiros solo puedan ir a tu propia billetera.
+                    </li>
+                    <li>
+                        <b style={{ color: '#fff' }}>3. Herramienta independiente:</b>
+                        <br />ARGBOT fue creado para facilitar envíos y no tiene relación comercial con Binance, Buenbit ni Remitly.
+                    </li>
+                    <li>
+                        <b style={{ color: '#fff' }}>4. Las cosas claras:</b>
+                        <br />Vos sos responsable de cuidar tus dispositivos y de revisar que la dirección de retiro sea la correcta. No nos podemos hacer cargo si te equivocás de red al pegar la dirección o si Binance bloquea tu cuenta por otros motivos.
+                    </li>
+                </ul>
             </div>
 
         </div>

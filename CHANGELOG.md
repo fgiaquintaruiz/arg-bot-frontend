@@ -1,3 +1,8 @@
+## [1.8.156] - 2026-03-20
+### Changed
+- Redesigned `LandingDocs.tsx` with a friendlier UI (cards, better spacing, softer colors).
+- Rewrote copy using local Argentine dialect ("voseo") and simplified terms to make legal and technical constraints more approachable and user-friendly.
+- 
 ## [1.8.155] - 2026-03-20
 ### Refactored
 - Extracted legal disclaimers and documentation from `Login.tsx` into a new `LandingDocs.tsx` component to improve maintainability.
