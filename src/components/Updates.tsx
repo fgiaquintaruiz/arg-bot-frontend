@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config';
-// Importamos el changelog del frontend directamente usando Vite
+// Import the frontend changelog directly using Vite
 import frontChangelog from '../../CHANGELOG.md?raw';
 
 export default function Updates({ onClose }: { onClose: () => void }) {
@@ -19,14 +19,18 @@ export default function Updates({ onClose }: { onClose: () => void }) {
     const roadmapContent = `
 # 🗺️ Roadmap de ARGBOT
 
+### 🔥 Prioridad Alta (Próximos lanzamientos)
+- **Métricas y Ahorro Global:** Tablero en vivo mostrando la cantidad de cálculos, trades y retiros exitosos, usuarios registrados y el ahorro total generado frente a los servicios de envíos tradicionales.
+- **Feed de Operaciones (Prueba Social):** Lista pública de transacciones recientes (100% anonimizadas y ofuscadas) para demostrar la actividad real de la plataforma.
+- **Seguridad Militar Backend:** Verificación estricta de tokens JWT de Google (firebase-admin) para blindar la API y proteger las nuevas rutas de estadísticas.
+
 ### 🚀 Próximamente (En desarrollo)
-- **Seguridad Militar Backend:** Verificación estricta de tokens JWT de Google (firebase-admin) para blindar la API.
 - **Notificaciones:** Alertas por email o Telegram cuando se complete un retiro exitoso.
 - **Historial Mejorado:** Filtros por fecha y exportación a CSV de tus operaciones.
 
 ### 🔮 Futuro a mediano plazo
 - Soporte para múltiples corredores (ej. USD a ARS, EUR a COP).
-- Integración con más exchanges locales además de Buenbit.
+- Integración con más exchanges locales además de Buenbit by Nexo.
 - App móvil nativa (PWA).
   `;
 

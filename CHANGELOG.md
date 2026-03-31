@@ -1,3 +1,6 @@
+## [1.8.161] - 2026-03-20
+### Changed
+- Updated Roadmap to prioritize public analytics (successful trades, users, savings comparisons) and an anonymized live operations feed for social proof.
 ## [1.8.160] - 2026-03-20
 ### Refactored
 - Extracted hardcoded legal texts into separate constant files (`terms.ts` and `privacy.ts`) to keep the `LegalModal` component clean and maintainable.
