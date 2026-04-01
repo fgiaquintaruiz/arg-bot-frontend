@@ -1,3 +1,10 @@
+## [1.8.162] - 2026-04-01
+### Changed
+- Re-prioritized Roadmap: Moved public analytics (savings vs Remitly, successful trades) and live anonymized operations feed to high priority.
+
+### Fixed
+- Fixed Google Login button by correctly passing the `onLogin` prop in `App.tsx`.
+- 
 ## [1.8.161] - 2026-03-20
 ### Changed
 - Updated Roadmap to prioritize public analytics (successful trades, users, savings comparisons) and an anonymized live operations feed for social proof.

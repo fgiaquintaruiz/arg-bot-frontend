@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {API_URL} from '../config';
+import CryptoJS from 'crypto-js';
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
 
 export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () => void, onCancel: () => void }>) {
     const [key, setKey] = useState(localStorage.getItem('binance_key') || '');
@@ -13,8 +15,14 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
     }, []);
 
     const handleSave = () => {
-        localStorage.setItem('binance_key', key);
-        localStorage.setItem('binance_secret', secret);
+        if (!ENCRYPTION_KEY) return alert("Error: Encryption key missing");
+
+        // Encriptamos antes de guardar en localStorage
+        const encryptedKey = CryptoJS.AES.encrypt(key, ENCRYPTION_KEY).toString();
+        const encryptedSecret = CryptoJS.AES.encrypt(secret, ENCRYPTION_KEY).toString();
+
+        localStorage.setItem('binance_key', encryptedKey);
+        localStorage.setItem('binance_secret', encryptedSecret);
         onSave();
     };
 
