@@ -57,6 +57,7 @@ const isValidChecksum = (address: string): boolean => {
 export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
   const [addresses, setAddresses] = useState<AddressEntry[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
   const [newAddress, setNewAddress] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -135,6 +136,83 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
       const updated = addresses.filter(addr => addr.id !== id);
       saveAddresses(updated);
     }
+  };
+
+  // Start editing
+  const handleEdit = (entry: AddressEntry) => {
+    setEditingId(entry.id);
+    setNewName(entry.name);
+    setNewAddress(entry.address);
+    setValidationError('');
+    setShowAddForm(true);
+  };
+
+  // Save edited address
+  const handleSaveEdit = () => {
+    if (!newName.trim()) {
+      alert('Please enter a name for this address');
+      return;
+    }
+
+    if (!isValidBSCAddress(newAddress)) {
+      setValidationError('Invalid BSC/BEP20 address format');
+      return;
+    }
+
+    if (!isValidChecksum(newAddress)) {
+      setValidationError('Address checksum validation failed');
+      return;
+    }
+
+    const updated = addresses.map(entry =>
+      entry.id === editingId
+        ? { ...entry, name: newName.trim(), address: newAddress.trim() }
+        : entry
+    );
+    saveAddresses(updated);
+
+    // Reset form
+    setEditingId(null);
+    setNewName('');
+    setNewAddress('');
+    setValidationError('');
+    setShowAddForm(false);
+  };
+
+  // Add new address
+  const handleAddAddress = () => {
+    if (!newName.trim()) {
+      alert('Please enter a name for this address');
+      return;
+    }
+
+    if (!isValidBSCAddress(newAddress)) {
+      setValidationError('Invalid BSC/BEP20 address format');
+      return;
+    }
+
+    if (!isValidChecksum(newAddress)) {
+      setValidationError('Address checksum validation failed');
+      return;
+    }
+
+    const newEntry: AddressEntry = {
+      id: Date.now().toString(),
+      name: newName.trim(),
+      address: newAddress.trim(),
+      network: 'BSC',
+      addedAt: new Date().toISOString()
+    };
+
+    const updated = [newEntry, ...addresses];
+    saveAddresses(updated);
+
+    // Reset form
+    setNewName('');
+    setNewAddress('');
+    setValidationError('');
+    setEditingId(null);
+    setShowAddForm(false);
   };
 
   // Select address
@@ -252,24 +330,44 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                   Added {new Date(entry.addedAt).toLocaleDateString()}
                 </span>
                 {!onSelect && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(entry.id);
-                    }}
-                    style={{
-                      background: '#450a0a',
-                      color: '#ef4444',
-                      border: '1px solid #7f1d1d',
-                      borderRadius: '6px',
-                      padding: '4px 12px',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Delete
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(entry);
+                      }}
+                      style={{
+                        background: '#1e293b',
+                        color: '#38bdf8',
+                        border: '1px solid #334155',
+                        borderRadius: '6px',
+                        padding: '4px 12px',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(entry.id);
+                      }}
+                      style={{
+                        background: '#450a0a',
+                        color: '#ef4444',
+                        border: '1px solid #7f1d1d',
+                        borderRadius: '6px',
+                        padding: '4px 12px',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -277,10 +375,12 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
         </div>
       )}
 
-      {/* Add New Address Form */}
+      {/* Add/Edit Address Form */}
       {showAddForm ? (
         <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', padding: '20px', borderRadius: '16px', marginBottom: '16px' }}>
-          <h4 style={{ margin: '0 0 16px 0', color: '#ffb74d', fontSize: '15px' }}>Add New Address</h4>
+          <h4 style={{ margin: '0 0 16px 0', color: '#ffb74d', fontSize: '15px' }}>
+            {editingId ? '✏️ Edit Address' : '➕ Add New Address'}
+          </h4>
           
           <label style={{display:'block', fontSize:'13px', color:'#94a3b8', marginBottom:'8px'}}>Name</label>
           <input
@@ -315,10 +415,13 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
             </div>
           )}
 
-          <button onClick={handleAddAddress} style={btnS}>Save Address</button>
+          <button onClick={editingId ? handleSaveEdit : handleAddAddress} style={btnS}>
+            {editingId ? 'Save Changes' : 'Save Address'}
+          </button>
           <button
             onClick={() => {
               setShowAddForm(false);
+              setEditingId(null);
               setNewName('');
               setNewAddress('');
               setValidationError('');
