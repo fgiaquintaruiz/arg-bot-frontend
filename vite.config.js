@@ -8,5 +8,17 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:10001'
     }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/tests/jest/**',
+      '**/tests/playwright/**'
+    ],
+    include: ['**/tests/**/*.test.{js,jsx,ts,tsx}']
   }
 })
