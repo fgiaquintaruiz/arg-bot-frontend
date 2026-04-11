@@ -86,28 +86,27 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
             <button onClick={handleWithdraw} style={btnS} disabled={loading}>{loading ? 'PROCESANDO...' : 'CONFIRMAR RETIRO'}</button>
             {onClose && <button onClick={onClose} style={backBtnS} disabled={loading}><span>⬅</span> <span>Volver al Menú</span></button>}
-        </div>
 
-        {showAddressBook && (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000,
-                padding: '20px',
-                boxSizing: 'border-box'
-            }}>
-                <div style={{ maxWidth: '500px', width: '100%' }}>
-                    <AddressBook onSelect={handleAddressSelect} onClose={() => setShowAddressBook(false)} />
+            {showAddressBook && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000,
+                    padding: '20px',
+                    boxSizing: 'border-box'
+                }}>
+                    <div style={{ maxWidth: '500px', width: '100%' }}>
+                        <AddressBook onSelect={handleAddressSelect} onClose={() => setShowAddressBook(false)} />
+                    </div>
                 </div>
-            </div>
-        )}
-    </div>
+            )}
+        </div>
     );
 }
