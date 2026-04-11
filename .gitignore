@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 /arg-bot-frontend.iml
 .env
+/dist/
+/node_modules/
