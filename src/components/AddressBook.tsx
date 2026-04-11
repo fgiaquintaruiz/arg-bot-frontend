@@ -95,41 +95,6 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
     }
   };
 
-  // Add new address
-  const handleAddAddress = () => {
-    if (!newName.trim()) {
-      alert('Please enter a name for this address');
-      return;
-    }
-
-    if (!isValidBSCAddress(newAddress)) {
-      setValidationError('Invalid BSC/BEP20 address format');
-      return;
-    }
-
-    if (!isValidChecksum(newAddress)) {
-      setValidationError('Address checksum validation failed');
-      return;
-    }
-
-    const newEntry: AddressEntry = {
-      id: Date.now().toString(),
-      name: newName.trim(),
-      address: newAddress.trim(),
-      network: 'BSC',
-      addedAt: new Date().toISOString()
-    };
-
-    const updated = [newEntry, ...addresses];
-    saveAddresses(updated);
-    
-    // Reset form
-    setNewName('');
-    setNewAddress('');
-    setValidationError('');
-    setShowAddForm(false);
-  };
-
   // Delete address
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this address?')) {
