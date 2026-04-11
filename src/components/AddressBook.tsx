@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CryptoJS from 'crypto-js';
 
 export interface AddressEntry {
   id: string;
@@ -34,7 +35,7 @@ const isValidChecksum = (address: string): boolean => {
   }
   
   // Implement EIP-55 checksum validation
-  const hash = require('crypto-js').SHA3(addressWithoutPrefix.toLowerCase()).toString();
+  const hash = CryptoJS.SHA3(addressWithoutPrefix.toLowerCase()).toString();
   
   for (let i = 0; i < 40; i++) {
     const hashChar = hash[i];
