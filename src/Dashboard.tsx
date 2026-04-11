@@ -18,6 +18,7 @@ export default function Dashboard({ user }: { user: any }) {
     const hasKeys = !!apiKey && !!apiSecret;
     const [showUpdates, setShowUpdates] = useState(false);
 
+    // Initial data fetch — only on mount/user change
     useEffect(() => {
         fetch(`${API_URL}/api/data`, {
             method: 'POST',
@@ -38,7 +39,21 @@ export default function Dashboard({ user }: { user: any }) {
                     fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 }
                 });
             });
-    }, [user]); // Removed currentView — only fetch on mount/user change
+    }, [user]);
+
+    // Keep-alive polling every 9 minutes to prevent Render sleep
+    useEffect(() => {
+        const pingBackend = () => {
+            fetch(`${API_URL}/api/data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userEmail: user.email, apiKey: '', apiSecret: '' })
+            }).catch(() => { /* silent fail — keep-alive only */ });
+        };
+
+        const interval = setInterval(pingBackend, 9 * 60 * 1000); // 9 minutes
+        return () => clearInterval(interval);
+    }, [user]);
 
     const bgPattern = "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='14' fill='%231e293b' opacity='0.4'%3E%E2%82%AC%3C/text%3E%3Ctext x='40' y='50' font-family='sans-serif' font-size='14' fill='%231e293b' opacity='0.4'%3E%E2%82%BF%3C/text%3E%3C/svg%3E\")";
 
