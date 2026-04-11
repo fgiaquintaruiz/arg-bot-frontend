@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config';
-import AddressBook from './AddressBook';
+import AddressBook, { AddressEntry } from './AddressBook';
 
 export interface CoreData { balances: { eur: string; usdc: string }; fees: { tradingRate: number; withdrawalUSDC_BEP20: number }; }
 interface WithdrawProps { data: CoreData; onClose?: () => void; onSuccess?: () => void; }
@@ -17,12 +17,35 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
     if (!data || !data.balances) return <div style={{ color: '#8897a7', padding: '20px', textAlign: 'center' }}>Cargando saldos...</div>;
 
+    // Check if user has any saved addresses in the address book
+    const addressBook = (() => {
+        try {
+            const stored = localStorage.getItem('address_book');
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+    })();
+    const hasAddressBookEntry = addressBook.length > 0;
+
     const handleAddressSelect = (selectedAddress: string) => {
         setAddress(selectedAddress);
         setShowAddressBook(false);
     };
 
     const handleWithdraw = async () => {
+        // Validate address is from address book
+        if (!hasAddressBookEntry) {
+            setErrorMsg('Debes agregar una dirección en la libreta de direcciones primero. Haz clic en 📖 para agregar una.');
+            setShowAddressBook(true);
+            return;
+        }
+        // Verify the current address matches one in the address book
+        if (address && hasAddressBookEntry) {
+            const isInBook = addressBook.some((entry: AddressEntry) => entry.address.toLowerCase() === address.toLowerCase());
+            if (!isInBook) {
+                setErrorMsg('La dirección debe ser seleccionada de la libreta de direcciones.');
+                return;
+            }
+        }
         if (!address || !amount || parseFloat(amount) <= 0) return;
         if (parseFloat(amount) > parseFloat(data.balances.usdc)) {
             setErrorMsg('Saldo insuficiente. Solo tenés ' + data.balances.usdc + ' USDC.');
@@ -49,10 +72,19 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label style={{fontSize:'13px', color:'#94a3b8'}}>Wallet Destino (BuenBit/Lemon):</label>
-                <span style={{fontSize:'11px', color:'#4caf50'}}>💾 Auto-guardado</span>
+                {hasAddressBookEntry
+                    ? <span style={{fontSize:'11px', color:'#4caf50'}}>💾 Seleccionada de la libreta</span>
+                    : <span style={{fontSize:'11px', color:'#ff9800'}}>⚠️ Libreta vacía</span>
+                }
             </div>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                <input value={address} onChange={(e)=>setAddress(e.target.value)} style={{ flex: 1, width: 'auto', padding: '16px', backgroundColor: '#0e1621', border: '1px solid #334155', color: 'white', borderRadius: '12px', fontSize: '16px', boxSizing: 'border-box' }} placeholder="0x..." />
+                <input 
+                    value={address} 
+                    readOnly 
+                    style={{ flex: 1, width: 'auto', padding: '16px', backgroundColor: '#0e1621', border: '1px solid #334155', color: address ? 'white' : '#64748b', borderRadius: '12px', fontSize: '16px', boxSizing: 'border-box', cursor: 'pointer' }} 
+                    placeholder="Selecciona una dirección de la libreta 📖"
+                    onClick={() => hasAddressBookEntry && setShowAddressBook(true)}
+                />
                 <button
                     onClick={() => setShowAddressBook(true)}
                     style={{
@@ -84,7 +116,13 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
             {errorMsg && <div style={{ color: '#ef5350', fontSize: '14px', marginBottom: '16px', textAlign: 'center', backgroundColor: '#450a0a', padding: '10px', borderRadius: '8px' }}>⚠️ {errorMsg}</div>}
             {successMsg && <div style={{ color: '#4caf50', fontSize: '14px', marginBottom: '16px', textAlign: 'center', fontWeight: 'bold' }}>✅ {successMsg}</div>}
 
-            <button onClick={handleWithdraw} style={btnS} disabled={loading}>{loading ? 'PROCESANDO...' : 'CONFIRMAR RETIRO'}</button>
+            {!hasAddressBookEntry && (
+                <div style={{ color: '#ffb74d', fontSize: '13px', marginBottom: '16px', textAlign: 'center', backgroundColor: '#2d2013', padding: '12px', borderRadius: '8px', border: '1px solid #ff9800' }}>
+                    🔒 Para retirar, primero debes agregar una dirección en la libreta de direcciones. Haz clic en el botón 📖 de arriba.
+                </div>
+            )}
+
+            <button onClick={handleWithdraw} style={btnS} disabled={loading || !hasAddressBookEntry}>{loading ? 'PROCESANDO...' : 'CONFIRMAR RETIRO'}</button>
             {onClose && <button onClick={onClose} style={backBtnS} disabled={loading}><span>⬅</span> <span>Volver al Menú</span></button>}
 
             {showAddressBook && (

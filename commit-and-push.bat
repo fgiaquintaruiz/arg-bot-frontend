@@ -11,7 +11,7 @@ git add .
 
 echo.
 echo Committing with message...
-git commit -m "feat: add Address Book with BSC validation and deployment guide"
+git commit -m "fix: require address book entry for withdrawal and fix crypto-js SHA3 encoding"
 
 echo.
 echo Pushing to GitHub...

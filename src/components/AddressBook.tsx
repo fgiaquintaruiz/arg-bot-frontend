@@ -35,8 +35,8 @@ const isValidChecksum = (address: string): boolean => {
   }
   
   // Implement EIP-55 checksum validation
-  const hash = CryptoJS.SHA3(addressWithoutPrefix.toLowerCase()).toString();
-  
+  const hash = CryptoJS.SHA3(addressWithoutPrefix.toLowerCase(), { outputLength: 256 }).toString(CryptoJS.enc.Hex);
+
   for (let i = 0; i < 40; i++) {
     const hashChar = hash[i];
     const addressChar = addressWithoutPrefix[i];
