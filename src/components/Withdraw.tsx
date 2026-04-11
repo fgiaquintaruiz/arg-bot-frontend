@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
 
@@ -17,17 +17,20 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
     if (!data || !data.balances) return <div style={{ color: '#8897a7', padding: '20px', textAlign: 'center' }}>Cargando saldos...</div>;
 
-    // Check if user has any saved addresses in the address book
-    const addressBook = (() => {
+    // Check if user has any saved addresses in the address book (memoized)
+    const addressBook = useMemo(() => {
         try {
             const stored = localStorage.getItem('address_book');
             return stored ? JSON.parse(stored) : [];
         } catch { return []; }
-    })();
+    }, []);
     const hasAddressBookEntry = addressBook.length > 0;
 
-    // Find the selected address entry to show name + truncated address
-    const selectedEntry = addressBook.find((entry: AddressEntry) => entry.address.toLowerCase() === address.toLowerCase());
+    // Find the selected address entry to show name + truncated address (memoized)
+    const selectedEntry = useMemo(
+        () => addressBook.find((entry: AddressEntry) => entry.address.toLowerCase() === address.toLowerCase()),
+        [address, addressBook]
+    );
     const truncateAddress = (addr: string) => {
         if (addr.length <= 12) return addr;
         return `${addr.slice(0, 5)}...${addr.slice(-5)}`;

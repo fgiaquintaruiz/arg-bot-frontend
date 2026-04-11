@@ -38,7 +38,7 @@ export default function Dashboard({ user }: { user: any }) {
                     fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 }
                 });
             });
-    }, [user, currentView]);
+    }, [user]); // Removed currentView — only fetch on mount/user change
 
     const bgPattern = "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='14' fill='%231e293b' opacity='0.4'%3E%E2%82%AC%3C/text%3E%3Ctext x='40' y='50' font-family='sans-serif' font-size='14' fill='%231e293b' opacity='0.4'%3E%E2%82%BF%3C/text%3E%3C/svg%3E\")";
 
