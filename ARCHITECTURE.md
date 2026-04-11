@@ -175,7 +175,7 @@ User's Wallet ──► Bridge (any chain → BSC) ──► PancakeSwap/Uniswap
 - [x] USD support in calculator
 - [x] Fix performance issues
 - [ ] Add rate fallback mechanism (if Nexo API dies)
-- [ ] GitHub Actions keep-alive → frontend polling
+- [x] Backend self-polling keep-alive (calls own public URL every 9min)
 
 ### Week 3-4: Prepare for Phase 1
 - [ ] Research EU entity options (Lithuania vs Estonia vs Portugal)
@@ -197,3 +197,29 @@ User's Wallet ──► Bridge (any chain → BSC) ──► PancakeSwap/Uniswap
 2. **First corridor:** EUR→ARS or USD→ARS?
 3. **Custody model:** Hold funds (Phase 1) or pure DeFi (Phase 3)?
 4. **Compliance strategy:** Embrace regulation or stay under the radar?
+
+---
+
+## Infrastructure: Keep-Alive Strategy
+
+### Problem
+Render's free tier sleeps web services after **15 minutes** of no incoming requests.
+
+### Solution: Self-Polling Backend
+```
+First request → Backend wakes up → starts setInterval()
+    ↓
+Every 9 min: Backend calls https://arg-bot-backend.onrender.com/api/health
+    ↓
+Request goes through Render's proxy → counts as "incoming activity"
+    ↓
+Sleep timer resets → backend stays alive ♻️
+```
+
+**Why this works:** Render tracks incoming requests at the **proxy/load balancer level**, not the process level. By calling our own **public URL** (not `localhost`), the request flows through Render's infrastructure and counts as activity.
+
+**Trade-offs:**
+- ✅ No external service needed (no cron-job.org, no UptimeRobot)
+- ✅ Works even when no users are visiting the frontend
+- ⚠️ First request still has cold start (~5-15 seconds)
+- ⚠️ If the backend crashes, it needs a new first request to restart the polling
