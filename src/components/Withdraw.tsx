@@ -26,6 +26,13 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     })();
     const hasAddressBookEntry = addressBook.length > 0;
 
+    // Find the selected address entry to show name + truncated address
+    const selectedEntry = addressBook.find((entry: AddressEntry) => entry.address.toLowerCase() === address.toLowerCase());
+    const truncateAddress = (addr: string) => {
+        if (addr.length <= 12) return addr;
+        return `${addr.slice(0, 5)}...${addr.slice(-5)}`;
+    };
+
     const handleAddressSelect = (selectedAddress: string) => {
         setAddress(selectedAddress);
         setShowAddressBook(false);
@@ -71,37 +78,39 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
             <h3 style={{marginTop:0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem'}}><span style={{fontSize: '24px'}}>🏦</span> Retirar USDC</h3>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <label style={{fontSize:'13px', color:'#94a3b8'}}>Wallet Destino (BuenBit/Lemon):</label>
+                <label style={{fontSize:'13px', color:'#94a3b8'}}>Destino (Broker Argentino ej: Nexo/Lemon):</label>
                 {hasAddressBookEntry
-                    ? <span style={{fontSize:'11px', color:'#4caf50'}}>💾 Seleccionada de la libreta</span>
+                    ? <span style={{fontSize:'11px', color:'#4caf50'}}>💾 Libreta</span>
                     : <span style={{fontSize:'11px', color:'#ff9800'}}>⚠️ Libreta vacía</span>
                 }
             </div>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                <input 
-                    value={address} 
-                    readOnly 
-                    style={{ flex: 1, width: 'auto', padding: '16px', backgroundColor: '#0e1621', border: '1px solid #334155', color: address ? 'white' : '#64748b', borderRadius: '12px', fontSize: '16px', boxSizing: 'border-box', cursor: 'pointer' }} 
-                    placeholder="Selecciona una dirección de la libreta 📖"
-                    onClick={() => hasAddressBookEntry && setShowAddressBook(true)}
-                />
-                <button
-                    onClick={() => setShowAddressBook(true)}
-                    style={{
-                        padding: '16px 20px',
-                        backgroundColor: '#1e293b',
-                        color: '#38bdf8',
-                        border: '1px solid #334155',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap'
-                    }}
-                    title="Open Address Book"
-                >
-                    📖
-                </button>
+
+            {/* Selected address display */}
+            <div style={{ backgroundColor: '#0e1621', border: '1px solid #334155', borderRadius: '12px', padding: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: hasAddressBookEntry ? 'pointer' : 'default' }} onClick={() => hasAddressBookEntry && setShowAddressBook(true)}>
+                {selectedEntry ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>👤</div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>{selectedEntry.name}</div>
+                            <div style={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '13px', marginTop: '2px' }}>{truncateAddress(selectedEntry.address)}</div>
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ color: '#64748b', fontSize: '14px', flex: 1, textAlign: 'center' }}>
+                        Seleccioná una dirección 📖
+                    </div>
+                )}
+                <span style={{ color: '#38bdf8', fontSize: '16px', marginLeft: '8px' }}>✏️</span>
             </div>
+
+            {selectedEntry && (
+                <div style={{ backgroundColor: '#052e16', border: '1px solid #10b981', borderRadius: '8px', padding: '10px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px' }}>✅</span>
+                    <span style={{ color: '#10b981', fontSize: '12px' }}>
+                        Dirección verificada: <strong>{selectedEntry.name}</strong> ({truncateAddress(selectedEntry.address)})
+                    </span>
+                </div>
+            )}
 
             <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', color: '#ffb74d', padding: '16px', borderRadius: '12px', fontSize: '12px', marginBottom: '20px', lineHeight: '1.5', textAlign: 'center' }}>
                 <b>⚠️ RED BSC (BEP20) EXCLUSIVA:</b> Si envías a una red equivocada, los fondos se perderán.
