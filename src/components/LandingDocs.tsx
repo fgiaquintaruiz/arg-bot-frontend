@@ -51,9 +51,9 @@ export default function LandingDocs() {
                     Olvidate de las comisiones ocultas y los tipos de cambio malos de los servicios de envíos tradicionales. Nosotros hacemos el trabajo pesado automatizando el mercado cripto por vos:
                 </p>
                 <ul style={listStyle}>
-                    <li>🎯 <b>Cálculo exacto:</b> Miramos el precio en tiempo real de Buenbit by Nexo para decirte justo cuántos Euros necesitás enviar para que te lleguen los Pesos que querés.</li>
-                    <li>🤖 <b>Piloto automático:</b> El bot entra a Binance y compra los USDC usando tus propios Euros.</li>
-                    <li>💸 <b>A donde vos quieras:</b> Aunque usamos Buenbit by Nexo de referencia, podés mandar tus USDC a cualquier billetera de la red BEP20 (Lemon, Buenbit, Fiwind, etc.).</li>
+                    <li>🎯 <b>Cálculo exacto:</b> Miramos el precio en tiempo real de Nexo para decirte justo cuántos Euros (o Dólares) necesitás enviar para que te lleguen los Pesos que querés.</li>
+                    <li>🤖 <b>Piloto automático:</b> El bot entra a Binance y compra los USDC usando tus propios Euros o Dólares.</li>
+                    <li>💸 <b>A donde vos quieras:</b> Aunque usamos Nexo de referencia, podés mandar tus USDC a cualquier billetera de la red BEP20 (Lemon, Nexo, Fiwind, etc.).</li>
                 </ul>
             </div>
 
@@ -87,7 +87,7 @@ export default function LandingDocs() {
                     </li>
                     <li>
                         <b style={{ color: '#fff' }}>3. Herramienta independiente:</b>
-                        <br />ARGBOT fue creado para facilitar envíos y no tiene relación comercial con Binance, Buenbit by Nexo ni otras empresas tradicionales.
+                        <br />ARGBOT fue creado para facilitar envíos y no tiene relación comercial con Binance, Nexo ni otras empresas tradicionales.
                     </li>
                     <li>
                         <b style={{ color: '#fff' }}>4. Las cosas claras:</b>

@@ -23,13 +23,13 @@ El uso del servicio requiere que generes credenciales ("API Key" y "API Secret")
 - Whitelist (Lista Blanca): Es tu responsabilidad exclusiva y obligatoria configurar la Lista Blanca de IP en Binance, habilitando únicamente la dirección IP de nuestro servidor (proporcionada en la Plataforma) y limitando las direcciones de retiro a tus propias billeteras personales.
 
 5. Independencia Corporativa
-ARGBOT es una herramienta de desarrollo independiente. No tenemos ninguna afiliación corporativa, patrocinio, asociación ni acuerdo comercial con Binance, Buenbit by Nexo, Lemon, Remitly, Western Union ni ninguna otra marca mencionada en la Plataforma. Las cotizaciones se obtienen de la API pública de Buenbit by Nexo a fines meramente informativos y de cálculo.
+ARGBOT es una herramienta de desarrollo independiente. No tenemos ninguna afiliación corporativa, patrocinio, asociación ni acuerdo comercial con Binance, Nexo, Lemon, Remitly, Western Union ni ninguna otra marca mencionada en la Plataforma. Las cotizaciones se obtienen de la API pública de Nexo a fines meramente informativos y de cálculo.
 
 6. Exención y Limitación de Responsabilidad (Cláusula "As-Is")
 El servicio se proporciona "tal cual" (As-Is) y "según disponibilidad". ARGBOT y sus desarrolladores no asumen responsabilidad alguna por:
 - Pérdidas financieras derivadas de fluctuaciones y volatilidad del mercado criptográfico durante la ejecución de las operaciones.
 - Errores introducidos por el usuario al proporcionar direcciones de retiro (ej. seleccionar una red incorrecta como enviar USDC por una red distinta a BEP20/BSC). Las transacciones en la blockchain son irreversibles.
-- Bloqueos, suspensiones, retenciones de fondos o congelamientos de cuentas aplicados por Binance o tu exchange local (ej. Buenbit, Lemon).
+- Bloqueos, suspensiones, retenciones de fondos o congelamientos de cuentas aplicados por Binance o tu exchange local (ej. Nexo, Lemon).
 - Caídas del servicio de Binance, de las APIs de cotización, congestión de la red blockchain o indisponibilidad de nuestros servidores en Render.
 - Accesos no autorizados a tus dispositivos personales que comprometan tus API Keys.
 

@@ -25,7 +25,7 @@ Para que ARGBOT funcione, nos apoyamos en infraestructura de terceros de primer 
 - Google (Firebase): Para el sistema de inicio de sesión y validación de tokens.
 - Render: Para el alojamiento (hosting) de nuestro servidor y sitio web.
 - Binance: A través de su API oficial, procesamos las operaciones financieras que ordenás.
-- Buenbit by Nexo: Consultamos su API pública de forma anónima para obtener el tipo de cambio actualizado.
+- Nexo: Consultamos su API pública de forma anónima para obtener el tipo de cambio actualizado.
 
 6. Seguridad
 Implementamos medidas de seguridad estándar de la industria para proteger el tránsito de la información, forzando el uso de conexiones encriptadas (SSL/HTTPS) en todo momento. Sin embargo, recordá que ningún sistema de transmisión por Internet es 100% invulnerable. Sos responsable de mantener la seguridad del dispositivo desde el cual accedés a ARGBOT, ya que tus claves de API se guardan en el mismo.

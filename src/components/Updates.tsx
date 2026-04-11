@@ -30,7 +30,7 @@ export default function Updates({ onClose }: { onClose: () => void }) {
 
 ### 🔮 Futuro a mediano plazo
 - Soporte para múltiples corredores (ej. USD a ARS, EUR a COP).
-- Integración con más exchanges locales además de Buenbit by Nexo.
+- Integración con más exchanges locales además de Nexo.
 - App móvil nativa (PWA).
   `;
 
