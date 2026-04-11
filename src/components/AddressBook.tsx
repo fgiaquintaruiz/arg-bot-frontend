@@ -281,59 +281,62 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                   ✅ BSC/BEP20
                 </span>
               </div>
-              <div style={{ 
-                fontFamily: 'monospace', 
-                fontSize: '12px', 
-                color: '#94a3b8',
-                wordBreak: 'break-all',
-                marginBottom: '8px'
-              }}>
+              <div
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  color: '#94a3b8',
+                  wordBreak: 'break-all',
+                  marginBottom: '8px',
+                  cursor: 'text',
+                  userSelect: 'text'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
                 {entry.address}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '11px', color: '#64748b' }}>
                   Added {new Date(entry.addedAt).toLocaleDateString()}
                 </span>
-                {!onSelect && (
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(entry);
-                      }}
-                      style={{
-                        background: '#1e293b',
-                        color: '#38bdf8',
-                        border: '1px solid #334155',
-                        borderRadius: '6px',
-                        padding: '4px 12px',
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(entry.id);
-                      }}
-                      style={{
-                        background: '#450a0a',
-                        color: '#ef4444',
-                        border: '1px solid #7f1d1d',
-                        borderRadius: '6px',
-                        padding: '4px 12px',
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(entry);
+                    }}
+                    style={{
+                      background: '#1e293b',
+                      color: '#38bdf8',
+                      border: '1px solid #334155',
+                      borderRadius: '6px',
+                      padding: '4px 12px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(entry.id);
+                    }}
+                    style={{
+                      background: '#450a0a',
+                      color: '#ef4444',
+                      border: '1px solid #7f1d1d',
+                      borderRadius: '6px',
+                      padding: '4px 12px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
