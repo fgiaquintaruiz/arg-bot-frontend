@@ -35,8 +35,11 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
       setSuccessMsg('¡Cambio ejecutado con éxito!');
+      // Calculate savings vs Remitly (~10% more expensive)
+      const remitlyCost = eurInput * 1.10;
+      const savings = (remitlyCost - eurInput).toFixed(2);
       const history = JSON.parse(localStorage.getItem("trade_history") || "[]");
-      history.push({ date: new Date().toISOString(), eur: eurInput, savings: '0.00' });
+      history.push({ date: new Date().toISOString(), eur: eurInput, savings, usdcReceived: netUsdc.toFixed(2) });
       localStorage.setItem("trade_history", JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);

@@ -268,76 +268,115 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                 padding: '16px',
                 borderRadius: '12px',
                 marginBottom: '12px',
-                border: '1px solid #242f3d',
-                cursor: onSelect ? 'pointer' : 'default'
+                border: onSelect ? '2px solid #38bdf8' : '1px solid #242f3d',
               }}
-              onClick={() => onSelect && handleSelect(entry.address)}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
-                  {entry.name}
-                </span>
-                <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
-                  ✅ BSC/BEP20
-                </span>
-              </div>
-              <div
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '12px',
-                  color: '#94a3b8',
-                  wordBreak: 'break-all',
-                  marginBottom: '8px',
-                  cursor: 'text',
-                  userSelect: 'text'
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {entry.address}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>
-                  Added {new Date(entry.addedAt).toLocaleDateString()}
-                </span>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(entry);
-                    }}
+              {onSelect ? (
+                // Selectable mode — tap entire card to select
+                <button
+                  onClick={() => handleSelect(entry.address)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    margin: 0,
+                    width: '100%',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
+                      {entry.name}
+                    </span>
+                    <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
+                      ✅ BSC/BEP20
+                    </span>
+                  </div>
+                  <div style={{
+                    fontFamily: 'monospace',
+                    fontSize: '12px',
+                    color: '#94a3b8',
+                    wordBreak: 'break-all',
+                    marginBottom: '8px'
+                  }}>
+                    {entry.address}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', marginTop: '4px' }}>
+                    👆 Tocar para seleccionar
+                  </div>
+                </button>
+              ) : (
+                // Manage mode — show Edit/Delete
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
+                      {entry.name}
+                    </span>
+                    <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
+                      ✅ BSC/BEP20
+                    </span>
+                  </div>
+                  <div
                     style={{
-                      background: '#1e293b',
-                      color: '#38bdf8',
-                      border: '1px solid #334155',
-                      borderRadius: '6px',
-                      padding: '4px 12px',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      color: '#94a3b8',
+                      wordBreak: 'break-all',
+                      marginBottom: '8px',
+                      cursor: 'text',
+                      userSelect: 'text'
                     }}
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(entry.id);
-                    }}
-                    style={{
-                      background: '#450a0a',
-                      color: '#ef4444',
-                      border: '1px solid #7f1d1d',
-                      borderRadius: '6px',
-                      padding: '4px 12px',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+                    {entry.address}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b' }}>
+                      Added {new Date(entry.addedAt).toLocaleDateString()}
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(entry);
+                        }}
+                        style={{
+                          background: '#1e293b',
+                          color: '#38bdf8',
+                          border: '1px solid #334155',
+                          borderRadius: '6px',
+                          padding: '4px 12px',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(entry.id);
+                        }}
+                        style={{
+                          background: '#450a0a',
+                          color: '#ef4444',
+                          border: '1px solid #7f1d1d',
+                          borderRadius: '6px',
+                          padding: '4px 12px',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
