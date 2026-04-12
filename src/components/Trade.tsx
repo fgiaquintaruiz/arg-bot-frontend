@@ -18,6 +18,13 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const fee = grossUsdc * (data.fees?.tradingRate || 0.001);
   const netUsdc = grossUsdc - fee;
 
+  // Service fee from settings
+  const serviceFee = parseFloat(localStorage.getItem('service_fee') || '0.50') || 0;
+  const userEmail = localStorage.getItem('user_email') || '';
+  const whitelist = (localStorage.getItem('fee_whitelist') || '').split('\n').map(e => e.trim().toLowerCase()).filter(Boolean);
+  const isExempt = whitelist.includes(userEmail.toLowerCase());
+  const effectiveFee = isExempt ? 0 : serviceFee;
+
   const handleInitiateTrade = () => {
     if (!eurInput || parseFloat(eurInput) <= 0) return;
     if (parseFloat(eurInput) > parseFloat(data.balances.eur)) {
@@ -39,7 +46,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const remitlyCost = eurInput * 1.10;
       const savings = (remitlyCost - eurInput).toFixed(2);
       const history = JSON.parse(localStorage.getItem("trade_history") || "[]");
-      history.push({ date: new Date().toISOString(), eur: eurInput, savings, usdcReceived: netUsdc.toFixed(2) });
+      history.push({ date: new Date().toISOString(), eur: eurInput, savings, usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2) });
       localStorage.setItem("trade_history", JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);
@@ -64,6 +71,12 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
 
         <div style={{backgroundColor:'#0e1621', padding:'20px', borderRadius:'16px', marginBottom:'24px', border: '1px solid #242f3d'}}>
           <div style={{display:'flex', justifyContent:'space-between', fontSize:'13px', color:'#ef5350', marginBottom:'8px'}}><span>Comisión est. ({(data.fees?.tradingRate || 0.001) * 100}%):</span><span>- {fee.toFixed(2)} USDC</span></div>
+          {effectiveFee > 0 && (
+            <div style={{display:'flex', justifyContent:'space-between', fontSize:'13px', color:'#fbbf24', marginBottom:'8px'}}><span>Fee de servicio ARGBOT:</span><span>- €{effectiveFee.toFixed(2)}</span></div>
+          )}
+          {isExempt && effectiveFee === 0 && serviceFee > 0 && (
+            <div style={{display:'flex', justifyContent:'space-between', fontSize:'13px', color:'#10b981', marginBottom:'8px'}}><span>Fee de servicio:</span><span>✅ Exento</span></div>
+          )}
           <div style={{display:'flex', justifyContent:'space-between', color:'#4caf50', fontSize:'18px'}}><span>Recibirás (~):</span><span style={{fontWeight:'bold'}}>{Math.max(0, netUsdc).toFixed(2)} USDC</span></div>
         </div>
 

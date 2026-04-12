@@ -8,6 +8,7 @@ import Trade from './components/Trade';
 import Withdraw from './components/Withdraw';
 import History from './components/History';
 import Updates from './components/Updates';
+import Settings from './components/Settings';
 
 export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
@@ -17,6 +18,7 @@ export default function Dashboard({ user }: { user: any }) {
     const apiSecret = localStorage.getItem('binance_secret');
     const hasKeys = !!apiKey && !!apiSecret;
     const [showUpdates, setShowUpdates] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
 
     // Initial data fetch — only on mount/user change
     useEffect(() => {
@@ -226,15 +228,29 @@ export default function Dashboard({ user }: { user: any }) {
             }}>
                 <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>ARGBOT <span
                     style={{ fontSize: '12px', color: '#54687a', fontWeight: 500 }}>v{pkg.version}</span></h2>
-                <button onClick={logout} style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#ef4444',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                }}>Salir
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <button onClick={() => setShowSettings(true)} style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#94a3b8',
+                        fontSize: '20px',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s'
+                    }} title="Configuración">
+                        ⚙️
+                    </button>
+                    <button onClick={logout} style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#ef4444',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                    }}>Salir
+                    </button>
+                </div>
             </div>
             <div style={{
                 flex: 1,
@@ -251,6 +267,7 @@ export default function Dashboard({ user }: { user: any }) {
             </div>
 
             {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
+            {showSettings && <Settings onClose={() => setShowSettings(false)} user={user} />}
         </div>
     );
 }

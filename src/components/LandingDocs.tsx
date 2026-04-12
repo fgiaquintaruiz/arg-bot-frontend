@@ -96,6 +96,35 @@ export default function LandingDocs() {
                 </ul>
             </div>
 
+            {/* Card 4: Trust Badges */}
+            <div style={{...cardStyle, backgroundColor: '#052e16', borderColor: '#10b981'}}>
+                <h2 style={{ ...titleStyle, color: '#34d399' }}>
+                    <span style={{ fontSize: '1.5rem' }}>✅</span> ¿Por qué confiar en ARGBOT?
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>🔒</div>
+                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>AES-256</div>
+                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>Encriptación local</div>
+                    </div>
+                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>🌐</div>
+                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>Open Source</div>
+                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>Código en GitHub</div>
+                    </div>
+                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>📧</div>
+                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>Soporte</div>
+                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>soporte@argbot.app</div>
+                    </div>
+                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>🔑</div>
+                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>Solo lectura</div>
+                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>Sin acceso a depósitos</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     );
 }
