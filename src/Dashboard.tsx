@@ -19,6 +19,28 @@ export default function Dashboard({ user }: { user: any }) {
     const hasKeys = !!apiKey && !!apiSecret;
     const [showUpdates, setShowUpdates] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+
+    // Auto-update detection — poll for new version every 60 seconds
+    useEffect(() => {
+        const checkForUpdates = async () => {
+            try {
+                const res = await fetch('/?_t=' + Date.now(), { cache: 'no-store' });
+                const html = await res.text();
+                // Look for version number in the HTML
+                const match = html.match(/v{pkg\.version}/) || html.match(/v(\d+\.\d+\.\d+)/);
+                if (match) {
+                    const serverVersion = match[1];
+                    if (serverVersion !== pkg.version) {
+                        setShowUpdateBanner(true);
+                    }
+                }
+            } catch { /* silent fail */ }
+        };
+
+        const interval = setInterval(checkForUpdates, 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Initial data fetch — only on mount/user change
     useEffect(() => {
@@ -268,6 +290,30 @@ export default function Dashboard({ user }: { user: any }) {
 
             {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
             {showSettings && <Settings onClose={() => setShowSettings(false)} user={user} />}
+
+            {/* Update Banner */}
+            {showUpdateBanner && (
+                <div style={{
+                    position: 'fixed', bottom: 0, left: 0, right: 0,
+                    backgroundColor: '#1e40af', padding: '16px 24px',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    zIndex: 9998, boxShadow: '0 -4px 20px rgba(0,0,0,0.4)'
+                }}>
+                    <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                        🔄 Nueva versión disponible
+                    </span>
+                    <button
+                        onClick={() => window.location.reload()}
+                        style={{
+                            backgroundColor: '#fff', color: '#1e40af', border: 'none',
+                            borderRadius: '8px', padding: '8px 20px', fontSize: '14px',
+                            fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap'
+                        }}
+                    >
+                        Actualizar ahora
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

@@ -125,23 +125,29 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
 
               <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
                 <button
+                  onTouchEnd={(e) => { e.preventDefault(); handleDriveSync('upload'); }}
                   onClick={() => handleDriveSync('upload')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
                   style={{
-                    flex: 1, padding: '14px', backgroundColor: '#10b981', color: '#fff',
+                    flex: 1, padding: '16px', backgroundColor: '#10b981', color: '#fff',
                     border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
-                    cursor: syncStatus === 'uploading' ? 'wait' : 'pointer', opacity: syncStatus === 'uploading' ? 0.7 : 1
+                    cursor: syncStatus === 'uploading' ? 'wait' : 'pointer', opacity: syncStatus === 'uploading' ? 0.7 : 1,
+                    WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
+                    minHeight: '48px'
                   }}
                 >
                   {syncStatus === 'uploading' ? '⏳ Subiendo...' : '📤 Subir a Drive'}
                 </button>
                 <button
+                  onTouchEnd={(e) => { e.preventDefault(); handleDriveSync('download'); }}
                   onClick={() => handleDriveSync('download')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
                   style={{
-                    flex: 1, padding: '14px', backgroundColor: '#3b82f6', color: '#fff',
+                    flex: 1, padding: '16px', backgroundColor: '#3b82f6', color: '#fff',
                     border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
-                    cursor: syncStatus === 'downloading' ? 'wait' : 'pointer', opacity: syncStatus === 'downloading' ? 0.7 : 1
+                    cursor: syncStatus === 'downloading' ? 'wait' : 'pointer', opacity: syncStatus === 'downloading' ? 0.7 : 1,
+                    WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
+                    minHeight: '48px'
                   }}
                 >
                   {syncStatus === 'downloading' ? '⏳ Bajando...' : '📥 Descargar de Drive'}
@@ -187,15 +193,18 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
                     }}
                   />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', gap: '4px' }}>
                   {['0.10', '0.25', '0.50', '0.75', '1.00'].map(v => (
                     <button
                       key={v}
+                      onTouchEnd={(e) => { e.preventDefault(); setServiceFee(v); }}
                       onClick={() => setServiceFee(v)}
                       style={{
-                        padding: '6px 10px', backgroundColor: serviceFee === v ? '#3b82f6' : '#0e1621',
+                        flex: 1, padding: '10px 4px', backgroundColor: serviceFee === v ? '#3b82f6' : '#0e1621',
                         color: serviceFee === v ? '#fff' : '#94a3b8', border: '1px solid #334155',
-                        borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold'
+                        borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold',
+                        WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
+                        minHeight: '44px'
                       }}
                     >
                       €{v}
@@ -220,11 +229,14 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
               </div>
 
               <button
+                onTouchEnd={(e) => { e.preventDefault(); handleSaveFee(); }}
                 onClick={handleSaveFee}
                 style={{
-                  width: '100%', padding: '14px', backgroundColor: feeSaved ? '#10b981' : '#3b82f6',
-                  color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
-                  cursor: 'pointer', transition: 'background-color 0.3s'
+                  width: '100%', padding: '16px', backgroundColor: feeSaved ? '#10b981' : '#3b82f6',
+                  color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',
+                  cursor: 'pointer', transition: 'background-color 0.3s',
+                  WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
+                  minHeight: '52px'
                 }}
               >
                 {feeSaved ? '✅ Guardado' : '💾 Guardar Configuración'}

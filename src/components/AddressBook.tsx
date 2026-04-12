@@ -259,7 +259,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
           {addresses.length === 0 ? 'No saved addresses yet. Add your first one!' : 'No addresses match your search.'}
         </div>
       ) : (
-        <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', marginBottom: '16px' }}>
+        <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', marginBottom: '16px', WebkitOverflowScrolling: 'touch' }}>
           {filteredAddresses.map((entry) => (
             <div
               key={entry.id}
@@ -269,12 +269,21 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                 borderRadius: '12px',
                 marginBottom: '12px',
                 border: onSelect ? '2px solid #38bdf8' : '1px solid #242f3d',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               {onSelect ? (
                 // Selectable mode — tap entire card to select
                 <button
-                  onClick={() => handleSelect(entry.address)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(entry.address);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    handleSelect(entry.address);
+                  }}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -284,7 +293,9 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                     textAlign: 'left',
                     cursor: 'pointer',
                     WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
+                    WebkitAppearance: 'none',
+                    touchAction: 'manipulation',
+                    display: 'block'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -304,7 +315,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                   }}>
                     {entry.address}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', marginTop: '4px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #1e293b' }}>
                     👆 Tocar para seleccionar
                   </div>
                 </button>
@@ -336,8 +347,12 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                     <span style={{ fontSize: '11px', color: '#64748b' }}>
                       Added {new Date(entry.addedAt).toLocaleDateString()}
                     </span>
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
                       <button
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleEdit(entry);
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEdit(entry);
@@ -346,16 +361,24 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                           background: '#1e293b',
                           color: '#38bdf8',
                           border: '1px solid #334155',
-                          borderRadius: '6px',
-                          padding: '4px 12px',
-                          fontSize: '11px',
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontSize: '13px',
                           cursor: 'pointer',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          WebkitTapHighlightColor: 'transparent',
+                          WebkitAppearance: 'none',
+                          touchAction: 'manipulation',
+                          minWidth: '70px'
                         }}
                       >
-                        Editar
+                        ✏️ Editar
                       </button>
                       <button
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleDelete(entry.id);
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(entry.id);
@@ -364,14 +387,18 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                           background: '#450a0a',
                           color: '#ef4444',
                           border: '1px solid #7f1d1d',
-                          borderRadius: '6px',
-                          padding: '4px 12px',
-                          fontSize: '11px',
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontSize: '13px',
                           cursor: 'pointer',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          WebkitTapHighlightColor: 'transparent',
+                          WebkitAppearance: 'none',
+                          touchAction: 'manipulation',
+                          minWidth: '90px'
                         }}
                       >
-                        Eliminar
+                        🗑️ Eliminar
                       </button>
                     </div>
                   </div>
