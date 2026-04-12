@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 export default function Calculator({ data, onBack }: { data: any, onBack?: () => void }) {
   const [arsAmount, setArsAmount] = useState('500000');
   const [sourceCurrency, setSourceCurrency] = useState<'EUR' | 'USD'>('EUR');
+  const [showSepaDetails, setShowSepaDetails] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
   if (!data) return <div style={{textAlign: 'center', padding: '20px', color: '#94a3b8'}}>Cargando mercado...</div>;
 
   const ars = parseFloat(arsAmount) || 0;
@@ -25,9 +28,38 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
   const tradingFee = beforeTradeFee * tradingFeeRate;
   const toDeposit = beforeTradeFee + tradingFee;
   const totalCost = toDeposit + depositFee;
+  const eurToDeposit = isEUR ? totalCost : totalCost; // For USD, same concept
 
   const remitlyEur = totalCost * 1.10;
   const ahorro = remitlyEur - totalCost;
+
+  // Binance Europe SEPA deposit details
+  const binanceIBAN = 'LT96 3230 0000 0000 0000'; // Binance EU IBAN (user should verify in their Binance app)
+  const binanceName = 'Binance Europe Services Ltd';
+  const binanceBIC = 'REVOLT21XXX';
+  const userEmail = localStorage.getItem('user_email') || 'tu-email@ejemplo.com';
+  const sepaReference = `${userEmail} Binance Deposit`;
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
+
+  // Generate payto: URI for Santander and other banking apps
+  const paytoUri = `payto:${binanceIBAN.replace(/\s/g, '')}?amount=${eurToDeposit.toFixed(2)}&message=${encodeURIComponent(sepaReference)}`;
 
   const backBtnS: React.CSSProperties = { width: '100%', padding: '16px', backgroundColor: 'transparent', border: 'none', color: '#38bdf8', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' };
 
@@ -81,6 +113,109 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
       {isEUR && (
         <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#052e16', borderRadius: '12px', border: '1px solid #10b981', marginBottom: '24px' }}>
           <span style={{ fontWeight: 'bold', color: '#34d399', fontSize: '15px' }}>🎉 AHORRO vs REMITLY: {ahorro.toFixed(2)} €</span>
+        </div>
+      )}
+
+      {/* SEPA Transfer Button — EUR only */}
+      {isEUR && (
+        <div style={{ marginBottom: '20px' }}>
+          <button
+            onClick={() => setShowSepaDetails(!showSepaDetails)}
+            style={{
+              width: '100%', padding: '16px', backgroundColor: '#1e40af', color: '#fff',
+              border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+            }}
+          >
+            🏦 Transferir {eurToDeposit.toFixed(2)} € desde mi banco
+            <span style={{ fontSize: '12px', opacity: 0.8 }}>{showSepaDetails ? '▲' : '▼'}</span>
+          </button>
+
+          {showSepaDetails && (
+            <div style={{ marginTop: '12px', backgroundColor: '#0e1621', borderRadius: '16px', border: '1px solid #334155', padding: '20px' }}>
+              <h4 style={{ margin: '0 0 16px 0', color: '#fbbf24', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📋 Datos para Transferencia SEPA
+              </h4>
+
+              {/* IBAN */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Beneficiario</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#f8fafc', fontSize: '14px', flex: 1 }}>{binanceName}</span>
+                  <button onClick={() => copyToClipboard(binanceName, 'name')} style={{ background: '#334155', border: 'none', color: copiedField === 'name' ? '#10b981' : '#94a3b8', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {copiedField === 'name' ? '✅' : '📋'}
+                  </button>
+                </div>
+              </div>
+
+              {/* IBAN */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>IBAN</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#f8fafc', fontSize: '14px', fontFamily: 'monospace', flex: 1 }}>{binanceIBAN}</span>
+                  <button onClick={() => copyToClipboard(binanceIBAN.replace(/\s/g, ''), 'iban')} style={{ background: '#334155', border: 'none', color: copiedField === 'iban' ? '#10b981' : '#94a3b8', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {copiedField === 'iban' ? '✅' : '📋'}
+                  </button>
+                </div>
+              </div>
+
+              {/* BIC/SWIFT */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>BIC/SWIFT</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#f8fafc', fontSize: '14px', fontFamily: 'monospace', flex: 1 }}>{binanceBIC}</span>
+                  <button onClick={() => copyToClipboard(binanceBIC, 'bic')} style={{ background: '#334155', border: 'none', color: copiedField === 'bic' ? '#10b981' : '#94a3b8', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {copiedField === 'bic' ? '✅' : '📋'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Monto a enviar</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981', fontSize: '18px', fontWeight: 'bold', flex: 1 }}>{eurToDeposit.toFixed(2)} EUR</span>
+                  <button onClick={() => copyToClipboard(eurToDeposit.toFixed(2), 'amount')} style={{ background: '#334155', border: 'none', color: copiedField === 'amount' ? '#10b981' : '#94a3b8', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {copiedField === 'amount' ? '✅' : '📋'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Reference */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Concepto / Referencia</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#fbbf24', fontSize: '13px', fontFamily: 'monospace', flex: 1, wordBreak: 'break-all' }}>{sepaReference}</span>
+                  <button onClick={() => copyToClipboard(sepaReference, 'ref')} style={{ background: '#334155', border: 'none', color: copiedField === 'ref' ? '#10b981' : '#94a3b8', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {copiedField === 'ref' ? '✅' : '📋'}
+                  </button>
+                </div>
+              </div>
+
+              {/* payto: URI button */}
+              <a
+                href={paytoUri}
+                style={{
+                  display: 'block', width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#fff',
+                  border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
+                  textDecoration: 'none', textAlign: 'center', marginBottom: '8px', cursor: 'pointer'
+                }}
+                onClick={(e) => {
+                  // If payto: doesn't work on this device, show a note
+                  if (!/android|iphone|ipad/i.test(navigator.userAgent)) {
+                    e.preventDefault();
+                    alert('En tu celular, tocá este botón desde la app de tu banco (Santander, BBVA, etc.) para que se autocomplete la transferencia.');
+                  }
+                }}
+              >
+                📱 Abrir app del banco (Santander, BBVA, etc.)
+              </a>
+
+              <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
+                ⚠️ Usá solo transferencia <b>SEPA</b> (no SWIFT). El nombre del banco debe coincidir con tu cuenta Binance.
+              </div>
+            </div>
+          )}
         </div>
       )}
 

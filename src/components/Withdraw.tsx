@@ -44,7 +44,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     const handleWithdraw = async () => {
         // Validate address is from address book
         if (!hasAddressBookEntry) {
-            setErrorMsg('Debes agregar una dirección en la libreta de direcciones primero. Haz clic en 📖 para agregar una.');
+            setErrorMsg('Debes agregar una dirección en la libreta de direcciones primero. Hacé clic en 📖 para agregar una.');
             setShowAddressBook(true);
             return;
         }
@@ -64,7 +64,6 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
         setLoading(true); setErrorMsg(''); setSuccessMsg('');
         try {
-            // Usamos API_URL directamente
             const res = await fetch(`${API_URL}/api/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: localStorage.getItem('binance_key'), apiSecret: localStorage.getItem('binance_secret'), address, amountUsdc: amount }) });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
@@ -80,6 +79,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
         <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b' }}>
             <h3 style={{marginTop:0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem'}}><span style={{fontSize: '24px'}}>🏦</span> Retirar USDC</h3>
 
+            {/* 1. Address book selector — FIRST, most important action */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label style={{fontSize:'13px', color:'#94a3b8'}}>Destino (Broker Argentino ej: Nexo/Lemon):</label>
                 {hasAddressBookEntry
@@ -89,10 +89,10 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
             </div>
 
             {/* Selected address display */}
-            <div style={{ backgroundColor: '#0e1621', border: '1px solid #334155', borderRadius: '12px', padding: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: hasAddressBookEntry ? 'pointer' : 'default' }} onClick={() => hasAddressBookEntry && setShowAddressBook(true)}>
+            <div style={{ backgroundColor: '#0e1621', border: selectedEntry ? '1px solid #10b981' : '1px solid #334155', borderRadius: '12px', padding: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: hasAddressBookEntry ? 'pointer' : 'default' }} onClick={() => hasAddressBookEntry && setShowAddressBook(true)}>
                 {selectedEntry ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>👤</div>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#052e16', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>👤</div>
                         <div style={{ flex: 1 }}>
                             <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>{selectedEntry.name}</div>
                             <div style={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '13px', marginTop: '2px' }}>{truncateAddress(selectedEntry.address)}</div>
@@ -100,25 +100,20 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
                     </div>
                 ) : (
                     <div style={{ color: '#64748b', fontSize: '14px', flex: 1, textAlign: 'center' }}>
-                        Seleccioná una dirección 📖
+                        Seleccioná una dirección de la libreta 📖
                     </div>
                 )}
-                <span style={{ color: '#38bdf8', fontSize: '16px', marginLeft: '8px' }}>✏️</span>
+                {hasAddressBookEntry && <span style={{ color: '#38bdf8', fontSize: '16px', marginLeft: '8px' }}>✏️</span>}
             </div>
 
-            {selectedEntry && (
-                <div style={{ backgroundColor: '#052e16', border: '1px solid #10b981', borderRadius: '8px', padding: '10px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '12px' }}>✅</span>
-                    <span style={{ color: '#10b981', fontSize: '12px' }}>
-                        Dirección verificada: <strong>{selectedEntry.name}</strong> ({truncateAddress(selectedEntry.address)})
-                    </span>
+            {/* 2. Network warning — shown BEFORE amount, only when no valid address selected */}
+            {!selectedEntry && (
+                <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', color: '#ffb74d', padding: '12px', borderRadius: '12px', fontSize: '12px', marginBottom: '16px', lineHeight: '1.5', textAlign: 'center' }}>
+                    ⚠️ <b>RED BSC (BEP20) EXCLUSIVA:</b> Solo podés retirar a direcciones de la red BSC (Binance Smart Chain). Si enviás a una red equivocada, los fondos se perderán.
                 </div>
             )}
 
-            <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', color: '#ffb74d', padding: '16px', borderRadius: '12px', fontSize: '12px', marginBottom: '20px', lineHeight: '1.5', textAlign: 'center' }}>
-                <b>⚠️ RED BSC (BEP20) EXCLUSIVA:</b> Si envías a una red equivocada, los fondos se perderán.
-            </div>
-
+            {/* 3. Amount input */}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>
                 <span>Disponible: {data.balances.usdc} USDC</span>
                 <button onClick={() => setAmount(data.balances.usdc)} style={{ background: 'none', border: 'none', color: '#38bdf8', cursor: 'pointer', fontWeight: 'bold' }}>MAX</button>
@@ -130,7 +125,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
             {!hasAddressBookEntry && (
                 <div style={{ color: '#ffb74d', fontSize: '13px', marginBottom: '16px', textAlign: 'center', backgroundColor: '#2d2013', padding: '12px', borderRadius: '8px', border: '1px solid #ff9800' }}>
-                    🔒 Para retirar, primero debes agregar una dirección en la libreta de direcciones. Haz clic en el botón 📖 de arriba.
+                    🔒 Para retirar, primero debés agregar una dirección en la libreta de direcciones. Hacé clic en el botón 📖 de arriba.
                 </div>
             )}
 
