@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { uploadToDrive, downloadFromDrive } from '../googleDrive';
 
 export default function Settings({ onClose, user }: { onClose: () => void; user: any }) {
   const [activeTab, setActiveTab] = useState<'sync' | 'fee' | 'support'>('sync');
@@ -14,66 +15,59 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
   // Google Drive Sync
   const handleDriveSync = async (action: 'upload' | 'download') => {
     setSyncStatus(action === 'upload' ? 'uploading' : 'downloading');
-    setSyncMessage(action === 'upload' ? 'Subiendo a Google Drive...' : 'Descargando desde Google Drive...');
+    setSyncMessage(action === 'upload' ? 'Conectando con Google Drive...' : 'Conectando con Google Drive...');
 
     try {
-      // Collect data from localStorage
-      const dataToSync = {
-        version: 1,
-        timestamp: new Date().toISOString(),
-        apiKey: localStorage.getItem('binance_key') || '',
-        apiSecret: localStorage.getItem('binance_secret') || '',
-        addressBook: localStorage.getItem('address_book') || '[]',
-        tradeHistory: localStorage.getItem('trade_history') || '[]',
-        usdcWallet: localStorage.getItem('usdc_wallet') || '',
-        serviceFee: localStorage.getItem('service_fee') || '0.50',
-        feeWhitelist: localStorage.getItem('fee_whitelist') || ''
-      };
+      if (action === 'upload') {
+        const dataToSync = {
+          version: 1,
+          timestamp: new Date().toISOString(),
+          apiKey: localStorage.getItem('binance_key') || '',
+          apiSecret: localStorage.getItem('binance_secret') || '',
+          addressBook: localStorage.getItem('address_book') || '[]',
+          tradeHistory: localStorage.getItem('trade_history') || '[]',
+          usdcWallet: localStorage.getItem('usdc_wallet') || '',
+          serviceFee: localStorage.getItem('service_fee') || '0.50',
+          feeWhitelist: localStorage.getItem('fee_whitelist') || ''
+        };
 
-      if (action === 'download') {
-        console.log('[Settings] Download attempted, checking for local backup...');
-        // Try to download from local backup
-        const encrypted = localStorage.getItem('drive_backup');
-        if (encrypted) {
-          console.log('[Settings] Found local backup, attempting to restore...');
-          try {
-            const data = JSON.parse(atob(encrypted));
-            // Restore data
-            if (data.apiKey) localStorage.setItem('binance_key', data.apiKey);
-            if (data.apiSecret) localStorage.setItem('binance_secret', data.apiSecret);
-            if (data.addressBook) localStorage.setItem('address_book', data.addressBook);
-            if (data.tradeHistory) localStorage.setItem('trade_history', data.tradeHistory);
-            if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);
-            if (data.serviceFee) localStorage.setItem('service_fee', data.serviceFee);
-            if (data.feeWhitelist) localStorage.setItem('fee_whitelist', data.feeWhitelist);
-            setSyncStatus('success');
-            setSyncMessage(`✅ Datos restaurados desde respaldo local (${data.timestamp || 'fecha desconocida'}). La sincronización con Google Drive estará disponible pronto.`);
-            console.log('[Settings] Download successful');
-          } catch (e) {
-            console.error('[Settings] Failed to parse backup:', e);
-            setSyncStatus('error');
-            setSyncMessage('❌ Error al leer el respaldo local. Los datos pueden estar corruptos.');
-          }
+        console.log('[Settings] Uploading to Google Drive...');
+        const success = await uploadToDrive(dataToSync);
+
+        if (success) {
+          setSyncStatus('success');
+          setSyncMessage('✅ Datos subidos a tu Google Drive correctamente. Ya podés descargarlos desde cualquier dispositivo.');
+          console.log('[Settings] Upload successful');
         } else {
-          console.log('[Settings] No local backup found');
           setSyncStatus('error');
-          setSyncMessage('⚠️ No hay respaldo en este dispositivo. El backup se guarda en cada dispositivo por separado. Para sincronizar entre dispositivos, necesitás primero "Subir a Drive" desde el dispositivo original. La integración con Google Drive real estará disponible pronto.');
+          setSyncMessage('❌ No se pudo subir. Cancelaste el permiso o hubo un error de conexión.');
         }
       } else {
-        // Upload simulation
-        const encrypted = btoa(JSON.stringify(dataToSync));
-        localStorage.setItem('drive_backup', encrypted);
+        console.log('[Settings] Downloading from Google Drive...');
+        const data = await downloadFromDrive();
 
-        // In production, this would call Google Drive API:
-        // const drive = google.drive({ version: 'v3', auth: oauth2Client });
-        // await drive.files.create({ media: { body: encrypted } });
+        if (data) {
+          // Restore data
+          if (data.apiKey) localStorage.setItem('binance_key', data.apiKey);
+          if (data.apiSecret) localStorage.setItem('binance_secret', data.apiSecret);
+          if (data.addressBook) localStorage.setItem('address_book', data.addressBook);
+          if (data.tradeHistory) localStorage.setItem('trade_history', data.tradeHistory);
+          if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);
+          if (data.serviceFee) localStorage.setItem('service_fee', data.serviceFee);
+          if (data.feeWhitelist) localStorage.setItem('fee_whitelist', data.feeWhitelist);
 
-        setSyncStatus('success');
-        setSyncMessage('✅ Datos respaldados localmente. La sincronización con Google Drive estará disponible pronto.');
+          setSyncStatus('success');
+          setSyncMessage(`✅ Datos restaurados desde Google Drive (${data.timestamp || 'fecha desconocida'}). Recargá la página para aplicar los cambios.`);
+          console.log('[Settings] Download successful');
+        } else {
+          setSyncStatus('error');
+          setSyncMessage('⚠️ No se encontró un respaldo en tu Google Drive. Primero necesitás subir tus datos desde otro dispositivo.');
+        }
       }
     } catch (err: any) {
+      console.error('[Settings] Sync error:', err);
       setSyncStatus('error');
-      setSyncMessage(`❌ Error: ${err.message}`);
+      setSyncMessage(`❌ Error: ${err.message || 'Error desconocido'}`);
     }
   };
 
