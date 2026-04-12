@@ -89,22 +89,55 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
             </div>
 
             {/* Selected address display */}
-            <div style={{ backgroundColor: '#0e1621', border: selectedEntry ? '1px solid #10b981' : '1px solid #334155', borderRadius: '12px', padding: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: hasAddressBookEntry ? 'pointer' : 'default' }} onClick={() => hasAddressBookEntry && setShowAddressBook(true)}>
-                {selectedEntry ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#052e16', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>👤</div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>{selectedEntry.name}</div>
-                            <div style={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '13px', marginTop: '2px' }}>{truncateAddress(selectedEntry.address)}</div>
+            {hasAddressBookEntry ? (
+                <button
+                    onClick={() => setShowAddressBook(true)}
+                    onTouchEnd={(e) => { e.preventDefault(); setShowAddressBook(true); }}
+                    style={{
+                        backgroundColor: '#0e1621',
+                        border: selectedEntry ? '1px solid #10b981' : '1px solid #334155',
+                        borderRadius: '12px', padding: '16px', marginBottom: '12px',
+                        width: '100%', textAlign: 'left', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none',
+                        touchAction: 'manipulation', minHeight: '72px'
+                    }}
+                >
+                    {selectedEntry ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#052e16', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>👤</div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px', userSelect: 'none' }}>{selectedEntry.name}</div>
+                                <div style={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '13px', marginTop: '2px', userSelect: 'none' }}>{truncateAddress(selectedEntry.address)}</div>
+                            </div>
                         </div>
+                    ) : (
+                        <div style={{ color: '#64748b', fontSize: '14px', flex: 1, textAlign: 'center', userSelect: 'none' }}>
+                            Seleccioná una dirección de la libreta 📖
+                        </div>
+                    )}
+                    <span style={{ color: '#38bdf8', fontSize: '16px', marginLeft: '8px', flexShrink: 0, userSelect: 'none' }}>✏️</span>
+                </button>
+            ) : (
+                <div style={{ backgroundColor: '#0e1621', border: '1px solid #334155', borderRadius: '12px', padding: '16px', marginBottom: '12px', textAlign: 'center' }}>
+                    <div style={{ color: '#64748b', fontSize: '14px', marginBottom: '12px' }}>
+                        No tenés direcciones guardadas
                     </div>
-                ) : (
-                    <div style={{ color: '#64748b', fontSize: '14px', flex: 1, textAlign: 'center' }}>
-                        Seleccioná una dirección de la libreta 📖
-                    </div>
-                )}
-                {hasAddressBookEntry && <span style={{ color: '#38bdf8', fontSize: '16px', marginLeft: '8px' }}>✏️</span>}
-            </div>
+                    <button
+                        onClick={() => setShowAddressBook(true)}
+                        onTouchEnd={(e) => { e.preventDefault(); setShowAddressBook(true); }}
+                        style={{
+                            padding: '12px 24px', backgroundColor: '#1e293b', color: '#38bdf8',
+                            border: '1px solid #334155', borderRadius: '10px', fontSize: '14px',
+                            fontWeight: 'bold', cursor: 'pointer',
+                            WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none',
+                            touchAction: 'manipulation', minHeight: '44px'
+                        }}
+                    >
+                        📖 Abrir libreta de direcciones
+                    </button>
+                </div>
+            )}
 
             {/* 2. Network warning — shown BEFORE amount, only when no valid address selected */}
             {!selectedEntry && (
