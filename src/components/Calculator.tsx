@@ -231,9 +231,8 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
             </div>
 
             <button
-              onClick={() => {
-                window.location.href = paytoUri;
-              }}
+              onTouchEnd={(e) => { e.preventDefault(); window.location.href = paytoUri; }}
+              onClick={() => { window.location.href = paytoUri; }}
               style={{
                 display: 'block', width: '100%', padding: '16px', backgroundColor: '#10b981', color: '#fff',
                 border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',

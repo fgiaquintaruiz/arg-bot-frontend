@@ -31,9 +31,29 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
       };
 
       if (action === 'download') {
-        // For now, simulate download — real implementation needs Google Drive API
-        setSyncStatus('error');
-        setSyncMessage('⚠️ Esta función requiere conectar con Google Drive. Por ahora, tus datos están seguros en este dispositivo.');
+        // Try to download from local backup first
+        const encrypted = localStorage.getItem('drive_backup');
+        if (encrypted) {
+          try {
+            const data = JSON.parse(atob(encrypted));
+            // Restore data
+            if (data.apiKey) localStorage.setItem('binance_key', data.apiKey);
+            if (data.apiSecret) localStorage.setItem('binance_secret', data.apiSecret);
+            if (data.addressBook) localStorage.setItem('address_book', data.addressBook);
+            if (data.tradeHistory) localStorage.setItem('trade_history', data.tradeHistory);
+            if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);
+            if (data.serviceFee) localStorage.setItem('service_fee', data.serviceFee);
+            if (data.feeWhitelist) localStorage.setItem('fee_whitelist', data.feeWhitelist);
+            setSyncStatus('success');
+            setSyncMessage(`✅ Datos restaurados desde respaldo local (${data.timestamp || 'fecha desconocida'}). La sincronización con Google Drive estará disponible pronto.`);
+          } catch {
+            setSyncStatus('error');
+            setSyncMessage('❌ Error al leer el respaldo local. Los datos pueden estar corruptos.');
+          }
+        } else {
+          setSyncStatus('error');
+          setSyncMessage('⚠️ No hay respaldo local disponible. Primero necesitás subir tus datos con "Subir a Drive".');
+        }
       } else {
         // Upload simulation
         const encrypted = btoa(JSON.stringify(dataToSync));

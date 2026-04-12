@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/update-version.mjs",
     "build": "rm -rf dist && vite build",
     "test:unit": "vitest run",
     "lint": "eslint .",
