@@ -21,21 +21,17 @@ export default function Dashboard({ user }: { user: any }) {
     const [showSettings, setShowSettings] = useState(false);
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
 
-    // Auto-update detection — poll for new version every 60 seconds
+    // Auto-update detection — poll version.json every 60 seconds
     useEffect(() => {
         const checkForUpdates = async () => {
             try {
-                const res = await fetch('/?_t=' + Date.now(), { cache: 'no-store' });
-                const html = await res.text();
-                // Look for version number in the HTML
-                const match = html.match(/v{pkg\.version}/) || html.match(/v(\d+\.\d+\.\d+)/);
-                if (match) {
-                    const serverVersion = match[1];
-                    if (serverVersion !== pkg.version) {
-                        setShowUpdateBanner(true);
-                    }
+                const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.version && data.version !== pkg.version) {
+                    setShowUpdateBanner(true);
                 }
-            } catch { /* silent fail */ }
+            } catch { /* silent fail — offline or server down */ }
         };
 
         const interval = setInterval(checkForUpdates, 60 * 1000);
