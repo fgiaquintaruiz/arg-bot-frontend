@@ -64,7 +64,7 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
   const backBtnS: React.CSSProperties = { width: '100%', padding: '16px', backgroundColor: 'transparent', border: 'none', color: '#38bdf8', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' };
 
   return (
-    <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b' }}>
+    <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b', maxHeight: '85vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <h3 style={{ margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '10px', color: '#f8fafc', fontSize: '1.4rem' }}><span style={{fontSize: '24px'}}>🧮</span> Calculadora</h3>
 
       {/* Currency Selector */}
