@@ -1,3 +1,38 @@
+## [1.8.165] - 2026-04-11
+### Added
+- **Calculadora bidireccional:** Ahora podés escribir en ARS y ver el EUR necesario, o escribir en EUR y ver el ARS resultante.
+- **Botón de transferencia SEPA:** Datos completos del IBAN de Binance con copiado rápido y botón para abrir la app del banco (Santander, BBVA, etc.).
+- **Panel de Configuración (⚙️):** Sincronización con Google Drive, fee de servicio configurable (€0.10–€1.00), lista de exentos y soporte.
+- **Badges de confianza:** Nueva sección "¿Por qué confiar en ARGBOT?" con encriptación, open source, soporte y permisos.
+- **Banner de actualización automática:** Detecta nuevas versiones y muestra un banner para recargar.
+- **Historial con ahorro real:** Ahora calcula y muestra el ahorro vs Remitly por operación y el total acumulado.
+
+### Fixed
+- **Address Book en móvil:** Botones de selección, edición y eliminación ahora funcionan con touch handlers correctos.
+- **Scroll en móvil:** Calculator y Withdraw ahora tienen scroll cuando el contenido excede la pantalla.
+- **Network warning contextual:** El aviso de red BSC ahora solo aparece cuando no hay dirección seleccionada.
+- **Duplicate function en AddressBook:** Eliminado `handleAddAddress` duplicado que rompía el build.
+
+### Changed
+- **Withdraw reordenado:** Dirección primero → advertencia de red (condicional) → monto → confirmar.
+- **Roadmap traducido al español LATAM:** Con renderizado de markdown apropiado.
+- **BuenBit → Nexo:** Todas las referencias actualizadas (BuenBit migró a Nexo).
+- **Eliminado toggle USD:** Calculadora enfocada exclusivamente en EUR por ahora.
+- **PWA optimizada:** Meta tags, overscroll prevention, touch targets mínimos de 44px.
+
+## [1.8.164] - 2026-04-11
+### Added
+- `version.json` para detección confiable de actualizaciones en PWA.
+
+### Fixed
+- **Address Book mobile:** Direcciones seleccionables ahora usan `<button>` con `onTouchEnd`.
+- **Edit/Delete siempre visibles:** Botones de edición y eliminación ya no se ocultan en modo selección.
+
+## [1.8.163] - 2026-04-11
+### Fixed
+- **Self keep-alive:** Backend ahora hace ping a su propia URL pública cada 9 minutos para evitar que Render se duerma.
+- **Dashboard refetch:** Se eliminó el re-fetch de datos al cambiar de vista (solo al montar o cambiar usuario).
+
 ## [1.8.162] - 2026-04-01
 ### Changed
 - Re-prioritized Roadmap: Moved public analytics (savings vs Remitly, successful trades) and live anonymized operations feed to high priority.

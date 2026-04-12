@@ -230,18 +230,19 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
               </div>
             </div>
 
-            <a
-              href={paytoUri}
-              onTouchEnd={(e) => { e.preventDefault(); }}
+            <button
+              onClick={() => {
+                window.location.href = paytoUri;
+              }}
               style={{
                 display: 'block', width: '100%', padding: '16px', backgroundColor: '#10b981', color: '#fff',
                 border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',
-                textDecoration: 'none', textAlign: 'center', marginBottom: '8px', cursor: 'pointer',
+                cursor: 'pointer', textAlign: 'center', marginBottom: '8px',
                 WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '52px'
               }}
             >
               📱 Abrir app del banco (Santander, BBVA, etc.)
-            </a>
+            </button>
 
             <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', lineHeight: '1.5' }}>
               ⚠️ Usá solo transferencia <b>SEPA</b> (no SWIFT). El nombre del banco debe coincidir con tu cuenta Binance.
