@@ -63,20 +63,28 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
   const [validationError, setValidationError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  console.log('[AddressBook] Render — onSelect:', !!onSelect, 'addresses:', addresses.length, 'editingId:', editingId);
+
   // Load addresses from localStorage on mount
   useEffect(() => {
+    console.log('[AddressBook] Loading from localStorage...');
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setAddresses(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        console.log('[AddressBook] Loaded', parsed.length, 'addresses:', parsed);
+        setAddresses(parsed);
+      } else {
+        console.log('[AddressBook] No addresses in localStorage');
       }
     } catch (error) {
-      console.error('Error loading address book:', error);
+      console.error('[AddressBook] Error loading:', error);
     }
   }, []);
 
   // Save to localStorage whenever addresses change
   const saveAddresses = (updated: AddressEntry[]) => {
+    console.log('[AddressBook] Saving', updated.length, 'addresses');
     setAddresses(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
@@ -85,7 +93,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
   const handleAddressChange = (value: string) => {
     setNewAddress(value);
     setValidationError('');
-    
+
     if (value.length > 0) {
       if (!isValidBSCAddress(value)) {
         setValidationError('Invalid BSC/BEP20 address format. Must be 0x followed by 40 hex characters.');
@@ -97,7 +105,8 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Delete address
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this address?')) {
+    console.log('[AddressBook] Delete called for id:', id);
+    if (confirm('¿Estás seguro de que querés eliminar esta dirección?')) {
       const updated = addresses.filter(addr => addr.id !== id);
       saveAddresses(updated);
     }
@@ -105,6 +114,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Start editing
   const handleEdit = (entry: AddressEntry) => {
+    console.log('[AddressBook] Edit called for:', entry.name);
     setEditingId(entry.id);
     setNewName(entry.name);
     setNewAddress(entry.address);
@@ -114,18 +124,19 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Save edited address
   const handleSaveEdit = () => {
+    console.log('[AddressBook] SaveEdit called');
     if (!newName.trim()) {
-      alert('Please enter a name for this address');
+      alert('Ingresá un nombre para esta dirección');
       return;
     }
 
     if (!isValidBSCAddress(newAddress)) {
-      setValidationError('Invalid BSC/BEP20 address format');
+      setValidationError('Formato de dirección BSC/BEP20 inválido');
       return;
     }
 
     if (!isValidChecksum(newAddress)) {
-      setValidationError('Address checksum validation failed');
+      setValidationError('La dirección no pasa la validación de checksum');
       return;
     }
 
@@ -136,7 +147,6 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
     );
     saveAddresses(updated);
 
-    // Reset form
     setEditingId(null);
     setNewName('');
     setNewAddress('');
@@ -146,18 +156,19 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Add new address
   const handleAddAddress = () => {
+    console.log('[AddressBook] AddAddress called');
     if (!newName.trim()) {
-      alert('Please enter a name for this address');
+      alert('Ingresá un nombre para esta dirección');
       return;
     }
 
     if (!isValidBSCAddress(newAddress)) {
-      setValidationError('Invalid BSC/BEP20 address format');
+      setValidationError('Formato de dirección BSC/BEP20 inválido');
       return;
     }
 
     if (!isValidChecksum(newAddress)) {
-      setValidationError('Address checksum validation failed');
+      setValidationError('La dirección no pasa la validación de checksum');
       return;
     }
 
@@ -172,7 +183,6 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
     const updated = [newEntry, ...addresses];
     saveAddresses(updated);
 
-    // Reset form
     setNewName('');
     setNewAddress('');
     setValidationError('');
@@ -182,6 +192,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Select address
   const handleSelect = (address: string) => {
+    console.log('[AddressBook] Select called for:', address);
     if (onSelect) {
       onSelect(address);
     }
@@ -256,7 +267,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
       {/* Address List */}
       {filteredAddresses.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '30px', color: '#8897a7', fontSize: '14px' }}>
-          {addresses.length === 0 ? 'No saved addresses yet. Add your first one!' : 'No addresses match your search.'}
+          {addresses.length === 0 ? 'No hay direcciones guardadas. ¡Agregá tu primera!' : 'Ninguna dirección coincide con tu búsqueda.'}
         </div>
       ) : (
         <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', marginBottom: '16px', WebkitOverflowScrolling: 'touch' }}>
@@ -269,18 +280,18 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                 borderRadius: '12px',
                 marginBottom: '12px',
                 border: onSelect ? '2px solid #38bdf8' : '1px solid #242f3d',
-                WebkitTapHighlightColor: 'transparent',
               }}
             >
-              {onSelect ? (
-                // Selectable mode — tap entire card to select
+              {/* Selection button (only in select mode) */}
+              {onSelect && (
                 <button
                   onClick={(e) => {
+                    console.log('[AddressBook] Card clicked via onClick');
                     e.preventDefault();
-                    e.stopPropagation();
                     handleSelect(entry.address);
                   }}
                   onTouchEnd={(e) => {
+                    console.log('[AddressBook] Card touched via onTouchEnd');
                     e.preventDefault();
                     handleSelect(entry.address);
                   }}
@@ -295,10 +306,11 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                     WebkitTapHighlightColor: 'transparent',
                     WebkitAppearance: 'none',
                     touchAction: 'manipulation',
-                    display: 'block'
+                    display: 'block',
+                    marginBottom: '8px'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
                       {entry.name}
                     </span>
@@ -311,7 +323,6 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                     fontSize: '12px',
                     color: '#94a3b8',
                     wordBreak: 'break-all',
-                    marginBottom: '8px'
                   }}>
                     {entry.address}
                   </div>
@@ -319,91 +330,95 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                     👆 Tocar para seleccionar
                   </div>
                 </button>
-              ) : (
-                // Manage mode — show Edit/Delete
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
-                      {entry.name}
-                    </span>
-                    <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
-                      ✅ BSC/BEP20
-                    </span>
-                  </div>
-                  <div
+              )}
+
+              {/* Always show: name, address, edit/delete */}
+              {!onSelect && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
+                    {entry.name}
+                  </span>
+                  <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
+                    ✅ BSC/BEP20
+                  </span>
+                </div>
+              )}
+              {!onSelect && (
+                <div style={{
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  color: '#94a3b8',
+                  wordBreak: 'break-all',
+                  marginBottom: '8px',
+                  cursor: 'text',
+                  userSelect: 'text'
+                }}>
+                  {entry.address}
+                </div>
+              )}
+
+              {/* Edit/Delete buttons — ALWAYS visible */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: onSelect ? '1px solid #1e293b' : 'none', paddingTop: onSelect ? '8px' : 0 }}>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                  {new Date(entry.addedAt).toLocaleDateString('es-AR')}
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onTouchEnd={(e) => {
+                      console.log('[AddressBook] Edit touched');
+                      e.preventDefault();
+                      handleEdit(entry);
+                    }}
+                    onClick={(e) => {
+                      console.log('[AddressBook] Edit clicked');
+                      e.stopPropagation();
+                      handleEdit(entry);
+                    }}
                     style={{
-                      fontFamily: 'monospace',
+                      background: '#1e293b',
+                      color: '#38bdf8',
+                      border: '1px solid #334155',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
                       fontSize: '12px',
-                      color: '#94a3b8',
-                      wordBreak: 'break-all',
-                      marginBottom: '8px',
-                      cursor: 'text',
-                      userSelect: 'text'
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      WebkitTapHighlightColor: 'transparent',
+                      WebkitAppearance: 'none',
+                      touchAction: 'manipulation'
                     }}
                   >
-                    {entry.address}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>
-                      Added {new Date(entry.addedAt).toLocaleDateString()}
-                    </span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleEdit(entry);
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(entry);
-                        }}
-                        style={{
-                          background: '#1e293b',
-                          color: '#38bdf8',
-                          border: '1px solid #334155',
-                          borderRadius: '8px',
-                          padding: '8px 16px',
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          fontWeight: 'bold',
-                          WebkitTapHighlightColor: 'transparent',
-                          WebkitAppearance: 'none',
-                          touchAction: 'manipulation',
-                          minWidth: '70px'
-                        }}
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleDelete(entry.id);
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(entry.id);
-                        }}
-                        style={{
-                          background: '#450a0a',
-                          color: '#ef4444',
-                          border: '1px solid #7f1d1d',
-                          borderRadius: '8px',
-                          padding: '8px 16px',
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          fontWeight: 'bold',
-                          WebkitTapHighlightColor: 'transparent',
-                          WebkitAppearance: 'none',
-                          touchAction: 'manipulation',
-                          minWidth: '90px'
-                        }}
-                      >
-                        🗑️ Eliminar
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
+                    ✏️ Editar
+                  </button>
+                  <button
+                    onTouchEnd={(e) => {
+                      console.log('[AddressBook] Delete touched for:', entry.name);
+                      e.preventDefault();
+                      handleDelete(entry.id);
+                    }}
+                    onClick={(e) => {
+                      console.log('[AddressBook] Delete clicked for:', entry.name);
+                      e.stopPropagation();
+                      handleDelete(entry.id);
+                    }}
+                    style={{
+                      background: '#450a0a',
+                      color: '#ef4444',
+                      border: '1px solid #7f1d1d',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      WebkitTapHighlightColor: 'transparent',
+                      WebkitAppearance: 'none',
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

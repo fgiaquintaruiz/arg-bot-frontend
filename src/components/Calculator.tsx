@@ -231,8 +231,15 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
             </div>
 
             <button
-              onTouchEnd={(e) => { e.preventDefault(); window.location.href = paytoUri; }}
-              onClick={() => { window.location.href = paytoUri; }}
+              onTouchEnd={(e) => {
+                console.log('[Calculator] Bank button touched, navigating to:', paytoUri);
+                e.preventDefault();
+                setTimeout(() => { window.location.href = paytoUri; }, 100);
+              }}
+              onClick={() => {
+                console.log('[Calculator] Bank button clicked, navigating to:', paytoUri);
+                window.location.href = paytoUri;
+              }}
               style={{
                 display: 'block', width: '100%', padding: '16px', backgroundColor: '#10b981', color: '#fff',
                 border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',

@@ -31,9 +31,11 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
       };
 
       if (action === 'download') {
-        // Try to download from local backup first
+        console.log('[Settings] Download attempted, checking for local backup...');
+        // Try to download from local backup
         const encrypted = localStorage.getItem('drive_backup');
         if (encrypted) {
+          console.log('[Settings] Found local backup, attempting to restore...');
           try {
             const data = JSON.parse(atob(encrypted));
             // Restore data
@@ -46,13 +48,16 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
             if (data.feeWhitelist) localStorage.setItem('fee_whitelist', data.feeWhitelist);
             setSyncStatus('success');
             setSyncMessage(`✅ Datos restaurados desde respaldo local (${data.timestamp || 'fecha desconocida'}). La sincronización con Google Drive estará disponible pronto.`);
-          } catch {
+            console.log('[Settings] Download successful');
+          } catch (e) {
+            console.error('[Settings] Failed to parse backup:', e);
             setSyncStatus('error');
             setSyncMessage('❌ Error al leer el respaldo local. Los datos pueden estar corruptos.');
           }
         } else {
+          console.log('[Settings] No local backup found');
           setSyncStatus('error');
-          setSyncMessage('⚠️ No hay respaldo local disponible. Primero necesitás subir tus datos con "Subir a Drive".');
+          setSyncMessage('⚠️ No hay respaldo en este dispositivo. El backup se guarda en cada dispositivo por separado. Para sincronizar entre dispositivos, necesitás primero "Subir a Drive" desde el dispositivo original. La integración con Google Drive real estará disponible pronto.');
         }
       } else {
         // Upload simulation
