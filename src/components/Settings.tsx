@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { uploadToDrive, downloadFromDrive } from '../googleDrive';
+import { API_URL } from '../config';
 
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
   const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>(
@@ -10,16 +11,38 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [serviceFee, setServiceFee] = useState<string>(() => localStorage.getItem('service_fee') || '0.50');
   const [feeWhitelist, setFeeWhitelist] = useState<string>(() => localStorage.getItem('fee_whitelist') || '');
   const [binanceEurIban, setBinanceEurIban] = useState<string>(() => localStorage.getItem('binance_eur_iban') || '');
-  const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem('binance_eur_name') || 'Binance Europe Services Ltd');
-  const [binanceEurBic, setBinanceEurBic] = useState<string>(() => localStorage.getItem('binance_eur_bic') || 'REVOLT21XXX');
+  const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem('binance_eur_name') || '');
+  const [binanceEurBic, setBinanceEurBic] = useState<string>(() => localStorage.getItem('binance_eur_bic') || '');
   const [binanceBankName, setBinanceBankName] = useState<string>(() => localStorage.getItem('binance_bank_name') || '');
   const [binanceBankAddress, setBinanceBankAddress] = useState<string>(() => localStorage.getItem('binance_bank_address') || '');
   const [binanceApiKey, setBinanceApiKey] = useState<string>(() => localStorage.getItem('binance_key') || '');
   const [binanceApiSecret, setBinanceApiSecret] = useState<string>(() => localStorage.getItem('binance_secret') || '');
+  const [serverIp, setServerIp] = useState<string>('Cargando...');
+  const [binanceSaved, setBinanceSaved] = useState(false);
+  const [binanceCleared, setBinanceCleared] = useState(false);
   const [feeSaved, setFeeSaved] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const SUPPORT_EMAIL = 'soporte@argbot.app';
+
+  // Fetch server IP for Binance whitelist
+  useEffect(() => {
+    if (activeTab === 'binance') {
+      fetch(`${API_URL}/api/ip`)
+        .then(res => res.json())
+        .then(data => setServerIp(data.ip || 'Error'))
+        .catch(() => setServerIp('No disponible'));
+    }
+  }, [activeTab]);
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch { /* fallback */ }
+  };
 
   // Google Drive Sync
   const handleDriveSync = async (action: 'upload' | 'download') => {
@@ -88,15 +111,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     }
     localStorage.setItem('service_fee', fee.toFixed(2));
     localStorage.setItem('fee_whitelist', feeWhitelist);
-    // Also save Binance EUR deposit details
-    localStorage.setItem('binance_eur_iban', binanceEurIban.trim());
-    localStorage.setItem('binance_eur_name', binanceEurName.trim());
-    localStorage.setItem('binance_eur_bic', binanceEurBic.trim());
-    localStorage.setItem('binance_bank_name', binanceBankName.trim());
-    localStorage.setItem('binance_bank_address', binanceBankAddress.trim());
-    // Save API keys
-    if (binanceApiKey.trim()) localStorage.setItem('binance_key', binanceApiKey.trim());
-    if (binanceApiSecret.trim()) localStorage.setItem('binance_secret', binanceApiSecret.trim());
     setFeeSaved(true);
     setTimeout(() => setFeeSaved(false), 3000);
   };
@@ -107,6 +121,42 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 2000);
     } catch { /* fallback not needed for modern browsers */ }
+  };
+
+  // Save Binance config
+  const handleSaveBinance = () => {
+    localStorage.setItem('binance_eur_iban', binanceEurIban.trim());
+    localStorage.setItem('binance_eur_name', binanceEurName.trim());
+    localStorage.setItem('binance_eur_bic', binanceEurBic.trim());
+    localStorage.setItem('binance_bank_name', binanceBankName.trim());
+    localStorage.setItem('binance_bank_address', binanceBankAddress.trim());
+    if (binanceApiKey.trim()) localStorage.setItem('binance_key', binanceApiKey.trim());
+    if (binanceApiSecret.trim()) localStorage.setItem('binance_secret', binanceApiSecret.trim());
+    setBinanceSaved(true);
+    setBinanceCleared(false);
+    setTimeout(() => setBinanceSaved(false), 3000);
+  };
+
+  // Clear Binance config
+  const handleClearBinance = () => {
+    if (!confirm('¿Estás seguro de que querés borrar todos los datos de Binance? Esta acción no se puede deshacer.')) return;
+    localStorage.removeItem('binance_eur_iban');
+    localStorage.removeItem('binance_eur_name');
+    localStorage.removeItem('binance_eur_bic');
+    localStorage.removeItem('binance_bank_name');
+    localStorage.removeItem('binance_bank_address');
+    localStorage.removeItem('binance_key');
+    localStorage.removeItem('binance_secret');
+    setBinanceEurIban('');
+    setBinanceEurName('');
+    setBinanceEurBic('');
+    setBinanceBankName('');
+    setBinanceBankAddress('');
+    setBinanceApiKey('');
+    setBinanceApiSecret('');
+    setBinanceCleared(true);
+    setBinanceSaved(false);
+    setTimeout(() => setBinanceCleared(false), 3000);
   };
 
   const tabStyle = (tab: string) => ({
@@ -208,128 +258,167 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {/* BINANCE TAB */}
           {activeTab === 'binance' && (
             <div>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>🏦 Datos de Depósito EUR</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
-                Configurá los datos de tu cuenta de depósito EUR en Binance para generar transferencias SEPA pre-rellenadas.
-              </p>
+              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>🏦 Configuración de Binance</h4>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <div style={{ fontSize: '11px', color: '#64748b', lineHeight: '1.5' }}>
-                  ℹ️ Los encontrás en Binance → Billetera → Depósito → EUR → Datos de transferencia SEPA
+              {/* IP Whitelist */}
+              <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: '#ffb74d', marginBottom: '6px' }}><b>⚠️ IP para Whitelist de Binance:</b></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: '14px', color: '#fff' }}>{serverIp}</span>
+                  <button
+                    onTouchEnd={(e) => { e.preventDefault(); copyToClipboard(serverIp, 'serverip'); }}
+                    onClick={() => copyToClipboard(serverIp, 'serverip')}
+                    style={{ background: '#ff9800', color: '#000', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', minHeight: '32px' }}
+                  >
+                    {copiedField === 'serverip' ? '✅' : '📋 COPIAR'}
+                  </button>
+                </div>
+                <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px' }}>
+                  Agregá esta IP en Binance → Gestión de API → Restricciones de IP
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <h5 style={{ color: '#38bdf8', margin: '0 0 16px 0', fontSize: '14px' }}>Beneficiario</h5>
+              {/* EUR Deposit Details */}
+              <h5 style={{ color: '#38bdf8', margin: '0 0 12px 0', fontSize: '14px' }}>💶 Datos de Depósito EUR</h5>
+              <p style={{ color: '#94a3b8', fontSize: '12px', lineHeight: '1.5', marginBottom: '16px' }}>
+                Copialos desde Binance → Billetera → Depósito → EUR → Datos SEPA
+              </p>
+
+              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>Beneficiario (tu nombre en Binance)</label>
                 <input
                   type="text"
                   value={binanceEurName}
                   onChange={e => setBinanceEurName(e.target.value)}
-                  placeholder="Ej: Binance Europe Services Ltd"
+                  placeholder="Tu nombre completo como aparece en Binance"
                   style={{
-                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px',
-                    boxSizing: 'border-box', marginBottom: '16px'
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px',
+                    boxSizing: 'border-box', marginBottom: '12px'
                   }}
                 />
 
-                <h5 style={{ color: '#38bdf8', margin: '0 0 8px 0', fontSize: '14px' }}>IBAN</h5>
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>IBAN</label>
                 <input
                   type="text"
                   value={binanceEurIban}
                   onChange={e => setBinanceEurIban(e.target.value)}
                   placeholder="Ej: LT12 3456 7890 1234 5678"
                   style={{
-                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace',
-                    boxSizing: 'border-box', marginBottom: '16px'
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
+                    boxSizing: 'border-box', marginBottom: '12px'
                   }}
                 />
 
-                <h5 style={{ color: '#38bdf8', margin: '0 0 8px 0', fontSize: '14px' }}>BIC/SWIFT</h5>
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>BIC/SWIFT</label>
                 <input
                   type="text"
                   value={binanceEurBic}
                   onChange={e => setBinanceEurBic(e.target.value)}
                   placeholder="Ej: REVOLT21XXX"
                   style={{
-                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace',
-                    boxSizing: 'border-box', marginBottom: '16px'
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
+                    boxSizing: 'border-box', marginBottom: '12px'
                   }}
                 />
 
-                <h5 style={{ color: '#38bdf8', margin: '0 0 8px 0', fontSize: '14px' }}>Banco</h5>
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>Banco</label>
                 <input
                   type="text"
                   value={binanceBankName}
                   onChange={e => setBinanceBankName(e.target.value)}
                   placeholder="Ej: Revolut Bank UAB"
                   style={{
-                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px',
-                    boxSizing: 'border-box', marginBottom: '16px'
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px',
+                    boxSizing: 'border-box', marginBottom: '12px'
                   }}
                 />
 
-                <h5 style={{ color: '#38bdf8', margin: '0 0 8px 0', fontSize: '14px' }}>Dirección del banco</h5>
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>Dirección del banco</label>
                 <input
                   type="text"
                   value={binanceBankAddress}
                   onChange={e => setBinanceBankAddress(e.target.value)}
                   placeholder="Ej: Konstitucijos pr. 21B, Vilnius"
                   style={{
-                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px',
-                    boxSizing: 'border-box', marginBottom: '16px'
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px',
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              {/* API Keys Section */}
-              <div style={{ borderTop: '2px solid #334155', paddingTop: '20px', marginTop: '8px' }}>
-                <h4 style={{ color: '#fbbf24', margin: '0 0 12px 0', fontSize: '15px' }}>🔑 Claves API de Binance</h4>
-                <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
-                  Estas claves se usan para operar en tu cuenta de Binance. Se guardan encriptadas solo en tu navegador.
-                </p>
+              {/* API Keys */}
+              <h5 style={{ color: '#fbbf24', margin: '0 0 12px 0', fontSize: '14px' }}>🔑 Claves API de Binance</h5>
+              <p style={{ color: '#94a3b8', fontSize: '12px', lineHeight: '1.5', marginBottom: '16px' }}>
+                Crealas en Binance → Gestión de API → Nueva clave. Permisos: lectura, trade, retiro.
+              </p>
 
-                <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b', lineHeight: '1.5' }}>
-                    ℹ️ Crealas en Binance → Gestión de API → Nueva clave. Solo permisos: lectura, trade, retiro.
-                  </div>
-                </div>
+              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>API Key</label>
+                <input
+                  type="password"
+                  value={binanceApiKey}
+                  onChange={e => setBinanceApiKey(e.target.value)}
+                  autoComplete="off"
+                  data-form-type="other"
+                  placeholder="Tu API Key"
+                  style={{
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
+                    boxSizing: 'border-box', marginBottom: '12px'
+                  }}
+                />
 
-                <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', border: '1px solid #334155' }}>
-                  <h5 style={{ color: '#38bdf8', margin: '0 0 8px 0', fontSize: '14px' }}>API Key</h5>
-                  <input
-                    type="password"
-                    value={binanceApiKey}
-                    onChange={e => setBinanceApiKey(e.target.value)}
-                    autoComplete="off"
-                    data-form-type="other"
-                    placeholder="Tu API Key de Binance"
-                    style={{
-                      width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                      color: '#f8fafc', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace',
-                      boxSizing: 'border-box', marginBottom: '16px'
-                    }}
-                  />
+                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>API Secret</label>
+                <input
+                  type="password"
+                  value={binanceApiSecret}
+                  onChange={e => setBinanceApiSecret(e.target.value)}
+                  autoComplete="new-password"
+                  data-form-type="other"
+                  placeholder="Tu API Secret"
+                  style={{
+                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
 
-                  <h5 style={{ color: '#38bdf8', margin: '0 0 8px 0', fontSize: '14px' }}>API Secret</h5>
-                  <input
-                    type="password"
-                    value={binanceApiSecret}
-                    onChange={e => setBinanceApiSecret(e.target.value)}
-                    autoComplete="new-password"
-                    data-form-type="other"
-                    placeholder="Tu API Secret de Binance"
-                    style={{
-                      width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                      color: '#f8fafc', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
+              {/* Save / Clear buttons */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                <button
+                  onTouchEnd={(e) => { e.preventDefault(); handleSaveBinance(); }}
+                  onClick={handleSaveBinance}
+                  style={{
+                    flex: 1, padding: '14px',
+                    backgroundColor: binanceSaved ? '#052e16' : '#10b981',
+                    color: binanceSaved ? '#10b981' : '#fff',
+                    border: binanceSaved ? '1px solid #10b981' : 'none',
+                    borderRadius: '10px', fontSize: '14px', fontWeight: 'bold',
+                    cursor: 'pointer', minHeight: '48px'
+                  }}
+                >
+                  {binanceSaved ? '✅ ¡Guardado!' : '💾 Guardar'}
+                </button>
+                <button
+                  onTouchEnd={(e) => { e.preventDefault(); handleClearBinance(); }}
+                  onClick={handleClearBinance}
+                  style={{
+                    flex: 1, padding: '14px',
+                    backgroundColor: binanceCleared ? '#450a0a' : '#dc2626',
+                    color: binanceCleared ? '#ef4444' : '#fff',
+                    border: binanceCleared ? '1px solid #7f1d1d' : 'none',
+                    borderRadius: '10px', fontSize: '14px', fontWeight: 'bold',
+                    cursor: 'pointer', minHeight: '48px'
+                  }}
+                >
+                  {binanceCleared ? '✅ ¡Borrado!' : '🗑️ Borrar todo'}
+                </button>
               </div>
             </div>
           )}

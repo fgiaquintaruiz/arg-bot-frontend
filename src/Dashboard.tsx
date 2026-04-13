@@ -3,7 +3,6 @@ import { logout } from './authService';
 import pkg from '../package.json';
 import { API_URL } from './config';
 import Calculator from './components/Calculator';
-import BinanceConfig from './components/BinanceConfig';
 import Trade from './components/Trade';
 import Withdraw from './components/Withdraw';
 import History from './components/History';
@@ -94,8 +93,6 @@ export default function Dashboard({ user }: { user: any }) {
         switch (currentView) {
             case 'calculator':
                 return <Calculator data={data} onBack={() => setCurrentView('main')} />;
-            case 'binance':
-                return <BinanceConfig onSave={() => setCurrentView('main')} onCancel={() => setCurrentView('main')} />;
             case 'trade':
                 return <Trade data={data} onClose={() => setCurrentView('main')} onSuccess={() => setCurrentView('main')} />;
             case 'withdraw':
@@ -186,7 +183,7 @@ export default function Dashboard({ user }: { user: any }) {
                                     borderRadius: '4px'
                                 }}>🔒 Requiere API</span>}
                             </button>
-                            <button onClick={() => setCurrentView('binance')} style={{
+                            <button onClick={() => { setSettingsTab('binance'); setShowSettings(true); }} style={{
                                 padding: '20px 10px',
                                 backgroundColor: '#1e293b',
                                 color: '#f59e0b',
@@ -199,7 +196,7 @@ export default function Dashboard({ user }: { user: any }) {
                                 alignItems: 'center',
                                 gap: '8px'
                             }}>
-                                <span style={{ fontSize: '24px' }}>🔑</span> API Binance
+                                <span style={{ fontSize: '24px' }}>⚙️</span> Config Binance
                                 {!hasKeys && <span style={{
                                     fontSize: '11px',
                                     color: '#f59e0b',
