@@ -19,7 +19,20 @@ export default function Dashboard({ user }: { user: any }) {
     const hasKeys = !!apiKey && !!apiSecret;
     const [showUpdates, setShowUpdates] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee' | 'support'>('sync');
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+
+    // Listen for custom event to open Settings with specific tab
+    useEffect(() => {
+      const handler = (e: CustomEvent) => {
+        if (e.detail?.tab) {
+          setSettingsTab(e.detail.tab as any);
+          setShowSettings(true);
+        }
+      };
+      window.addEventListener('open-settings', handler as any);
+      return () => window.removeEventListener('open-settings', handler as any);
+    }, []);
 
     // Auto-update detection — poll version.json every 60 seconds
     useEffect(() => {
@@ -285,7 +298,7 @@ export default function Dashboard({ user }: { user: any }) {
             </div>
 
             {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
-            {showSettings && <Settings onClose={() => setShowSettings(false)} user={user} />}
+            {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
 
             {/* Update Banner */}
             {showUpdateBanner && (

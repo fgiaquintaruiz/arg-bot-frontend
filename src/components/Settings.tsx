@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { uploadToDrive, downloadFromDrive } from '../googleDrive';
 
-export default function Settings({ onClose, user }: { onClose: () => void; user: any }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>('sync');
+export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>(
+    (initialTab as any) || 'sync'
+  );
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
   const [serviceFee, setServiceFee] = useState<string>(() => localStorage.getItem('service_fee') || '0.50');
@@ -303,6 +305,8 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
                     type="password"
                     value={binanceApiKey}
                     onChange={e => setBinanceApiKey(e.target.value)}
+                    autoComplete="off"
+                    data-form-type="other"
                     placeholder="Tu API Key de Binance"
                     style={{
                       width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
@@ -316,6 +320,8 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
                     type="password"
                     value={binanceApiSecret}
                     onChange={e => setBinanceApiSecret(e.target.value)}
+                    autoComplete="new-password"
+                    data-form-type="other"
                     placeholder="Tu API Secret de Binance"
                     style={{
                       width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',

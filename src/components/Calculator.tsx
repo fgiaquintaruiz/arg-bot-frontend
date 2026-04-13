@@ -153,11 +153,24 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
     <div style={{ backgroundColor: '#17212b', padding: '24px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b', maxHeight: '85vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <h3 style={{ margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '10px', color: '#f8fafc', fontSize: '1.3rem' }}><span style={{fontSize: '22px'}}>🧮</span> Calculadora</h3>
 
-      {/* Binance EUR account warning */}
+      {/* Binance EUR account warning with link to Settings */}
       {needsIbanConfig && (
         <div style={{ backgroundColor: '#451a03', border: '1px solid #78350f', borderRadius: '12px', padding: '12px', marginBottom: '16px', textAlign: 'center' }}>
           <span style={{ color: '#fbbf24', fontSize: '12px' }}>
-            ⚠️ Configurá tu IBAN de depósito EUR de Binance en ⚙️ Configuración para usar la transferencia automática.
+            ⚠️ Configurá tu IBAN de depósito EUR de Binance en
+            <span
+              onClick={() => {
+                // Dispatch custom event to open Settings → Binance tab
+                window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
+              }}
+              style={{ color: '#60a5fa', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold', marginLeft: '4px' }}
+            >
+              ⚙️ Configuración
+            </span>
           </span>
         </div>
       )}
