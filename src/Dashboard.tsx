@@ -184,6 +184,7 @@ export default function Dashboard({ user }: { user: any }) {
                                 }}>🔒 Requiere API</span>}
                             </button>
                             <button onClick={() => setCurrentView('history')} style={{
+                                gridColumn: '1 / -1',
                                 padding: '20px 10px',
                                 backgroundColor: '#1e293b',
                                 color: '#94a3b8',
@@ -201,19 +202,10 @@ export default function Dashboard({ user }: { user: any }) {
                         </div>
 
                         {/* Links debajo del menú */}
-                        <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155', display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                            <span
-                                onClick={() => { setSettingsTab('binance'); setShowSettings(true); }}
-                                style={{ color: '#f59e0b', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', background: 'transparent', border: 'none' }}
-                            >
-                                ⚙️ Config Binance
-                            </span>
-                            <span
-                                onClick={() => setShowUpdates(true)}
-                                style={{ color: '#60a5fa', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', background: 'transparent', border: 'none' }}
-                            >
+                        <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
+                            <button onClick={() => setShowUpdates(true)} style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}>
                                 🗺️ Novedades y Roadmap
-                            </span>
+                            </button>
                         </div>
                     </div>
                 );

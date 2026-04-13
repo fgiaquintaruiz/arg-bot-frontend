@@ -373,7 +373,18 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '16px', color: '#64748b', fontSize: '13px' }}>
-              ⚙️ Configurá tu IBAN de Binance en <b>⚙️ Configuración</b> para ver los datos aquí.
+              ⚙️ Configurá tu IBAN de Binance en
+              <span
+                onClick={() => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }))}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
+                }}
+                style={{ color: '#60a5fa', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold', margin: '0 4px' }}
+              >
+                ⚙️ Configuración
+              </span>
+              para ver los datos aquí.
             </div>
           )}
 
