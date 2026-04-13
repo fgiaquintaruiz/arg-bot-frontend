@@ -183,29 +183,6 @@ export default function Dashboard({ user }: { user: any }) {
                                     borderRadius: '4px'
                                 }}>🔒 Requiere API</span>}
                             </button>
-                            <button onClick={() => { setSettingsTab('binance'); setShowSettings(true); }} style={{
-                                padding: '20px 10px',
-                                backgroundColor: '#1e293b',
-                                color: '#f59e0b',
-                                border: '1px solid #334155',
-                                borderRadius: '20px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}>
-                                <span style={{ fontSize: '24px' }}>⚙️</span> Config Binance
-                                {!hasKeys && <span style={{
-                                    fontSize: '11px',
-                                    color: '#f59e0b',
-                                    backgroundColor: '#451a03',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #78350f'
-                                }}>⚠️ Falta Configurar</span>}
-                            </button>
                             <button onClick={() => setCurrentView('history')} style={{
                                 padding: '20px 10px',
                                 backgroundColor: '#1e293b',
@@ -223,11 +200,20 @@ export default function Dashboard({ user }: { user: any }) {
                             </button>
                         </div>
 
-                        {/* Botón para ver las Novedades y Roadmap integrado al menú principal */}
-                        <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
-                            <button onClick={() => setShowUpdates(true)} style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}>
+                        {/* Links debajo del menú */}
+                        <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155', display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                            <span
+                                onClick={() => { setSettingsTab('binance'); setShowSettings(true); }}
+                                style={{ color: '#f59e0b', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', background: 'transparent', border: 'none' }}
+                            >
+                                ⚙️ Config Binance
+                            </span>
+                            <span
+                                onClick={() => setShowUpdates(true)}
+                                style={{ color: '#60a5fa', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', background: 'transparent', border: 'none' }}
+                            >
                                 🗺️ Novedades y Roadmap
-                            </button>
+                            </span>
                         </div>
                     </div>
                 );
