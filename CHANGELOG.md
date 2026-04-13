@@ -1,3 +1,14 @@
+## [1.8.169] - 2026-04-12
+### Agregado
+- **Botón "Abrir app del banco":** Intenta abrir la app bancaria con URI `payto:` pre-rellenando IBAN, monto y concepto. Si no funciona, muestra los datos para copiar.
+- **Detección inteligente:** Si la app se abre (la página se oculta), no muestra fallback. Si no se abre en 2.5s, muestra alert con los datos.
+
+## [1.8.168] - 2026-04-12
+### Cambiado
+- **Calculadora rediseñada:** "Costo Final" ahora es un input editable grande (reemplaza la etiqueta EUR separada).
+- **Botón de copiar todos los datos SEPA:** Un solo toque copia IBAN, BIC, monto y concepto.
+- **Quitado `payto:` URI:** Reemplazado por copia manual (los bancos móviles no soportan el esquema).
+
 ## [1.8.167] - 2026-04-12
 ### Agregado
 - **Sync real con Google Drive:** Subí y bajá tu config (API keys, libreta, historial) desde tu Google Drive. Funciona con OAuth de Google Identity Services.

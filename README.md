@@ -2,7 +2,7 @@
 
 React + Vite frontend application for ARGBOT -- automated international money transfers from Europe to Argentina.
 
-**Version:** 1.8.167
+**Version:** 1.8.169
 
 ## Quick Start
 

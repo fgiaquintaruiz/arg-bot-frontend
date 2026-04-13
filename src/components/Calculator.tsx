@@ -105,6 +105,49 @@ Concepto: ${sepaReference}`;
     setEurAmount(val);
   };
 
+  // Open bank app with payment details
+  const openBankApp = () => {
+    console.log('[Calculator] Attempting to open bank app...');
+    const iban = binanceIBAN.replace(/\s/g, '');
+    const amount = displayedEur.toFixed(2);
+    const concept = sepaReference;
+
+    // Try payto: URI (standard, supported by some banking apps)
+    const paytoUri = `payto:${iban}?amount=${amount}&message=${encodeURIComponent(concept)}`;
+    console.log('[Calculator] Trying payto: URI:', paytoUri);
+
+    // Record the time before navigation
+    const startTime = Date.now();
+    let appOpened = false;
+
+    // Listen for visibility change (app opened = page hidden)
+    const handleVisibility = () => {
+      if (document.hidden) {
+        appOpened = true;
+        console.log('[Calculator] Bank app opened (page hidden)');
+      }
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    // Try to open
+    window.location.href = paytoUri;
+
+    // If still visible after 2.5s, the URI didn't work
+    setTimeout(() => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (!appOpened) {
+        console.log('[Calculator] payto: URI did not open any app');
+        // Show a helpful message
+        alert(
+          `No se pudo abrir ninguna app bancaria automáticamente.\n\n` +
+          `Podés copiar los datos de transferencia SEPA tocando el botón "🏦 Datos para transferencia SEPA" de abajo.\n\n` +
+          `Datos rápidos:\nIBAN: ${iban}\nMonto: ${amount} EUR\nConcepto: ${concept}`
+        );
+      }
+    }, 2500);
+  };
+
   const backBtnS: React.CSSProperties = { width: '100%', padding: '16px', backgroundColor: 'transparent', border: 'none', color: '#38bdf8', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' };
 
   return (
@@ -168,17 +211,33 @@ Concepto: ${sepaReference}`;
 
       {/* SEPA Transfer Section */}
       <div style={{ marginBottom: '20px' }}>
+        {/* Primary action: try to open bank app */}
+        <button
+          onTouchEnd={(e) => { e.preventDefault(); openBankApp(); }}
+          onClick={() => openBankApp()}
+          style={{
+            width: '100%', padding: '16px', backgroundColor: '#10b981', color: '#fff',
+            border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+            WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '52px',
+            marginBottom: showSepaDetails ? '8px' : '0'
+          }}
+        >
+          📱 Abrir app del banco
+        </button>
+
+        {/* Secondary: show details to copy */}
         <button
           onTouchEnd={(e) => { e.preventDefault(); setShowSepaDetails(!showSepaDetails); }}
           onClick={() => setShowSepaDetails(!showSepaDetails)}
           style={{
-            width: '100%', padding: '16px', backgroundColor: '#1e40af', color: '#fff',
-            border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',
+            width: '100%', padding: '14px', backgroundColor: '#1e40af', color: '#fff',
+            border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-            WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '52px'
+            WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px'
           }}
         >
-          🏦 Datos para transferencia SEPA
+          📋 Ver datos para copiar manualmente
           <span style={{ fontSize: '12px', opacity: 0.8 }}>{showSepaDetails ? '▲' : '▼'}</span>
         </button>
 
