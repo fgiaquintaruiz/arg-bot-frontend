@@ -22,6 +22,8 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
   const binanceIBAN = localStorage.getItem('binance_eur_iban') || '';
   const binanceName = localStorage.getItem('binance_eur_name') || 'Binance Europe Services Ltd';
   const binanceBIC = localStorage.getItem('binance_eur_bic') || 'REVOLT21XXX';
+  const binanceBank = localStorage.getItem('binance_bank_name') || '';
+  const binanceBankAddr = localStorage.getItem('binance_bank_address') || '';
   const userEmail = localStorage.getItem('user_email') || '';
   const sepaReference = userEmail ? `${userEmail} Binance Deposit` : 'Deposito ARGBOT';
 
@@ -47,7 +49,10 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
 
   const copyAllSepaDetails = async () => {
     if (!binanceIBAN) return;
-    const allText = `Beneficiario: ${binanceName}\nIBAN: ${binanceIBAN.replace(/\s/g, '')}\nBIC/SWIFT: ${binanceBIC}\nMonto: ${displayedEur.toFixed(2)} EUR\nConcepto: ${sepaReference}`;
+    let allText = `Beneficiario: ${binanceName}\nIBAN: ${binanceIBAN.replace(/\s/g, '')}\nBIC/SWIFT: ${binanceBIC}`;
+    if (binanceBank) allText += `\nBanco: ${binanceBank}`;
+    if (binanceBankAddr) allText += `\nDirección: ${binanceBankAddr}`;
+    allText += `\nMonto: ${displayedEur.toFixed(2)} EUR\nConcepto: ${sepaReference}`;
     try {
       await navigator.clipboard.writeText(allText);
       setCopiedAll(true);
@@ -322,6 +327,18 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
                   </button>
                 </div>
               </div>
+              {binanceBank && (
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Banco</div>
+                  <div style={{ color: '#f8fafc', fontSize: '13px' }}>{binanceBank}</div>
+                </div>
+              )}
+              {binanceBankAddr && (
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Dirección del banco</div>
+                  <div style={{ color: '#f8fafc', fontSize: '13px' }}>{binanceBankAddr}</div>
+                </div>
+              )}
               <div style={{ marginBottom: '10px' }}>
                 <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>Monto</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
