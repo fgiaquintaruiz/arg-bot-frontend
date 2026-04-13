@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { uploadToDrive, downloadFromDrive } from '../googleDrive';
 
 export default function Settings({ onClose, user }: { onClose: () => void; user: any }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'fee' | 'support'>('sync');
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>('sync');
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
   const [serviceFee, setServiceFee] = useState<string>(() => localStorage.getItem('service_fee') || '0.50');
   const [feeWhitelist, setFeeWhitelist] = useState<string>(() => localStorage.getItem('fee_whitelist') || '');
+  const [binanceEurIban, setBinanceEurIban] = useState<string>(() => localStorage.getItem('binance_eur_iban') || '');
+  const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem('binance_eur_name') || 'Binance Europe Services Ltd');
+  const [binanceEurBic, setBinanceEurBic] = useState<string>(() => localStorage.getItem('binance_eur_bic') || 'REVOLT21XXX');
   const [feeSaved, setFeeSaved] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
@@ -79,6 +82,10 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
     }
     localStorage.setItem('service_fee', fee.toFixed(2));
     localStorage.setItem('fee_whitelist', feeWhitelist);
+    // Also save Binance EUR deposit details
+    localStorage.setItem('binance_eur_iban', binanceEurIban.trim());
+    localStorage.setItem('binance_eur_name', binanceEurName.trim());
+    localStorage.setItem('binance_eur_bic', binanceEurBic.trim());
     setFeeSaved(true);
     setTimeout(() => setFeeSaved(false), 3000);
   };
@@ -110,6 +117,7 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
         {/* Tabs */}
         <div style={{ padding: '12px 24px', display: 'flex', gap: '8px', borderBottom: '1px solid #1e293b' }}>
           <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>☁️ Sync</button>
+          <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>🏦 Binance</button>
           <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>💰 Fee</button>
           <button style={tabStyle('support')} onClick={() => setActiveTab('support')}>📧 Soporte</button>
         </div>
@@ -183,6 +191,63 @@ export default function Settings({ onClose, user }: { onClose: () => void; user:
                   {syncMessage}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* BINANCE TAB */}
+          {activeTab === 'binance' && (
+            <div>
+              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>Cuenta Binance EUR</h4>
+              <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
+                Configurá los datos de tu cuenta de depósito EUR en Binance. Estos datos se usan para generar transferencias SEPA pre-rellenadas.
+              </p>
+
+              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>
+                  ℹ️ Los encontrás en Binance → Billetera → Depósito → EUR → Datos de transferencia SEPA
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '16px', border: '1px solid #334155' }}>
+                <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>IBAN</label>
+                <input
+                  type="text"
+                  value={binanceEurIban}
+                  onChange={e => setBinanceEurIban(e.target.value)}
+                  placeholder="Ej: LT12 3456 7890 1234 5678"
+                  style={{
+                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace',
+                    boxSizing: 'border-box', marginBottom: '16px'
+                  }}
+                />
+
+                <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Beneficiario</label>
+                <input
+                  type="text"
+                  value={binanceEurName}
+                  onChange={e => setBinanceEurName(e.target.value)}
+                  placeholder="Ej: Binance Europe Services Ltd"
+                  style={{
+                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px',
+                    boxSizing: 'border-box', marginBottom: '16px'
+                  }}
+                />
+
+                <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>BIC/SWIFT</label>
+                <input
+                  type="text"
+                  value={binanceEurBic}
+                  onChange={e => setBinanceEurBic(e.target.value)}
+                  placeholder="Ej: REVOLT21XXX"
+                  style={{
+                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
+                    color: '#f8fafc', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
             </div>
           )}
 

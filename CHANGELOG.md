@@ -1,3 +1,15 @@
+## [1.8.170] - 2026-04-12
+### Corregido
+- **Input EUR desbordado:** Tamaño contenido con `maxWidth`, `minWidth: 0`, `boxSizing`.
+- **Botones pegados:** Espaciado correcto entre botón "Abrir banco" y "Ver datos".
+- **Sin feedback al tocar banco:** Ahora muestra spinner "Abriendo tu banco..." y mensaje inline estilizado si falla (reemplaza el alert nativo feo).
+- **IBAN de Binance hardcoded:** Ahora el usuario lo configura en ⚙️ Configuración → pestaña 🏦 Binance.
+
+### Agregado
+- **Nueva pestaña 🏦 Binance en Configuración:** IBAN, beneficiario y BIC/SWIFT del depósito EUR de Binance.
+- **Explicación de payto::** Mensaje inline explica qué es y qué hace si tu banco no lo soporta.
+- **Aviso si IBAN no configurado:** Banner amarillo en calculadora提醒 configurar el IBAN.
+
 ## [1.8.169] - 2026-04-12
 ### Agregado
 - **Botón "Abrir app del banco":** Intenta abrir la app bancaria con URI `payto:` pre-rellenando IBAN, monto y concepto. Si no funciona, muestra los datos para copiar.
