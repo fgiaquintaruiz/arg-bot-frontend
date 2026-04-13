@@ -1,3 +1,17 @@
+## [1.8.167] - 2026-04-12
+### Agregado
+- **Sync real con Google Drive:** Subí y bajá tu config (API keys, libreta, historial) desde tu Google Drive. Funciona con OAuth de Google Identity Services.
+- **Logs de debug:** Logs en AddressBook, Calculadora y Settings para diagnosticar problemas en móvil.
+
+### Corregido
+- **Botones editar/eliminar:** Ahora siempre visibles en la libreta de direcciones, tanto en modo selección como en modo gestión.
+- **Botón del banco:** Arreglado con `setTimeout` para evitar que `preventDefault` bloquee la navegación en móvil.
+- **Mensaje de sync entre dispositivos:** Ahora explica claramente que el backup es local por defecto.
+
+## [1.8.166] - 2026-04-11
+### Corregido
+- `update-version.mjs` usa `import` en lugar de `require` para ES modules.
+
 ## [1.8.165] - 2026-04-11
 ### Agregado
 - **Calculadora bidireccional:** Ahora podés escribir en ARS y ver el EUR necesario, o escribir en EUR y ver el ARS resultante.
