@@ -30,8 +30,8 @@ const loadGIS = (): Promise<void> => {
 };
 
 // Authenticate and get access token
-const getAccessToken = async (): Promise<string | null> => {
-  console.log('[GoogleDrive] Requesting access token...');
+const getAccessToken = async (forceConsent = false): Promise<string | null> => {
+  console.log('[GoogleDrive] Requesting access token, forceConsent:', forceConsent);
   await loadGIS();
 
   return new Promise((resolve, reject) => {
@@ -40,35 +40,32 @@ const getAccessToken = async (): Promise<string | null> => {
       return;
     }
 
-    // Reuse existing token client if available
-    if (tokenClient) {
-      tokenClient.callback = (response: any) => {
+    const doRequest = (client: any) => {
+      client.callback = (response: any) => {
         if (response.access_token) {
           console.log('[GoogleDrive] Got access token');
           currentAccessToken = response.access_token;
           resolve(response.access_token);
+        } else if (response.error) {
+          console.error('[GoogleDrive] OAuth error:', response);
+          resolve(null);
         } else {
-          console.log('[GoogleDrive] User cancelled or error:', response);
+          console.log('[GoogleDrive] User cancelled');
           resolve(null);
         }
       };
-      tokenClient.requestAccessToken({ prompt: 'consent' });
+      client.requestAccessToken({ prompt: forceConsent ? 'consent' : '' });
+    };
+
+    if (tokenClient) {
+      doRequest(tokenClient);
     } else {
       tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
-        callback: (response: any) => {
-          if (response.access_token) {
-            console.log('[GoogleDrive] Got access token');
-            currentAccessToken = response.access_token;
-            resolve(response.access_token);
-          } else {
-            console.log('[GoogleDrive] User cancelled or error:', response);
-            resolve(null);
-          }
-        },
+        callback: () => {}, // Will be overridden per call
       });
-      tokenClient.requestAccessToken({ prompt: 'consent' });
+      doRequest(tokenClient);
     }
   });
 };
@@ -99,8 +96,14 @@ export const uploadToDrive = async (data: any): Promise<boolean> => {
   try {
     console.log('[GoogleDrive] Starting upload...');
 
-    const token = await getAccessToken();
-    if (!token) return false;
+    // First try silent token
+    let token = await getAccessToken(false);
+    if (!token) {
+      // If silent failed, ask for consent
+      console.log('[GoogleDrive] Silent auth failed, requesting consent...');
+      token = await getAccessToken(true);
+      if (!token) return false;
+    }
 
     const content = JSON.stringify(data);
     const blob = new Blob([content], { type: 'application/json' });
@@ -168,8 +171,13 @@ export const downloadFromDrive = async (): Promise<any | null> => {
   try {
     console.log('[GoogleDrive] Starting download...');
 
-    const token = await getAccessToken();
-    if (!token) return null;
+    // First try silent token
+    let token = await getAccessToken(false);
+    if (!token) {
+      console.log('[GoogleDrive] Silent auth failed, requesting consent...');
+      token = await getAccessToken(true);
+      if (!token) return null;
+    }
 
     // Search for the backup file
     console.log('[GoogleDrive] Searching for backup file...');
