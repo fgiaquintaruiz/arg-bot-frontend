@@ -26,3 +26,7 @@ dist-ssr
 .env
 /dist/
 /node_modules/
+
+# Local screenshots, captures, and personal docs — never commit
+/screenshots/
+SESSION_LOG.md
