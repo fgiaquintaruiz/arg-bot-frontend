@@ -6,7 +6,9 @@ const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
 export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () => void, onCancel: () => void }>) {
     const [key, setKey] = useState(localStorage.getItem('binance_key') || '');
     const [secret, setSecret] = useState(localStorage.getItem('binance_secret') || '');
-    const [serverIp, setServerIp] = useState('Obteniendo IP del servidor...');
+    const [serverIp, setServerIp] = useState('Obteniendo IP...');
+    const [copied, setCopied] = useState(false);
+
     useEffect(() => {
         fetch(`${API_URL}/api/ip`)
             .then(res => res.json())
@@ -16,79 +18,80 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
 
     const handleSave = () => {
         if (!ENCRYPTION_KEY) return alert("Error: Encryption key missing");
-
-        // Encriptamos antes de guardar en localStorage
         const encryptedKey = CryptoJS.AES.encrypt(key, ENCRYPTION_KEY).toString();
         const encryptedSecret = CryptoJS.AES.encrypt(secret, ENCRYPTION_KEY).toString();
-
         localStorage.setItem('binance_key', encryptedKey);
         localStorage.setItem('binance_secret', encryptedSecret);
         onSave();
     };
 
-    const btnS: React.CSSProperties = {
-        width: '100%',
-        padding: '16px',
-        backgroundColor: '#f59e0b',
-        color: 'white',
-        border: 'none',
-        borderRadius: '12px',
-        fontSize: '15px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        marginBottom: '12px'
+    const copyIp = () => {
+        navigator.clipboard.writeText(serverIp);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
-    const backBtnS: React.CSSProperties = {
-        width: '100%',
-        padding: '16px',
-        backgroundColor: 'transparent',
-        border: 'none',
-        color: '#94a3b8',
-        borderRadius: '12px',
-        fontSize: '15px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '8px'
+
+    const inputStyle: React.CSSProperties = {
+        width: '100%', padding: '13px 14px', backgroundColor: '#181A20',
+        border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '8px',
+        marginBottom: '16px', fontSize: '14px', boxSizing: 'border-box',
+        fontFamily: "'IBM Plex Mono', monospace", outline: 'none',
     };
-    const inS: React.CSSProperties = {
-        width: '100%',
-        padding: '16px',
-        backgroundColor: '#0e1621',
-        border: '1px solid #334155',
-        color: 'white',
-        borderRadius: '12px',
-        marginBottom: '16px',
-        fontSize: '14px',
-        boxSizing: 'border-box'
+
+    const labelStyle: React.CSSProperties = {
+        display: 'block', fontSize: '11px', color: '#474D57',
+        marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px',
     };
 
     return (
-        <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b' }}>
-            <h3 style={{marginTop:0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem'}}><span style={{fontSize: '24px'}}>🔑</span> API de Binance</h3>
+        <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139' }}>
 
-            <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '16px', lineHeight: '1.5' }}>
-                Ingresá tus credenciales de lectura y escritura (Spot/Withdrawal). Esta información se guarda <b>localmente en tu dispositivo</b>.
-            </p>
-
-            <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', padding: '12px', borderRadius: '12px', marginBottom: '20px' }}>
-                <p style={{ margin: 0, fontSize: '12px', color: '#ffb74d', marginBottom: '6px' }}><b>⚠️ IP para la Whitelist de Binance:</b></p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: 'monospace', fontSize: '14px', color: '#fff' }}>{serverIp}</span>
-                    <button onClick={() => navigator.clipboard.writeText(serverIp)} style={{ background: '#ff9800', color: '#000', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>COPIAR</button>
-                </div>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>🔑</span>
+                <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>
+                    API de Binance
+                </h3>
             </div>
 
-            <label style={{display:'block', fontSize:'13px', color:'#94a3b8', marginBottom:'8px'}}>API Key</label>
-            <input type="text" value={key} onChange={e => setKey(e.target.value)} style={inS} placeholder="Ingresá tu API Key" />
+            <div style={{ padding: '20px' }}>
 
-            <label style={{display:'block', fontSize:'13px', color:'#94a3b8', marginBottom:'8px'}}>API Secret</label>
-            <input type="password" value={secret} onChange={e => setSecret(e.target.value)} style={inS} placeholder="Ingresá tu API Secret" />
+                <p style={{ fontSize: '13px', color: '#848E9C', marginBottom: '16px', lineHeight: '1.6', margin: '0 0 16px' }}>
+                    Credenciales Spot/Withdrawal. Se guardan <strong style={{ color: '#EAECEF' }}>localmente en tu dispositivo</strong>.
+                </p>
 
-            <button onClick={handleSave} style={btnS}>GUARDAR CREDENCIALES</button>
-            <button onClick={onCancel} style={backBtnS}><span>⬅</span> <span>Volver al Menú</span></button>
+                {/* IP Whitelist */}
+                <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '12px 14px', borderRadius: '8px', marginBottom: '20px' }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#F0B90B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>IP para Whitelist de Binance</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '14px', color: '#EAECEF', flex: 1 }}>{serverIp}</span>
+                        <button
+                            onClick={copyIp}
+                            style={{ padding: '6px 14px', backgroundColor: copied ? 'rgba(14,203,129,0.1)' : 'rgba(240,185,11,0.1)', color: copied ? '#0ECB81' : '#F0B90B', border: `1px solid ${copied ? 'rgba(14,203,129,0.3)' : 'rgba(240,185,11,0.3)'}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", whiteSpace: 'nowrap' }}
+                        >
+                            {copied ? '✓ Copiada' : 'Copiar'}
+                        </button>
+                    </div>
+                </div>
+
+                <label style={labelStyle}>API Key</label>
+                <input type="text" value={key} onChange={e => setKey(e.target.value)} style={inputStyle} placeholder="Ingresá tu API Key" />
+
+                <label style={labelStyle}>API Secret</label>
+                <input type="password" value={secret} onChange={e => setSecret(e.target.value)} style={inputStyle} placeholder="Ingresá tu API Secret" />
+
+                <button
+                    onClick={handleSave}
+                    style={{ width: '100%', padding: '13px', backgroundColor: '#F0B90B', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '8px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                >
+                    Guardar credenciales
+                </button>
+                <button
+                    onClick={onCancel}
+                    style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                >
+                    ← Cancelar
+                </button>
+            </div>
         </div>
     );
 }

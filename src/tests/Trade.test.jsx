@@ -26,98 +26,77 @@ describe('Trade Component', () => {
 
   it('should render trade component with correct title', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-
     expect(screen.getByText('Cambiar EUR a USDC')).toBeInTheDocument();
   });
 
   it('should show loading state when data is null', () => {
     render(<Trade data={null} onClose={() => {}} onSuccess={() => {}} />);
-    
     expect(screen.getByText('Cargando mercado...')).toBeInTheDocument();
   });
 
   it('should display available balance', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
     expect(screen.getByText(/Disponible: 100.00 €/)).toBeInTheDocument();
   });
 
   it('should display exchange rate', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
     expect(screen.getByText(/Tasa: 1.0850/)).toBeInTheDocument();
   });
 
   it('should update EUR input when user types', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    
     expect(input).toHaveValue(50);
   });
 
   it('should calculate expected USDC amount', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '100' } });
-    
     const eurAmount = 100;
     const rate = 1.0850;
     const feeRate = 0.001;
     const grossUsdc = eurAmount * rate;
     const fee = grossUsdc * feeRate;
     const netUsdc = grossUsdc - fee;
-    
     expect(screen.getByText(`${netUsdc.toFixed(2)} USDC`)).toBeInTheDocument();
   });
 
   it('should display trading fee information', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
     expect(screen.getByText(/Comisión est./)).toBeInTheDocument();
     expect(screen.getByText(/0.1%/)).toBeInTheDocument();
   });
 
   it('should show minimum EUR warning', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    expect(screen.getByText(/Binance requiere un mínimo de ~10 EUR/)).toBeInTheDocument();
+    expect(screen.getByText(/Mínimo ~10 EUR/)).toBeInTheDocument();
   });
 
   it('should enable MAX button and set amount to balance', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
     const maxButton = screen.getByText('MAX');
     fireEvent.click(maxButton);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     expect(input).toHaveValue(100);
   });
 
   it('should show confirmation dialog when initiating trade', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    
-    const tradeButton = screen.getByText('EJECUTAR CAMBIO');
-    fireEvent.click(tradeButton);
-    
-    expect(screen.getByText(/POR FAVOR CONFIRMA/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    expect(screen.getByText(/Confirmar operación/)).toBeInTheDocument();
     expect(screen.getByText(/Estás a punto de cambiar/)).toBeInTheDocument();
   });
 
   it('should show error when attempting to trade more than balance', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '200' } });
-
-    const tradeButton = screen.getByText('EJECUTAR CAMBIO');
-    fireEvent.click(tradeButton);
-
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
     expect(screen.getByText(/Saldo insuficiente/)).toBeInTheDocument();
   });
 
@@ -126,26 +105,15 @@ describe('Trade Component', () => {
       ok: true,
       json: () => Promise.resolve({ success: true, data: { orderId: 12345 } })
     });
-
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    
-    const tradeButton = screen.getByText('EJECUTAR CAMBIO');
-    fireEvent.click(tradeButton);
-    
-    const confirmButton = screen.getByText('SÍ, CONFIRMAR');
-    fireEvent.click(confirmButton);
-    
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/api/trade'),
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: expect.stringContaining('50')
-        })
+        expect.objectContaining({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: expect.stringContaining('50') })
       );
     });
   });
@@ -155,14 +123,11 @@ describe('Trade Component', () => {
       ok: true,
       json: () => Promise.resolve({ success: true, data: { orderId: 12345 } })
     });
-
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    fireEvent.click(screen.getByText('EJECUTAR CAMBIO'));
-    fireEvent.click(screen.getByText('SÍ, CONFIRMAR'));
-    
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
     await waitFor(() => {
       expect(screen.getByText(/¡Cambio ejecutado con éxito!/)).toBeInTheDocument();
     });
@@ -173,14 +138,11 @@ describe('Trade Component', () => {
       ok: false,
       json: () => Promise.resolve({ error: 'Trade failed due to insufficient balance' })
     });
-
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    fireEvent.click(screen.getByText('EJECUTAR CAMBIO'));
-    fireEvent.click(screen.getByText('SÍ, CONFIRMAR'));
-    
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
     await waitFor(() => {
       expect(screen.getByText(/Trade failed due to insufficient balance/)).toBeInTheDocument();
     });
@@ -189,26 +151,18 @@ describe('Trade Component', () => {
   it('should call onClose when back button is clicked', () => {
     const mockOnClose = vi.fn();
     render(<Trade data={mockData} onClose={mockOnClose} onSuccess={() => {}} />);
-    
-    const backButton = screen.getByText(/Volver al Menú/);
-    fireEvent.click(backButton);
-    
+    fireEvent.click(screen.getByText(/Volver al menú/));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
   it('should cancel confirmation when cancel button is clicked', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    fireEvent.click(screen.getByText('EJECUTAR CAMBIO'));
-    
-    expect(screen.getByText(/POR FAVOR CONFIRMA/)).toBeInTheDocument();
-    
-    const cancelButton = screen.getByText('CANCELAR');
-    fireEvent.click(cancelButton);
-    
-    expect(screen.queryByText(/POR FAVOR CONFIRMA/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    expect(screen.getByText(/Confirmar operación/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Cancelar'));
+    expect(screen.queryByText(/Confirmar operación/)).not.toBeInTheDocument();
   });
 
   it('should save trade to localStorage after success', async () => {
@@ -216,14 +170,11 @@ describe('Trade Component', () => {
       ok: true,
       json: () => Promise.resolve({ success: true, data: { orderId: 12345 } })
     });
-
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    fireEvent.click(screen.getByText('EJECUTAR CAMBIO'));
-    fireEvent.click(screen.getByText('SÍ, CONFIRMAR'));
-    
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
     await waitFor(() => {
       const history = JSON.parse(localStorage.getItem('trade_history') || '[]');
       expect(history.length).toBeGreaterThan(0);
@@ -236,16 +187,13 @@ describe('Trade Component', () => {
       ok: true,
       json: () => Promise.resolve({ success: true })
     }), 100)));
-
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    
-    const input = screen.getByPlaceholderText('Monto en EUR a cambiar');
+    const input = screen.getByPlaceholderText('Monto en EUR');
     fireEvent.change(input, { target: { value: '50' } });
-    fireEvent.click(screen.getByText('EJECUTAR CAMBIO'));
-    fireEvent.click(screen.getByText('SÍ, CONFIRMAR'));
-    
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
     await waitFor(() => {
-      const confirmButton = screen.getByText('EJECUTANDO...');
+      const confirmButton = screen.getByText('Ejecutando...');
       expect(confirmButton).toBeDisabled();
     });
   });

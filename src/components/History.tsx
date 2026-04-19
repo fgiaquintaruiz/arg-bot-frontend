@@ -13,45 +13,51 @@ export default function History({ onClose }: { onClose: () => void }) {
     }
   }, []);
 
-  const backBtnS: React.CSSProperties = { width: '100%', padding: '16px', backgroundColor: 'transparent', border: 'none', color: '#94a3b8', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '20px' };
-
-  // Calculate total savings
   const totalSavings = history.reduce((sum, h) => sum + (parseFloat(h.savings) || 0), 0);
 
   return (
-    <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b', width: '100%', boxSizing: 'border-box' }}>
-      <h3 style={{marginTop:0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem'}}><span style={{fontSize: '24px'}}>📜</span> Historial</h3>
+    <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139', width: '100%', boxSizing: 'border-box' }}>
 
-      {totalSavings > 0 && (
-        <div style={{ textAlign: 'center', padding: '12px', backgroundColor: '#052e16', borderRadius: '12px', border: '1px solid #10b981', marginBottom: '16px' }}>
-          <span style={{ fontWeight: 'bold', color: '#34d399', fontSize: '15px' }}>🎉 Ahorro total acumulado: {totalSavings.toFixed(2)} €</span>
-        </div>
-      )}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '18px' }}>📋</span>
+        <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>Historial de operaciones</h3>
+      </div>
 
-      {history.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '14px' }}>
-          No hay operaciones registradas aún.
-        </div>
-      ) : (
-        <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '10px' }}>
-          {history.map((h, i) => {
-            const savings = parseFloat(h.savings) || 0;
-            return (
-              <div key={i} style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', marginBottom: '12px', border: '1px solid #334155' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{h.eur} EUR → {h.usdcReceived || '?'} USDC</span>
-                  <span style={{ color: '#94a3b8', fontSize: '12px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+      <div style={{ padding: '20px' }}>
+
+        {totalSavings > 0 && (
+          <div style={{ textAlign: 'center', padding: '10px 14px', backgroundColor: 'rgba(14,203,129,0.08)', borderRadius: '8px', border: '1px solid rgba(14,203,129,0.2)', marginBottom: '16px' }}>
+            <span style={{ fontWeight: 600, color: '#0ECB81', fontSize: '14px' }}>Ahorro total acumulado: +{totalSavings.toFixed(2)} €</span>
+          </div>
+        )}
+
+        {history.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px 20px', color: '#474D57', fontSize: '14px' }}>
+            No hay operaciones registradas aún.
+          </div>
+        ) : (
+          <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {history.map((h, i) => {
+              const savings = parseFloat(h.savings) || 0;
+              return (
+                <div key={i} style={{ backgroundColor: '#181A20', padding: '14px 16px', borderRadius: '8px', border: '1px solid #2B3139' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
+                    <span style={{ color: '#EAECEF', fontWeight: 600, fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace" }}>{h.eur} EUR → {h.usdcReceived || '?'} USDC</span>
+                    <span style={{ color: '#474D57', fontSize: '11px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: savings > 0 ? '#0ECB81' : '#474D57' }}>
+                    {savings > 0 ? `Ahorro vs Remitly: +${savings.toFixed(2)} €` : 'Sin datos de ahorro'}
+                  </div>
                 </div>
-                <div style={{ fontSize: '13px', color: savings > 0 ? '#10b981' : '#94a3b8' }}>
-                  {savings > 0 ? `💰 Ahorro vs Remitly: ${savings.toFixed(2)} €` : 'Sin datos de ahorro'}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
 
-      <button onClick={onClose} style={backBtnS}><span>⬅</span> <span>Volver al Menú</span></button>
+        <button onClick={onClose} aria-label="Volver al menú" style={{ width: '100%', padding: '14px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginTop: '16px', fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          ← Volver al menú
+        </button>
+      </div>
     </div>
   );
 }

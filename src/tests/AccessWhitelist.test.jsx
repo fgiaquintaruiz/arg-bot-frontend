@@ -403,7 +403,7 @@ describe('Login.tsx banners', () => {
   it('SPEC-AW-021: login banner contains full Spanish description text', async () => {
     const { default: Login } = await import('../components/Login');
     render(<Login onLogin={vi.fn()} rejected={false} />);
-    expect(screen.getByText(/Esta aplicación es de uso privado/i)).toBeInTheDocument();
+    expect(screen.getByText(/Solo cuentas de Google previamente autorizadas/i)).toBeInTheDocument();
   });
 
   // SPEC-AW-022: Rejection message visible when rejected=true

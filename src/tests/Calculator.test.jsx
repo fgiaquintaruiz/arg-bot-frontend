@@ -27,34 +27,34 @@ describe('Calculator Component', () => {
 
   it('should show loading state when data is null', () => {
     render(<Calculator data={null} />);
-    expect(screen.getByText('Cargando mercado...')).toBeInTheDocument();
+    expect(screen.getByText(/Cargando tasas/)).toBeInTheDocument();
   });
 
   it('should display ARS input', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByPlaceholderText('Ej: 500000')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('500000')).toBeInTheDocument();
   });
 
   it('should display EUR cost input', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByPlaceholderText('Calculado')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('0.00')).toBeInTheDocument();
   });
 
   it('should display savings section', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByText(/AHORRO vs REMITLY/)).toBeInTheDocument();
+    expect(screen.getByText(/Ahorro vs Remitly/)).toBeInTheDocument();
   });
 
   it('should call onBack when back button is clicked', () => {
     const mockOnBack = vi.fn();
     render(<Calculator data={mockData} onBack={mockOnBack} />);
-    fireEvent.click(screen.getByText(/Volver al Menú/));
+    fireEvent.click(screen.getByText(/Volver al menú/));
     expect(mockOnBack).toHaveBeenCalledTimes(1);
   });
 
   it('should not render back button when onBack is not provided', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.queryByText(/Volver al Menú/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Volver al menú/)).not.toBeInTheDocument();
   });
 
   it('should display SEPA transfer button', () => {

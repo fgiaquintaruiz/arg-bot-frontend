@@ -39,7 +39,7 @@ describe('Withdraw Component', () => {
 
   it('should show BSC network warning', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    expect(screen.getByText(/RED BSC \(BEP20\) EXCLUSIVA/)).toBeInTheDocument();
+    expect(screen.getByText(/Red BSC \(BEP20\)/)).toBeInTheDocument();
   });
 
   it('should show empty address book message', () => {
@@ -49,12 +49,12 @@ describe('Withdraw Component', () => {
 
   it('should show warning when no address book entries exist', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    expect(screen.getByText(/Para retirar, primero debés agregar una dirección/)).toBeInTheDocument();
+    expect(screen.getByText(/Agregá una dirección en la libreta/)).toBeInTheDocument();
   });
 
   it('should disable confirm button when no address book', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    const confirmButton = screen.getByText('CONFIRMAR RETIRO');
+    const confirmButton = screen.getByText('Confirmar retiro');
     expect(confirmButton).toBeDisabled();
   });
 
@@ -81,7 +81,7 @@ describe('Withdraw Component', () => {
   it('should call onClose when back button is clicked', () => {
     const mockOnClose = vi.fn();
     render(<Withdraw data={mockData} onClose={mockOnClose} onSuccess={() => {}} />);
-    const backButton = screen.getByText(/Volver al Menú/);
+    const backButton = screen.getByText(/Volver al menú/);
     fireEvent.click(backButton);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
@@ -90,13 +90,13 @@ describe('Withdraw Component', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
     const amountInput = screen.getByPlaceholderText('Monto a retirar');
     fireEvent.change(amountInput, { target: { value: '100' } });
-    const withdrawButton = screen.getByText('CONFIRMAR RETIRO');
+    const withdrawButton = screen.getByText('Confirmar retiro');
     expect(() => fireEvent.click(withdrawButton)).not.toThrow();
   });
 
   it('should not allow withdrawal without amount', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    const withdrawButton = screen.getByText('CONFIRMAR RETIRO');
+    const withdrawButton = screen.getByText('Confirmar retiro');
     expect(() => fireEvent.click(withdrawButton)).not.toThrow();
   });
 });

@@ -43,9 +43,8 @@ export default function Dashboard({ user }: { user: any }) {
                 if (data.version && data.version !== pkg.version) {
                     setShowUpdateBanner(true);
                 }
-            } catch { /* silent fail — offline or server down */ }
+            } catch { /* silent fail */ }
         };
-
         const interval = setInterval(checkForUpdates, 60 * 1000);
         return () => clearInterval(interval);
     }, []);
@@ -80,14 +79,11 @@ export default function Dashboard({ user }: { user: any }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userEmail: user.email, apiKey: '', apiSecret: '' })
-            }).catch(() => { /* silent fail — keep-alive only */ });
+            }).catch(() => { /* silent fail */ });
         };
-
-        const interval = setInterval(pingBackend, 9 * 60 * 1000); // 9 minutes
+        const interval = setInterval(pingBackend, 9 * 60 * 1000);
         return () => clearInterval(interval);
     }, [user]);
-
-    const bgPattern = "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='sans-serif' font-size='14' fill='%231e293b' opacity='0.4'%3E%E2%82%AC%3C/text%3E%3Ctext x='40' y='50' font-family='sans-serif' font-size='14' fill='%231e293b' opacity='0.4'%3E%E2%82%BF%3C/text%3E%3C/svg%3E\")";
 
     const renderView = () => {
         switch (currentView) {
@@ -100,185 +96,300 @@ export default function Dashboard({ user }: { user: any }) {
             case 'history':
                 return <History onClose={() => setCurrentView('main')} />;
             default:
-                return (
-                    <div style={{
-                        backgroundColor: '#17212b',
-                        padding: '30px',
-                        borderRadius: '24px',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
-                        border: '1px solid #1e293b',
-                        width: '100%'
-                    }}>
-                        <h3 style={{
-                            margin: '0 0 10px 0',
-                            color: '#f8fafc',
-                            textAlign: 'center',
-                            fontSize: '1.4rem'
-                        }}>Hola, {user.displayName?.split(' ')[0] || 'Usuario'}</h3>
-                        <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '30px', textAlign: 'center' }}>¿Qué
-                            vas a operar hoy?</p>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <button onClick={() => setCurrentView('calculator')} style={{
-                                gridColumn: '1 / -1',
-                                padding: '24px 10px',
-                                backgroundColor: '#1e293b',
-                                color: '#38bdf8',
-                                border: '1px solid #334155',
-                                borderRadius: '20px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '12px'
-                            }}>
-                                <span style={{ fontSize: '32px' }}>🧮</span> Calculadora
-                            </button>
-                            <button onClick={() => hasKeys && setCurrentView('trade')} style={{
-                                opacity: hasKeys ? 1 : 0.4,
-                                cursor: hasKeys ? 'pointer' : 'not-allowed',
-                                padding: '24px 10px',
-                                backgroundColor: '#1e293b',
-                                color: '#10b981',
-                                border: '1px solid #334155',
-                                borderRadius: '20px',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '8px',
-                                transition: 'all 0.2s'
-                            }}>
-                                <span style={{ fontSize: '32px' }}>💱</span> Cambiar EUR
-                                {!hasKeys && <span style={{
-                                    fontSize: '11px',
-                                    color: '#ef4444',
-                                    backgroundColor: '#450a0a',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px'
-                                }}>🔒 Requiere API</span>}
-                            </button>
-                            <button onClick={() => hasKeys && setCurrentView('withdraw')} style={{
-                                opacity: hasKeys ? 1 : 0.4,
-                                cursor: hasKeys ? 'pointer' : 'not-allowed',
-                                padding: '24px 10px',
-                                backgroundColor: '#1e293b',
-                                color: '#a78bfa',
-                                border: '1px solid #334155',
-                                borderRadius: '20px',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '8px',
-                                transition: 'all 0.2s'
-                            }}>
-                                <span style={{ fontSize: '32px' }}>🏦</span> Retirar ARS
-                                {!hasKeys && <span style={{
-                                    fontSize: '11px',
-                                    color: '#ef4444',
-                                    backgroundColor: '#450a0a',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px'
-                                }}>🔒 Requiere API</span>}
-                            </button>
-                            <button onClick={() => setCurrentView('history')} style={{
-                                gridColumn: '1 / -1',
-                                padding: '20px 10px',
-                                backgroundColor: '#1e293b',
-                                color: '#94a3b8',
-                                border: '1px solid #334155',
-                                borderRadius: '20px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}>
-                                <span style={{ fontSize: '24px' }}>📜</span> Historial
-                            </button>
-                        </div>
-
-                        {/* Links debajo del menú */}
-                        <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
-                            <button onClick={() => setShowUpdates(true)} style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}>
-                                🗺️ Novedades y Roadmap
-                            </button>
-                        </div>
-                    </div>
-                );
+                return <MainMenu />;
         }
     };
+
+    function MainMenu() {
+        const eurUsdc = data ? parseFloat(data.rate).toFixed(4) : '—';
+        const usdcArs = data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+
+        return (
+            <div style={{ width: '100%' }}>
+                {/* Greeting */}
+                <div style={{ marginBottom: '24px' }}>
+                    <p style={{ color: '#848E9C', fontSize: '13px', marginBottom: '2px' }}>Bienvenido de vuelta,</p>
+                    <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1.3rem', fontWeight: 700 }}>
+                        {user.displayName?.split(' ')[0] || 'Usuario'}
+                    </h3>
+                </div>
+
+                {/* Live rate strip */}
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    marginBottom: '20px',
+                }}>
+                    <div style={{
+                        flex: 1,
+                        backgroundColor: '#1E2329',
+                        border: '1px solid #2B3139',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                    }}>
+                        <p style={{ color: '#848E9C', fontSize: '11px', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EUR / USDC</p>
+                        <p style={{ color: '#0ECB81', fontSize: '15px', fontWeight: 600, margin: 0, fontFamily: "'IBM Plex Mono', monospace" }}>{eurUsdc}</p>
+                    </div>
+                    <div style={{
+                        flex: 1,
+                        backgroundColor: '#1E2329',
+                        border: '1px solid #2B3139',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                    }}>
+                        <p style={{ color: '#848E9C', fontSize: '11px', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>USDC / ARS</p>
+                        <p style={{ color: '#0ECB81', fontSize: '15px', fontWeight: 600, margin: 0, fontFamily: "'IBM Plex Mono', monospace" }}>{usdcArs}</p>
+                    </div>
+                </div>
+
+                {/* Action grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {/* Calculadora — CTA primario en amarillo */}
+                    <button
+                        onClick={() => setCurrentView('calculator')}
+                        style={{
+                            gridColumn: '1 / -1',
+                            padding: '18px 16px',
+                            backgroundColor: '#F0B90B',
+                            color: '#181A20',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 700,
+                            fontSize: '15px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
+                        }}
+                    >
+                        <span style={{ fontSize: '20px' }}>🧮</span>
+                        Calculadora
+                    </button>
+
+                    {/* Cambiar EUR */}
+                    <button
+                        onClick={() => hasKeys && setCurrentView('trade')}
+                        style={{
+                            opacity: hasKeys ? 1 : 0.45,
+                            cursor: hasKeys ? 'pointer' : 'not-allowed',
+                            padding: '18px 12px',
+                            backgroundColor: '#1E2329',
+                            color: '#0ECB81',
+                            border: '1px solid #2B3139',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'background-color 0.15s',
+                        }}
+                    >
+                        <span style={{ fontSize: '22px' }}>💱</span>
+                        Cambiar EUR
+                        {!hasKeys && (
+                            <span style={{
+                                fontSize: '10px',
+                                color: '#F6465D',
+                                backgroundColor: 'rgba(246,70,93,0.12)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontWeight: 500,
+                            }}>🔒 Config API</span>
+                        )}
+                    </button>
+
+                    {/* Retirar */}
+                    <button
+                        onClick={() => hasKeys && setCurrentView('withdraw')}
+                        style={{
+                            opacity: hasKeys ? 1 : 0.45,
+                            cursor: hasKeys ? 'pointer' : 'not-allowed',
+                            padding: '18px 12px',
+                            backgroundColor: '#1E2329',
+                            color: '#C3A1FF',
+                            border: '1px solid #2B3139',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'background-color 0.15s',
+                        }}
+                    >
+                        <span style={{ fontSize: '22px' }}>🏦</span>
+                        Retirar ARS
+                        {!hasKeys && (
+                            <span style={{
+                                fontSize: '10px',
+                                color: '#F6465D',
+                                backgroundColor: 'rgba(246,70,93,0.12)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontWeight: 500,
+                            }}>🔒 Config API</span>
+                        )}
+                    </button>
+
+                    {/* Historial */}
+                    <button
+                        onClick={() => setCurrentView('history')}
+                        style={{
+                            gridColumn: '1 / -1',
+                            padding: '14px 16px',
+                            backgroundColor: '#1E2329',
+                            color: '#848E9C',
+                            border: '1px solid #2B3139',
+                            borderRadius: '8px',
+                            fontWeight: 500,
+                            fontSize: '14px',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                        }}
+                    >
+                        <span style={{ fontSize: '16px' }}>📋</span>
+                        Historial de operaciones
+                    </button>
+                </div>
+
+                {/* Footer link */}
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                    <button
+                        onClick={() => setShowUpdates(true)}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#848E9C',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            padding: '8px',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
+                        }}
+                    >
+                        Novedades y Roadmap →
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{
             width: '100vw',
             minHeight: '100vh',
-            backgroundImage: bgPattern,
+            backgroundColor: '#181A20',
             display: 'flex',
             flexDirection: 'column',
-            color: '#fff'
+            color: '#EAECEF',
         }}>
+            {/* Access restricted banner */}
             <div style={{
-                backgroundColor: '#7f1d1d',
-                color: '#fef2f2',
-                padding: '8px 16px',
+                backgroundColor: 'rgba(246,70,93,0.1)',
+                borderBottom: '1px solid rgba(246,70,93,0.2)',
+                color: '#F6465D',
+                padding: '6px 16px',
                 textAlign: 'center',
-                fontSize: '13px',
-                fontWeight: 600,
-                flexShrink: 0
+                fontSize: '12px',
+                fontWeight: 500,
+                letterSpacing: '0.3px',
+                flexShrink: 0,
             }}>
-                Acceso restringido — solo usuarios autorizados.
+                Acceso restringido — solo usuarios autorizados
             </div>
+
+            {/* Header */}
             <div style={{
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '16px 24px',
-                backgroundColor: '#0e1621',
-                borderBottom: '1px solid #1e293b',
+                padding: '0 20px',
+                height: '56px',
+                backgroundColor: '#181A20',
+                borderBottom: '1px solid #2B3139',
                 flexShrink: 0,
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
             }}>
-                <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>ARGBOT <span
-                    style={{ fontSize: '12px', color: '#54687a', fontWeight: 500 }}>v{pkg.version}</span></h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button onClick={() => setShowSettings(true)} style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#94a3b8',
-                        fontSize: '20px',
-                        cursor: 'pointer',
-                        padding: '4px',
-                        borderRadius: '8px',
-                        transition: 'all 0.2s'
-                    }} title="Configuración" aria-label="Abrir configuración">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '18px', lineHeight: 1 }}>🤖</span>
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#EAECEF', letterSpacing: '-0.3px' }}>
+                        ARG<span style={{ color: '#F0B90B' }}>BOT</span>
+                    </span>
+                    <span style={{
+                        fontSize: '10px',
+                        color: '#474D57',
+                        backgroundColor: '#2B3139',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: 500,
+                        fontFamily: "'IBM Plex Mono', monospace",
+                    }}>
+                        v{pkg.version}
+                    </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                        onClick={() => setShowSettings(true)}
+                        title="Configuración"
+                        aria-label="Abrir configuración"
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#848E9C',
+                            fontSize: '18px',
+                            cursor: 'pointer',
+                            padding: '8px',
+                            borderRadius: '6px',
+                            lineHeight: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}
+                    >
                         ⚙️
                     </button>
-                    <button onClick={logout} style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#ef4444',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                    }}>Salir
+                    <button
+                        onClick={logout}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid #2B3139',
+                            color: '#848E9C',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
+                            letterSpacing: '0.2px',
+                        }}
+                    >
+                        Salir
                     </button>
                 </div>
             </div>
+
+            {/* Content */}
             <div style={{
                 flex: 1,
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center',
-                padding: '20px',
-                boxSizing: 'border-box'
+                alignItems: 'flex-start',
+                padding: '24px 20px',
+                boxSizing: 'border-box',
             }}>
-                <div style={{ width: '100%', maxWidth: '450px', margin: '0 auto' }}>
+                <div style={{ width: '100%', maxWidth: '420px' }}>
                     {renderView()}
                 </div>
             </div>
@@ -286,26 +397,36 @@ export default function Dashboard({ user }: { user: any }) {
             {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
             {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
 
-            {/* Update Banner */}
+            {/* Update banner */}
             {showUpdateBanner && (
                 <div style={{
                     position: 'fixed', bottom: 0, left: 0, right: 0,
-                    backgroundColor: '#1e40af', padding: '16px 24px',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    zIndex: 9998, boxShadow: '0 -4px 20px rgba(0,0,0,0.4)'
+                    backgroundColor: '#1E2329',
+                    borderTop: '1px solid #F0B90B',
+                    padding: '14px 20px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    zIndex: 9998,
                 }}>
-                    <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
-                        🔄 Nueva versión disponible
+                    <span style={{ color: '#EAECEF', fontSize: '14px', fontWeight: 500 }}>
+                        Nueva versión disponible
                     </span>
                     <button
                         onClick={() => window.location.reload()}
                         style={{
-                            backgroundColor: '#fff', color: '#1e40af', border: 'none',
-                            borderRadius: '8px', padding: '8px 20px', fontSize: '14px',
-                            fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap'
+                            backgroundColor: '#F0B90B',
+                            color: '#181A20',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '8px 18px',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            fontFamily: "'IBM Plex Sans', sans-serif",
                         }}
                     >
-                        Actualizar ahora
+                        Actualizar
                     </button>
                 </div>
             )}

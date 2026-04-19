@@ -7,8 +7,8 @@
 html, body, #root {
   width: 100vw;
   min-height: 100vh;
-  background-color: #0f172a;
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #181A20;
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
@@ -18,12 +18,12 @@ html {
 }
 
 *:focus-visible {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid #F0B90B;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: #38bdf8;
-  color: #0f172a;
+  background: #F0B90B;
+  color: #181A20;
 }
