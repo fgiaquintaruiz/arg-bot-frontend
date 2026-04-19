@@ -2,13 +2,14 @@ import pkg from "../package.json";
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebaseConfig';
-import { loginWithGoogle } from './authService'; // <-- Import the login function
+import { loginWithGoogle } from './authService';
 import Login from './components/Login';
 import Dashboard from './Dashboard';
 
 function App() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [rejected, setRejected] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -17,12 +18,16 @@ function App() {
     });
   }, []);
 
-  // Handle the login process
   const handleLogin = async () => {
+    setRejected(false);
     try {
       await loginWithGoogle();
-    } catch (error) {
-      console.error("Error during Google Login:", error);
+    } catch (error: any) {
+      if (error?.message === 'ACCESS_DENIED') {
+        setRejected(true);
+      } else {
+        console.error("Error during Google Login:", error);
+      }
     }
   };
 
@@ -32,7 +37,8 @@ function App() {
       </div>
   );
 
-  // Pass the handleLogin function to the onLogin prop
-  return user ? <Dashboard user={user} /> : <Login onLogin={handleLogin} />;
+  return (user && !rejected)
+    ? <Dashboard user={user} />
+    : <Login onLogin={handleLogin} rejected={rejected} />;
 }
 export default App;

@@ -222,6 +222,17 @@ export default function Dashboard({ user }: { user: any }) {
             color: '#fff'
         }}>
             <div style={{
+                backgroundColor: '#7f1d1d',
+                color: '#fef2f2',
+                padding: '8px 16px',
+                textAlign: 'center',
+                fontSize: '13px',
+                fontWeight: 600,
+                flexShrink: 0
+            }}>
+                Acceso restringido — solo usuarios autorizados.
+            </div>
+            <div style={{
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'space-between',
