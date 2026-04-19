@@ -4,8 +4,13 @@ export default function History({ onClose }: { onClose: () => void }) {
   const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('trade_history') || '[]');
-    setHistory(data.reverse());
+    try {
+      const raw = localStorage.getItem('trade_history') || '[]';
+      const data = JSON.parse(raw);
+      setHistory(Array.isArray(data) ? [...data].reverse() : []);
+    } catch {
+      setHistory([]);
+    }
   }, []);
 
   const backBtnS: React.CSSProperties = { width: '100%', padding: '16px', backgroundColor: 'transparent', border: 'none', color: '#94a3b8', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '20px' };

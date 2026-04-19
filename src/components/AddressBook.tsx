@@ -96,9 +96,9 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
     if (value.length > 0) {
       if (!isValidBSCAddress(value)) {
-        setValidationError('Invalid BSC/BEP20 address format. Must be 0x followed by 40 hex characters.');
+        setValidationError('Formato de dirección BSC/BEP20 inválido');
       } else if (!isValidChecksum(value)) {
-        setValidationError('Address checksum is invalid. Please check for typos.');
+        setValidationError('La dirección no pasa la validación de checksum');
       }
     }
   };
