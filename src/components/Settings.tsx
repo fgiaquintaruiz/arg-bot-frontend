@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { uploadToDrive, downloadFromDrive } from '../googleDrive';
 import { API_URL } from '../config';
 
+// Service fee is disabled pending written authorization from redacted (contractual requirement). Flip to `true` once authorization is obtained — rest of the fee logic is preserved intentionally.
+const FEE_ENABLED = false;
+
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>(
-    (initialTab as any) || 'sync'
-  );
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>(() => {
+    const tab = (initialTab as any) || 'sync';
+    return (!FEE_ENABLED && tab === 'fee') ? 'sync' : tab;
+  });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
-  const [serviceFee, setServiceFee] = useState<string>(() => localStorage.getItem('service_fee') || '0.50');
+  const [serviceFee, setServiceFee] = useState<string>(() => localStorage.getItem('service_fee') || '0');
   const [feeWhitelist, setFeeWhitelist] = useState<string>(() => localStorage.getItem('fee_whitelist') || '');
   const [binanceEurIban, setBinanceEurIban] = useState<string>(() => localStorage.getItem('binance_eur_iban') || '');
   const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem('binance_eur_name') || '');
@@ -179,7 +183,9 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         <div style={{ padding: '12px 24px', display: 'flex', gap: '8px', borderBottom: '1px solid #1e293b' }}>
           <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>☁️ Sync</button>
           <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>🏦 Binance</button>
-          <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>💰 Fee</button>
+          {FEE_ENABLED && (
+            <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>💰 Fee</button>
+          )}
           <button style={tabStyle('support')} onClick={() => setActiveTab('support')}>📧 Soporte</button>
         </div>
 
@@ -424,7 +430,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           )}
 
           {/* FEE TAB */}
-          {activeTab === 'fee' && (
+          {FEE_ENABLED && activeTab === 'fee' && (
             <div>
               <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>Fee de Servicio</h4>
               <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
