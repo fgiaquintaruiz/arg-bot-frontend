@@ -2,7 +2,7 @@
 
 React + Vite frontend application for ARGBOT -- automated international money transfers from Europe to Argentina.
 
-**Version:** 1.8.170
+**Version:** 1.8.175
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ ARGBOT helps Argentines in Europe send money home cheaper by automating the EUR 
 2. **Trade** — Execute EUR → USDC on Binance with one click (uses your own API keys).
 3. **Withdraw** — Send USDC from Binance to any BSC (BEP20) wallet with address book validation.
 4. **Address Book** — Save and manage BSC wallet addresses with EIP-55 checksum validation.
-5. **Settings** — Configure service fees, Google Drive sync, and support.
+5. **Settings** — Google Drive sync, Binance IBAN/API keys, IP whitelist, and support.
 
 The app is fully **non-custodial** — it never holds user funds or credentials on the server. All sensitive data is encrypted locally and only transmitted during API calls.
 
@@ -42,10 +42,12 @@ The app is fully **non-custodial** — it never holds user funds or credentials 
 |----------|----------|-------------|
 | `VITE_API_URL` | No | Backend API URL. Defaults to `http://localhost:10007` |
 | `VITE_ENCRYPTION_KEY` | **Yes** | AES key for encrypting API keys. Must match backend's `ENCRYPTION_KEY` |
+| `VITE_WHITELIST_EMAILS` | **Yes** | Comma-separated Gmail aliases allowed to sign in. Empty/missing → **all access rejected** (fail-closed) |
 
 ```env
 VITE_API_URL=http://localhost:10007
 VITE_ENCRYPTION_KEY=your-secret-key
+VITE_WHITELIST_EMAILS=alias1@gmail.com,alias2@gmail.com
 ```
 
 ## Scripts
@@ -76,7 +78,7 @@ App.tsx
     ├── Withdraw.tsx        (USDC → BSC wallet)
     ├── BinanceConfig.tsx   (API key setup)
     ├── History.tsx         (trade history + savings)
-    ├── Settings.tsx        (sync, fees, support)
+    ├── Settings.tsx        (sync, Binance IBAN/API, IP whitelist, support)
     └── Updates.tsx         (roadmap + changelogs)
 ```
 
@@ -86,7 +88,7 @@ App.tsx
 - **SEPA Transfer Helper** — Binance IBAN details with copy-to-clipboard and bank app deep link
 - **Address Book** — BSC/BEP20 address management with EIP-55 checksum validation, edit/delete
 - **Address Validation** — Withdraw only allows addresses from the address book
-- **Service Fees** — Configurable fee (€0.10–€1.00) per transaction with email whitelist for exemptions
+- **Access Whitelist** — Google Sign-In restricted to authorized Gmail aliases via `VITE_WHITELIST_EMAILS`; unlisted accounts are signed out immediately (fail-closed, no flash of Dashboard)
 - **Auto-Update Detection** — Polls `version.json` every 60s, shows banner when new version available
 - **PWA Optimized** — Touch-friendly UI (44px min targets), overscroll prevention, theme colors
 

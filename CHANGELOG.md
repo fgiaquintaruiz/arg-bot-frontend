@@ -1,3 +1,20 @@
+## [1.8.175] - 2026-04-19
+### Cambiado
+- **Fee de servicio gateado detrás de `FEE_ENABLED=false`:** La pestaña 💰 Fee ya no se renderiza y el valor por defecto de `service_fee` pasa a `"0"` mientras esté pendiente la autorización escrita de redacted (requerimiento contractual). Toda la lógica del fee se preserva; re-habilitar es un one-liner.
+
+## [1.8.174] - 2026-04-19
+### Corregido
+- **Historial robusto ante localStorage corrupto:** `History.tsx` ahora envuelve `JSON.parse` en try/catch y defaultea a `[]` si la key está dañada (evita pantalla en blanco).
+- **Copy unificado en español en AddressBook:** Mensajes de validación de dirección BSC/BEP20 y checksum ahora en español rioplatense.
+
+## [1.8.173] - 2026-04-19
+### Agregado
+- **Whitelist de emails autorizados:** Nueva variable de entorno `VITE_WHITELIST_EMAILS` (comma-separated). Usuarios fuera de la lista son deslogueados inmediatamente tras `signInWithPopup` mediante `signOut` awaited + gate de render `(user && !rejected)` para evitar flash del Dashboard.
+- **Banners de acceso restringido:** Login y Dashboard muestran banners persistentes informando que el acceso está limitado.
+
+### Seguridad
+- **Fail-closed:** Si `VITE_WHITELIST_EMAILS` está vacía o ausente, TODOS los accesos se rechazan.
+
 ## [1.8.170] - 2026-04-12
 ### Corregido
 - **Input EUR desbordado:** Tamaño contenido con `maxWidth`, `minWidth: 0`, `boxSizing`.

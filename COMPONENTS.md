@@ -22,6 +22,16 @@ App.tsx
 - **Login trigger:** `signInWithPopup(auth, GoogleAuthProvider)`
 - **Logout trigger:** `signOut(auth)`
 
+#### Whitelist gate (since 1.8.173)
+
+After `signInWithPopup` returns, `checkWhitelist(user.email)` (in `authService.ts`) verifies the signed-in address against `VITE_WHITELIST_EMAILS`. If the email is not authorized:
+
+1. `await signOut(auth)` — MUST be awaited before `throw` so `onAuthStateChanged` fires with `null` before the render commits
+2. `throw` propagates to `handleLogin` in `App.tsx`, which sets `rejected = true`
+3. Dashboard renders ONLY when `user && !rejected` — this render gate is the second flash-prevention layer
+
+Empty or missing `VITE_WHITELIST_EMAILS` means **all access is rejected** (fail-closed).
+
 ### Dashboard State
 
 `Dashboard.tsx` is the central state container for all authenticated views:

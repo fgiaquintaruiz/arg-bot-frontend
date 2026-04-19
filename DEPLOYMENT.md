@@ -32,7 +32,9 @@
    ```
    VITE_API_URL=https://YOUR-BACKEND-URL.onrender.com
    VITE_ENCRYPTION_KEY=<generate-with-script-below>
+   VITE_WHITELIST_EMAILS=alias1@gmail.com,alias2@gmail.com
    ```
+   **⚠️ `VITE_WHITELIST_EMAILS` is fail-closed**: if empty or missing, ALL Google Sign-In attempts are rejected. Use Gmail aliases you control.
 
 4. **Deploy**:
    - Render will build and deploy automatically
@@ -93,6 +95,7 @@ Frontend will be at: `http://localhost:10000`
 - [ ] Encryption key generated (32 chars)
 - [ ] `VITE_API_URL` set to backend URL
 - [ ] `VITE_ENCRYPTION_KEY` set (matches backend)
+- [ ] `VITE_WHITELIST_EMAILS` set with authorized Gmail aliases (fail-closed if empty)
 - [ ] Tests passing: `npm run test:unit`
 - [ ] Build succeeds: `npm run build`
 - [ ] CORS configured on backend with frontend URL

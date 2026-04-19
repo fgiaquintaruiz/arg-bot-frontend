@@ -1,7 +1,7 @@
 # 🏗️ ARGBOT Architecture — Phased Roadmap
 
 > **Goal:** Independent money transfer pipe — SEPA/USD → USDC → ARS  
-> **Last updated:** April 11, 2026
+> **Last updated:** April 19, 2026
 
 ---
 

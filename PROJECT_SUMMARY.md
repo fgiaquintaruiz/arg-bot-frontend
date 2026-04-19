@@ -1,5 +1,7 @@
 # ARGBOT - Complete Project Summary & Next Steps
 
+> **📌 Historical snapshot (~2026-03-19).** This file documents the milestone where the repo was split from the monorepo and the Address Book feature was introduced. Test counts, feature status, and "NEW" tags reflect THAT moment in time — not the current app. For current state see [`README.md`](./README.md) and [`CHANGELOG.md`](./CHANGELOG.md).
+
 ## ✅ ALL TASKS COMPLETED
 
 ### 📊 Final Test Results
