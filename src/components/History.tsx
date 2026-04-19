@@ -29,7 +29,7 @@ export default function History({ onClose }: { onClose: () => void }) {
       )}
 
       {history.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '30px', color: '#8897a7', fontSize: '14px' }}>
+        <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '14px' }}>
           No hay operaciones registradas aún.
         </div>
       ) : (
@@ -37,12 +37,12 @@ export default function History({ onClose }: { onClose: () => void }) {
           {history.map((h, i) => {
             const savings = parseFloat(h.savings) || 0;
             return (
-              <div key={i} style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', marginBottom: '12px', border: '1px solid #242f3d' }}>
+              <div key={i} style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', marginBottom: '12px', border: '1px solid #334155' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{h.eur} EUR → {h.usdcReceived || '?'} USDC</span>
-                  <span style={{ color: '#8897a7', fontSize: '12px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  <span style={{ color: '#94a3b8', fontSize: '12px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                 </div>
-                <div style={{ fontSize: '13px', color: savings > 0 ? '#10b981' : '#8897a7' }}>
+                <div style={{ fontSize: '13px', color: savings > 0 ? '#10b981' : '#94a3b8' }}>
                   {savings > 0 ? `💰 Ahorro vs Remitly: ${savings.toFixed(2)} €` : 'Sin datos de ahorro'}
                 </div>
               </div>

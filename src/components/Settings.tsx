@@ -176,7 +176,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '1.3rem' }}>⚙️ Configuración</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>✖</button>
+          <button onClick={onClose} aria-label="Cerrar configuración" style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>✖</button>
         </div>
 
         {/* Tabs */}

@@ -266,7 +266,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
       {/* Address List */}
       {filteredAddresses.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '30px', color: '#8897a7', fontSize: '14px' }}>
+        <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '14px' }}>
           {addresses.length === 0 ? 'No hay direcciones guardadas. ¡Agregá tu primera!' : 'Ninguna dirección coincide con tu búsqueda.'}
         </div>
       ) : (
@@ -279,7 +279,7 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                 padding: '16px',
                 borderRadius: '12px',
                 marginBottom: '12px',
-                border: onSelect ? '2px solid #38bdf8' : '1px solid #242f3d',
+                border: onSelect ? '2px solid #38bdf8' : '1px solid #334155',
               }}
             >
               {/* Selection button (only in select mode) */}

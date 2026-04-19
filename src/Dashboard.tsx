@@ -255,7 +255,7 @@ export default function Dashboard({ user }: { user: any }) {
                         padding: '4px',
                         borderRadius: '8px',
                         transition: 'all 0.2s'
-                    }} title="Configuración">
+                    }} title="Configuración" aria-label="Abrir configuración">
                         ⚙️
                     </button>
                     <button onClick={logout} style={{

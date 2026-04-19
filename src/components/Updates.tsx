@@ -148,7 +148,7 @@ Sin exchanges, sin claves API. Todo on-chain vía DEXs y smart contracts.
                 {/* Header */}
                 <div style={{ padding: '20px 30px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '1.5rem' }}>📢 Novedades y Hoja de Ruta</h2>
-                    <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>✖</button>
+                    <button onClick={onClose} aria-label="Cerrar novedades" style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>✖</button>
                 </div>
 
                 {/* Tabs */}

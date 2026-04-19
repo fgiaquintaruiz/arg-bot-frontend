@@ -11,7 +11,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const [successMsg, setSuccessMsg] = useState<string>('');
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
 
-  if (!data) return <div style={{ color: '#8897a7', padding: '20px', textAlign: 'center' }}>Cargando mercado...</div>;
+  if (!data) return <div style={{ color: '#94a3b8', padding: '20px', textAlign: 'center' }}>Cargando mercado...</div>;
 
   const eurAmount = parseFloat(eurInput) || 0;
   const grossUsdc = eurAmount * parseFloat(data.rate || '0');
@@ -60,16 +60,16 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b' }}>
         <h3 style={{marginTop:0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem'}}><span style={{fontSize: '24px'}}>💱</span> Cambiar EUR a USDC</h3>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#8897a7', marginBottom: '15px', alignItems: 'center' }}>
-          <div>Disponible: {data.balances?.eur || '0.00'} € <button onClick={() => {setEurInput(data.balances?.eur || ''); setIsConfirming(false); setErrorMsg('');}} style={{ marginLeft: '8px', padding: '4px 8px', backgroundColor: '#242f3d', color: '#6ab3f3', border: '1px solid #2b5278', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>MAX</button></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#94a3b8', marginBottom: '15px', alignItems: 'center' }}>
+          <div>Disponible: {data.balances?.eur || '0.00'} € <button onClick={() => {setEurInput(data.balances?.eur || ''); setIsConfirming(false); setErrorMsg('');}} style={{ marginLeft: '8px', padding: '4px 8px', backgroundColor: '#334155', color: '#6ab3f3', border: '1px solid #2b5278', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>MAX</button></div>
           <span>Tasa: {data.rate}</span>
         </div>
 
-        <input type="number" value={eurInput} onChange={(e) => {setEurInput(e.target.value); setIsConfirming(false); setErrorMsg('');}} style={{ width: '100%', padding: '16px', backgroundColor: '#0e1621', border: '1px solid #242f3d', color: 'white', borderRadius: '12px', marginBottom: '10px', fontSize: '16px', boxSizing: 'border-box' }} placeholder="Monto en EUR a cambiar" disabled={loading || isConfirming} />
+        <input type="number" value={eurInput} onChange={(e) => {setEurInput(e.target.value); setIsConfirming(false); setErrorMsg('');}} style={{ width: '100%', padding: '16px', backgroundColor: '#0e1621', border: '1px solid #334155', color: 'white', borderRadius: '12px', marginBottom: '10px', fontSize: '16px', boxSizing: 'border-box' }} placeholder="Monto en EUR a cambiar" disabled={loading || isConfirming} />
 
-        <div style={{ fontSize: '12px', color: '#8897a7', textAlign: 'center', marginBottom: '20px' }}>ℹ️ Nota: Binance requiere un mínimo de ~10 EUR por operación.</div>
+        <div style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'center', marginBottom: '20px' }}>ℹ️ Nota: Binance requiere un mínimo de ~10 EUR por operación.</div>
 
-        <div style={{backgroundColor:'#0e1621', padding:'20px', borderRadius:'16px', marginBottom:'24px', border: '1px solid #242f3d'}}>
+        <div style={{backgroundColor:'#0e1621', padding:'20px', borderRadius:'16px', marginBottom:'24px', border: '1px solid #334155'}}>
           <div style={{display:'flex', justifyContent:'space-between', fontSize:'13px', color:'#ef5350', marginBottom:'8px'}}><span>Comisión est. ({(data.fees?.tradingRate || 0.001) * 100}%):</span><span>- {fee.toFixed(2)} USDC</span></div>
           {effectiveFee > 0 && (
             <div style={{display:'flex', justifyContent:'space-between', fontSize:'13px', color:'#fbbf24', marginBottom:'8px'}}><span>Fee de servicio ARGBOT:</span><span>- €{effectiveFee.toFixed(2)}</span></div>
@@ -88,7 +88,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
               <div style={{ color: '#ffb74d', fontWeight: 'bold', marginBottom: '12px', fontSize: '15px' }}>⚠️ POR FAVOR CONFIRMA</div>
               <div style={{ fontSize: '14px', marginBottom: '20px', color: '#f8fafc' }}>Estás a punto de cambiar <b>{eurInput} EUR</b>. Esta acción no se puede deshacer.</div>
               <button onClick={handleConfirmTrade} style={{...btnS, backgroundColor: '#d32f2f'}} disabled={loading}>{loading ? 'EJECUTANDO...' : 'SÍ, CONFIRMAR'}</button>
-              <button onClick={() => setIsConfirming(false)} style={{...backBtnS, color: '#8897a7'}} disabled={loading}>CANCELAR</button>
+              <button onClick={() => setIsConfirming(false)} style={{...backBtnS, color: '#94a3b8'}} disabled={loading}>CANCELAR</button>
             </div>
         ) : (
             <>

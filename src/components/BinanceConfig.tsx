@@ -43,7 +43,7 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
         padding: '16px',
         backgroundColor: 'transparent',
         border: 'none',
-        color: '#8897a7',
+        color: '#94a3b8',
         borderRadius: '12px',
         fontSize: '15px',
         fontWeight: 'bold',

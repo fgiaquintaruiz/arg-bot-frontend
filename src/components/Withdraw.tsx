@@ -15,7 +15,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
     useEffect(() => { localStorage.setItem('usdc_wallet', address); }, [address]);
 
-    if (!data || !data.balances) return <div style={{ color: '#8897a7', padding: '20px', textAlign: 'center' }}>Cargando saldos...</div>;
+    if (!data || !data.balances) return <div style={{ color: '#94a3b8', padding: '20px', textAlign: 'center' }}>Cargando saldos...</div>;
 
     // Check if user has any saved addresses in the address book (memoized)
     const addressBook = useMemo(() => {
