@@ -87,7 +87,7 @@ export default function LandingDocs() {
                         ['🔒', 'Encriptación AES-256 local', 'Tus claves nunca salen de tu dispositivo sin cifrar.'],
                         ['🌐', 'Open Source', 'Todo el código está en GitHub para que lo puedas revisar.'],
                         ['🔑', 'Permisos mínimos', 'Solo lectura, trade y retiro. Sin acceso a depósitos fiat.'],
-                        ['📧', 'Soporte en soporte@argbot.app', ''],
+                        ['📧', 'Soporte', 'soporte@argbot.app'],
                     ].map(([icon, title, desc]) => (
                         <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
                             <span style={{ flexShrink: 0 }}>{icon}</span>
