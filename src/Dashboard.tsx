@@ -386,13 +386,11 @@ export default function Dashboard({ user }: { user: any }) {
                 width: '100%',
                 overflowY: 'auto',
                 WebkitOverflowScrolling: 'touch',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
+                overscrollBehaviorY: 'contain', // evita pull-to-refresh en Android PWA
                 padding: '24px 20px',
                 boxSizing: 'border-box',
             }}>
-                <div style={{ width: '100%', maxWidth: '420px' }}>
+                <div style={{ maxWidth: '420px', margin: '0 auto' }}>
                     {renderView()}
                 </div>
             </div>
