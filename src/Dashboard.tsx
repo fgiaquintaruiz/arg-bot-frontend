@@ -287,11 +287,12 @@ export default function Dashboard({ user }: { user: any }) {
     return (
         <div style={{
             width: '100vw',
-            minHeight: '100vh',
+            height: '100vh',
             backgroundColor: '#181A20',
             display: 'flex',
             flexDirection: 'column',
             color: '#EAECEF',
+            overflow: 'hidden', // contenedor fijo; el scroll va en el área de contenido
         }}>
             {/* Access restricted banner */}
             <div style={{
@@ -379,10 +380,12 @@ export default function Dashboard({ user }: { user: any }) {
                 </div>
             </div>
 
-            {/* Content */}
+            {/* Content — scroll aquí, no en el body */}
             <div style={{
                 flex: 1,
                 width: '100%',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'flex-start',
