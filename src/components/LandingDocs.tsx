@@ -1,127 +1,100 @@
 import React from 'react';
 
 export default function LandingDocs() {
-    const cardStyle: React.CSSProperties = {
-        backgroundColor: '#1e293b',
-        padding: '30px',
-        borderRadius: '20px',
-        border: '1px solid #334155',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-        transition: 'transform 0.2s ease',
+    const card: React.CSSProperties = {
+        backgroundColor: '#1E2329',
+        padding: '20px',
+        borderRadius: '12px',
+        border: '1px solid #2B3139',
     };
 
-    const titleStyle: React.CSSProperties = {
-        fontSize: '1.3rem',
-        marginTop: 0,
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        fontWeight: '600'
-    };
-
-    const pStyle: React.CSSProperties = {
-        color: '#cbd5e1',
+    const itemStyle: React.CSSProperties = {
+        color: '#848E9C',
         lineHeight: '1.7',
-        fontSize: '15px',
-        marginBottom: '16px'
-    };
-
-    const listStyle: React.CSSProperties = {
-        color: '#cbd5e1',
-        lineHeight: '1.8',
-        fontSize: '15px',
-        paddingLeft: '0',
-        listStyleType: 'none',
-        margin: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
+        fontSize: '14px',
+        marginBottom: '10px',
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'left' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
 
             {/* Card 1: Qué hace */}
-            <div style={cardStyle}>
-                <h2 style={{ ...titleStyle, color: '#60a5fa' }}>
-                    <span style={{ fontSize: '1.5rem' }}>⚡</span> ¿Cómo te ayuda ARGBOT?
+            <div style={card}>
+                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#EAECEF', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>⚡</span> ¿Cómo te ayuda ARGBOT?
                 </h2>
-                <p style={pStyle}>
-                    Olvidate de las comisiones ocultas y los tipos de cambio malos de los servicios de envíos tradicionales. Nosotros hacemos el trabajo pesado automatizando el mercado cripto por vos:
+                <p style={itemStyle}>
+                    Olvidate de las comisiones ocultas de los servicios de envío tradicionales. Automatizamos el mercado cripto por vos:
                 </p>
-                <ul style={listStyle}>
-                    <li>🎯 <b>Cálculo exacto:</b> Miramos el precio en tiempo real de Nexo para decirte justo cuántos Euros (o Dólares) necesitás enviar para que te lleguen los Pesos que querés.</li>
-                    <li>🤖 <b>Piloto automático:</b> El bot entra a Binance y compra los USDC usando tus propios Euros o Dólares.</li>
-                    <li>💸 <b>A donde vos quieras:</b> Aunque usamos Nexo de referencia, podés mandar tus USDC a cualquier billetera de la red BEP20 (Lemon, Nexo, Fiwind, etc.).</li>
-                </ul>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        ['🎯', 'Cálculo exacto', 'Miramos el precio en tiempo real para decirte exactamente cuántos EUR necesitás.'],
+                        ['🤖', 'Piloto automático', 'El bot entra a Binance y compra los USDC usando tus propios Euros.'],
+                        ['💸', 'A donde vos quieras', 'Podés mandar tus USDC a cualquier billetera BEP20 (Lemon, Nexo, Fiwind, etc.).'],
+                    ].map(([icon, title, desc]) => (
+                        <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
+                            <span style={{ flexShrink: 0 }}>{icon}</span>
+                            <span style={{ color: '#848E9C' }}><strong style={{ color: '#EAECEF' }}>{title}:</strong> {desc}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            {/* Card 2: Reglas claras */}
-            <div style={{...cardStyle, backgroundColor: '#2d2417', borderColor: '#78350f'}}>
-                <h2 style={{ ...titleStyle, color: '#fbbf24' }}>
-                    <span style={{ fontSize: '1.5rem' }}>⚠️</span> Antes de arrancar
+            {/* Card 2: Antes de arrancar */}
+            <div style={{ ...card, backgroundColor: 'rgba(240,185,11,0.05)', border: '1px solid rgba(240,185,11,0.15)' }}>
+                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#F0B90B', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>⚠️</span> Antes de arrancar
                 </h2>
-                <p style={pStyle}>
-                    Para que todo fluya, necesitás tener tus propias cuentas en Binance y en tu exchange argentino. Además, Binance tiene un par de reglas de oro para cuando mandes tus Euros:
-                </p>
-                <ul style={listStyle}>
-                    <li>📝 <b>Tu nombre tiene que coincidir:</b> La cuenta bancaria desde donde mandás los Euros tiene que estar a tu mismo nombre que la cuenta de Binance.</li>
-                    <li>🛑 <b>Cero transferencias SWIFT:</b> Usá solo transferencias <b>SEPA</b>. Si mandás por SWIFT, el banco lo rebota y tu plata puede quedar trabada hasta 2 semanas.</li>
-                </ul>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        ['📝', 'Tu nombre tiene que coincidir', 'La cuenta bancaria desde donde mandás los EUR tiene que estar a tu mismo nombre que la de Binance.'],
+                        ['🛑', 'Cero transferencias SWIFT', 'Usá solo SEPA. Por SWIFT, el banco lo rebota y tu plata puede quedar trabada hasta 2 semanas.'],
+                    ].map(([icon, title, desc]) => (
+                        <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
+                            <span style={{ flexShrink: 0 }}>{icon}</span>
+                            <span style={{ color: '#848E9C' }}><strong style={{ color: '#F0B90B' }}>{title}:</strong> {desc}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            {/* Card 3: Seguridad y Legales */}
-            <div style={cardStyle}>
-                <h2 style={{ ...titleStyle, color: '#f87171' }}>
-                    <span style={{ fontSize: '1.5rem' }}>🛡️</span> Tu plata, tu seguridad
+            {/* Card 3: Seguridad */}
+            <div style={card}>
+                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#EAECEF', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>🛡️</span> Tu plata, tu seguridad
                 </h2>
-                <ul style={listStyle}>
-                    <li>
-                        <b style={{ color: '#fff' }}>1. Nosotros no tocamos tus fondos:</b>
-                        <br />ARGBOT es un control remoto, no un banco. No guardamos tu plata ni tus contraseñas. Tus claves de Binance quedan encriptadas solo en tu compu/celular.
-                    </li>
-                    <li>
-                        <b style={{ color: '#fff' }}>2. Permisos mínimos y candado IP:</b>
-                        <br />El bot solo necesita permisos para leer, hacer trade y retirar. Al usar la "Lista Blanca" de Binance con la IP de nuestro servidor, te asegurás de que los retiros solo puedan ir a tu propia billetera.
-                    </li>
-                    <li>
-                        <b style={{ color: '#fff' }}>3. Herramienta independiente:</b>
-                        <br />ARGBOT fue creado para facilitar envíos y no tiene relación comercial con Binance, Nexo ni otras empresas tradicionales.
-                    </li>
-                    <li>
-                        <b style={{ color: '#fff' }}>4. Las cosas claras:</b>
-                        <br />Vos sos responsable de cuidar tus dispositivos y de revisar que la dirección de retiro sea la correcta. No nos podemos hacer cargo si te equivocás de red al pegar la dirección o si Binance bloquea tu cuenta por otros motivos.
-                    </li>
-                </ul>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {[
+                        ['No tocamos tus fondos', 'ARGBOT es un control remoto, no un banco. Tus claves quedan encriptadas solo en tu dispositivo.'],
+                        ['Permisos mínimos + whitelist IP', 'Solo permisos de lectura, trade y retiro. Con la whitelist IP de Binance, los retiros solo van a tu wallet.'],
+                        ['Herramienta independiente', 'Sin relación comercial con Binance, Nexo ni ninguna otra empresa.'],
+                        ['Las cosas claras', 'Vos sos responsable de verificar que la dirección de retiro sea la correcta antes de confirmar.'],
+                    ].map(([title, desc], i) => (
+                        <div key={i} style={{ fontSize: '13px', color: '#848E9C' }}>
+                            <strong style={{ color: '#EAECEF' }}>{i + 1}. {title}:</strong> {desc}
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            {/* Card 4: Trust Badges */}
-            <div style={{...cardStyle, backgroundColor: '#052e16', borderColor: '#10b981'}}>
-                <h2 style={{ ...titleStyle, color: '#34d399' }}>
-                    <span style={{ fontSize: '1.5rem' }}>✅</span> ¿Por qué confiar en ARGBOT?
+            {/* Card 4: Trust badges */}
+            <div style={{ ...card, border: '1px solid rgba(14,203,129,0.2)', backgroundColor: 'rgba(14,203,129,0.04)' }}>
+                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#0ECB81', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>✅</span> ¿Por qué confiar en ARGBOT?
                 </h2>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
-                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>🔒</div>
-                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>AES-256</div>
-                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>Encriptación local</div>
-                    </div>
-                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>🌐</div>
-                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>Open Source</div>
-                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>Código en GitHub</div>
-                    </div>
-                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>📧</div>
-                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>Soporte</div>
-                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>soporte@argbot.app</div>
-                    </div>
-                    <div style={{ backgroundColor: '#0e1621', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #1e293b' }}>
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>🔑</div>
-                        <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '13px' }}>Solo lectura</div>
-                        <div style={{ color: '#94a3b8', fontSize: '11px' }}>Sin acceso a depósitos</div>
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {[
+                        ['🔒', 'AES-256', 'Encriptación local'],
+                        ['🌐', 'Open Source', 'Código en GitHub'],
+                        ['📧', 'Soporte', 'soporte@argbot.app'],
+                        ['🔑', 'Solo lectura', 'Sin acceso a depósitos'],
+                    ].map(([icon, title, sub]) => (
+                        <div key={title} style={{ backgroundColor: '#181A20', padding: '14px', borderRadius: '8px', textAlign: 'center', border: '1px solid #2B3139' }}>
+                            <div style={{ fontSize: '22px', marginBottom: '6px' }}>{icon}</div>
+                            <div style={{ color: '#EAECEF', fontWeight: 600, fontSize: '12px', marginBottom: '2px' }}>{title}</div>
+                            <div style={{ color: '#474D57', fontSize: '11px' }}>{sub}</div>
+                        </div>
+                    ))}
                 </div>
             </div>
 

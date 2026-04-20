@@ -5,6 +5,7 @@ import { auth } from './firebaseConfig';
 import { loginWithGoogle } from './authService';
 import Login from './components/Login';
 import Dashboard from './Dashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -32,13 +33,17 @@ function App() {
   };
 
   if (loading) return (
-      <div style={{backgroundColor:'#0f172a', height:'100vh', color:'white', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'sans-serif'}}>
-        ARGBOT v{pkg.version}
-      </div>
+    <div style={{ backgroundColor: '#181A20', height: '100vh', color: '#EAECEF', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '14px', letterSpacing: '-0.2px' }}>
+      ARG<span style={{ color: '#F0B90B' }}>BOT</span> v{pkg.version}
+    </div>
   );
 
-  return (user && !rejected)
-    ? <Dashboard user={user} />
-    : <Login onLogin={handleLogin} rejected={rejected} />;
+  return (
+    <ErrorBoundary>
+      {(user && !rejected)
+        ? <Dashboard user={user} />
+        : <Login onLogin={handleLogin} rejected={rejected} />}
+    </ErrorBoundary>
+  );
 }
 export default App;

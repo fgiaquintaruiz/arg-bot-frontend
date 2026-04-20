@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Settings from '../components/Settings';
@@ -42,9 +42,9 @@ describe('Settings Component', () => {
 
   it('should show sync, binance and support tabs (fee tab is gated)', () => {
     render(<Settings onClose={() => {}} user={mockUser} />);
-    expect(screen.getByText('☁️ Sync')).toBeInTheDocument();
-    expect(screen.getByText('🏦 Binance')).toBeInTheDocument();
-    expect(screen.getByText('📧 Soporte')).toBeInTheDocument();
+    expect(screen.getByText('Sync')).toBeInTheDocument();
+    expect(screen.getByText('Binance')).toBeInTheDocument();
+    expect(screen.getByText('Soporte')).toBeInTheDocument();
   });
 
   it('should NOT render the Fee tab while FEE_ENABLED is false', () => {
@@ -66,31 +66,31 @@ describe('Settings Component', () => {
 
   it('should show binance tab with all fields', () => {
     render(<Settings onClose={() => {}} user={mockUser} />);
-    fireEvent.click(screen.getByText('🏦 Binance'));
+    fireEvent.click(screen.getByText('Binance'));
     expect(screen.getByText(/Configuración de Binance/)).toBeInTheDocument();
     expect(screen.getByText(/IP para Whitelist/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Tu nombre completo/)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Tu nombre en Binance/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/LT12/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/REVOLT21XXX/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Tu API Key/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Tu API Secret/)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Tu API Key')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Tu API Secret')).toBeInTheDocument();
   });
 
   it('should save binance config to localStorage', () => {
     render(<Settings onClose={() => {}} user={mockUser} />);
-    fireEvent.click(screen.getByText('🏦 Binance'));
+    fireEvent.click(screen.getByText('Binance'));
 
     const ibanInput = screen.getByPlaceholderText(/LT12/);
     fireEvent.change(ibanInput, { target: { value: 'LT96323000000000' } });
 
-    const nameInput = screen.getByPlaceholderText(/Tu nombre completo/);
+    const nameInput = screen.getByPlaceholderText(/Tu nombre en Binance/);
     fireEvent.change(nameInput, { target: { value: 'John Doe' } });
 
-    fireEvent.click(screen.getByText('💾 Guardar'));
+    fireEvent.click(screen.getByText('Guardar'));
 
     expect(localStorage.setItem).toHaveBeenCalledWith('binance_eur_iban', 'LT96323000000000');
     expect(localStorage.setItem).toHaveBeenCalledWith('binance_eur_name', 'John Doe');
-    expect(screen.getByText('✅ ¡Guardado!')).toBeInTheDocument();
+    expect(screen.getByText('✓ Guardado')).toBeInTheDocument();
   });
 
   // Fee tab behavior tests are skipped while FEE_ENABLED === false (pending redacted authorization).
@@ -123,7 +123,7 @@ describe('Settings Component', () => {
 
   it('should show support tab with email', () => {
     render(<Settings onClose={() => {}} user={mockUser} />);
-    fireEvent.click(screen.getByText('📧 Soporte'));
+    fireEvent.click(screen.getByText('Soporte'));
     expect(screen.getByText(/soporte@argbot.app/)).toBeInTheDocument();
   });
 

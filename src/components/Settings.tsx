@@ -163,97 +163,83 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     setTimeout(() => setBinanceCleared(false), 3000);
   };
 
-  const tabStyle = (tab: string) => ({
-    flex: 1, padding: '10px 8px', backgroundColor: activeTab === tab ? '#3b82f6' : '#1e293b',
-    color: activeTab === tab ? '#fff' : '#94a3b8', border: 'none', borderRadius: '8px',
-    cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', transition: 'all 0.2s ease'
+  const tabStyle = (tab: string): React.CSSProperties => ({
+    flex: 1, padding: '8px 6px',
+    backgroundColor: activeTab === tab ? '#F0B90B' : 'transparent',
+    color: activeTab === tab ? '#181A20' : '#848E9C',
+    border: activeTab === tab ? 'none' : '1px solid #2B3139',
+    borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '12px',
+    fontFamily: "'IBM Plex Sans', sans-serif",
   });
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', boxSizing: 'border-box' }}>
-      <div style={{ backgroundColor: '#0f172a', width: '100%', maxWidth: '500px', maxHeight: '85vh', borderRadius: '24px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', boxSizing: 'border-box' }}>
+      <div style={{ backgroundColor: '#1E2329', width: '100%', maxWidth: '500px', maxHeight: '85vh', borderRadius: '12px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '1.3rem' }}>⚙️ Configuración</h2>
-          <button onClick={onClose} aria-label="Cerrar configuración" style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>✖</button>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>Configuración</h2>
+          <button onClick={onClose} aria-label="Cerrar configuración" style={{ background: 'transparent', border: 'none', color: '#848E9C', fontSize: '1.3rem', cursor: 'pointer', lineHeight: 1, padding: '4px' }}>✖</button>
         </div>
 
         {/* Tabs */}
-        <div style={{ padding: '12px 24px', display: 'flex', gap: '8px', borderBottom: '1px solid #1e293b' }}>
-          <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>☁️ Sync</button>
-          <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>🏦 Binance</button>
+        <div style={{ padding: '10px 20px', display: 'flex', gap: '6px', borderBottom: '1px solid #2B3139' }}>
+          <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>Sync</button>
+          <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>Binance</button>
           {FEE_ENABLED && (
-            <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>💰 Fee</button>
+            <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>Fee</button>
           )}
-          <button style={tabStyle('support')} onClick={() => setActiveTab('support')}>📧 Soporte</button>
+          <button style={tabStyle('support')} onClick={() => setActiveTab('support')}>Soporte</button>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
 
           {/* SYNC TAB */}
           {activeTab === 'sync' && (
             <div>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>Sincronización con Google Drive</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
-                Guardá tus claves API, libreta de direcciones e historial en Google Drive para usar ARGBOT desde cualquier dispositivo. Tus datos se encriptan antes de subirse.
+              <h4 style={{ color: '#EAECEF', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600 }}>Sincronización con Google Drive</h4>
+              <p style={{ color: '#848E9C', fontSize: '13px', lineHeight: '1.6', marginBottom: '16px' }}>
+                Guardá tus claves API, libreta de direcciones e historial en Google Drive. Los datos se encriptan antes de subirse.
               </p>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>🔒</span>
-                  <div>
-                    <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '14px' }}>Encriptado AES-256</div>
-                    <div style={{ color: '#94a3b8', fontSize: '12px' }}>Tus datos se cifran antes de subirse</div>
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139' }}>
+                {[['🔒', 'Encriptado AES-256', 'Tus datos se cifran antes de subirse'], ['📱', 'Multi-dispositivo', 'Usá la app desde cualquier celular o PC']].map(([icon, title, sub]) => (
+                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: title === 'Encriptado AES-256' ? '10px' : 0 }}>
+                    <span>{icon}</span>
+                    <div>
+                      <div style={{ color: '#EAECEF', fontWeight: 600, fontSize: '13px' }}>{title}</div>
+                      <div style={{ color: '#848E9C', fontSize: '12px' }}>{sub}</div>
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '20px' }}>📱</span>
-                  <div>
-                    <div style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '14px' }}>Multi-dispositivo</div>
-                    <div style={{ color: '#94a3b8', fontSize: '12px' }}>Usá la app desde cualquier celular o PC</div>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
                 <button
                   onTouchEnd={(e) => { e.preventDefault(); handleDriveSync('upload'); }}
                   onClick={() => handleDriveSync('upload')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
-                  style={{
-                    flex: 1, padding: '16px', backgroundColor: '#10b981', color: '#fff',
-                    border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
-                    cursor: syncStatus === 'uploading' ? 'wait' : 'pointer', opacity: syncStatus === 'uploading' ? 0.7 : 1,
-                    WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
-                    minHeight: '48px'
-                  }}
+                  style={{ flex: 1, padding: '13px', backgroundColor: '#0ECB81', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: syncStatus === 'uploading' ? 'wait' : 'pointer', opacity: syncStatus === 'uploading' ? 0.7 : 1, WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
-                  {syncStatus === 'uploading' ? '⏳ Subiendo...' : '📤 Subir a Drive'}
+                  {syncStatus === 'uploading' ? 'Subiendo...' : '↑ Subir a Drive'}
                 </button>
                 <button
                   onTouchEnd={(e) => { e.preventDefault(); handleDriveSync('download'); }}
                   onClick={() => handleDriveSync('download')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
-                  style={{
-                    flex: 1, padding: '16px', backgroundColor: '#3b82f6', color: '#fff',
-                    border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold',
-                    cursor: syncStatus === 'downloading' ? 'wait' : 'pointer', opacity: syncStatus === 'downloading' ? 0.7 : 1,
-                    WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
-                    minHeight: '48px'
-                  }}
+                  style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', color: '#EAECEF', border: '1px solid #2B3139', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: syncStatus === 'downloading' ? 'wait' : 'pointer', opacity: syncStatus === 'downloading' ? 0.7 : 1, WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
-                  {syncStatus === 'downloading' ? '⏳ Bajando...' : '📥 Descargar de Drive'}
+                  {syncStatus === 'downloading' ? 'Bajando...' : '↓ Descargar de Drive'}
                 </button>
               </div>
 
               {syncMessage && (
                 <div style={{
-                  padding: '12px', borderRadius: '10px', fontSize: '13px', lineHeight: '1.5',
-                  backgroundColor: syncStatus === 'success' ? '#052e16' : syncStatus === 'error' ? '#450a0a' : '#1e293b',
-                  color: syncStatus === 'success' ? '#10b981' : syncStatus === 'error' ? '#ef4444' : '#94a3b8',
-                  border: `1px solid ${syncStatus === 'success' ? '#10b981' : syncStatus === 'error' ? '#7f1d1d' : '#334155'}`
+                  padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.5',
+                  backgroundColor: syncStatus === 'success' ? 'rgba(14,203,129,0.08)' : syncStatus === 'error' ? 'rgba(246,70,93,0.08)' : '#181A20',
+                  color: syncStatus === 'success' ? '#0ECB81' : syncStatus === 'error' ? '#F6465D' : '#848E9C',
+                  border: `1px solid ${syncStatus === 'success' ? 'rgba(14,203,129,0.2)' : syncStatus === 'error' ? 'rgba(246,70,93,0.2)' : '#2B3139'}`
                 }}>
                   {syncMessage}
                 </div>
@@ -264,166 +250,84 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {/* BINANCE TAB */}
           {activeTab === 'binance' && (
             <div>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>🏦 Configuración de Binance</h4>
+              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Configuración de Binance</h4>
 
               {/* IP Whitelist */}
-              <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '12px', color: '#ffb74d', marginBottom: '6px' }}><b>⚠️ IP para Whitelist de Binance:</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: '14px', color: '#fff' }}>{serverIp}</span>
+              <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
+                <div style={{ fontSize: '11px', color: '#F0B90B', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>IP para Whitelist de Binance</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '14px', color: '#EAECEF', flex: 1 }}>{serverIp}</span>
                   <button
                     onTouchEnd={(e) => { e.preventDefault(); copyToClipboard(serverIp, 'serverip'); }}
                     onClick={() => copyToClipboard(serverIp, 'serverip')}
-                    style={{ background: '#ff9800', color: '#000', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', minHeight: '32px' }}
+                    style={{ padding: '5px 12px', backgroundColor: copiedField === 'serverip' ? 'rgba(14,203,129,0.1)' : 'rgba(240,185,11,0.1)', color: copiedField === 'serverip' ? '#0ECB81' : '#F0B90B', border: `1px solid ${copiedField === 'serverip' ? 'rgba(14,203,129,0.3)' : 'rgba(240,185,11,0.3)'}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', minHeight: '32px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                   >
-                    {copiedField === 'serverip' ? '✅' : '📋 COPIAR'}
+                    {copiedField === 'serverip' ? '✓ Copiada' : 'Copiar'}
                   </button>
                 </div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px' }}>
-                  Agregá esta IP en Binance → Gestión de API → Restricciones de IP
+                <div style={{ fontSize: '11px', color: '#474D57', marginTop: '6px' }}>
+                  Binance → Gestión de API → Restricciones de IP
                 </div>
               </div>
 
               {/* EUR Deposit Details */}
-              <h5 style={{ color: '#38bdf8', margin: '0 0 12px 0', fontSize: '14px' }}>💶 Datos de Depósito EUR</h5>
-              <p style={{ color: '#94a3b8', fontSize: '12px', lineHeight: '1.5', marginBottom: '16px' }}>
-                Copialos desde Binance → Billetera → Depósito → EUR → Datos SEPA
+              <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 8px' }}>Datos de Depósito EUR</p>
+              <p style={{ color: '#474D57', fontSize: '12px', lineHeight: '1.5', marginBottom: '12px' }}>
+                Binance → Billetera → Depósito → EUR → Datos SEPA
               </p>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>Beneficiario (tu nombre en Binance)</label>
-                <input
-                  type="text"
-                  value={binanceEurName}
-                  onChange={e => setBinanceEurName(e.target.value)}
-                  placeholder="Tu nombre completo como aparece en Binance"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px',
-                    boxSizing: 'border-box', marginBottom: '12px'
-                  }}
-                />
-
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>IBAN</label>
-                <input
-                  type="text"
-                  value={binanceEurIban}
-                  onChange={e => setBinanceEurIban(e.target.value)}
-                  placeholder="Ej: LT12 3456 7890 1234 5678"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
-                    boxSizing: 'border-box', marginBottom: '12px'
-                  }}
-                />
-
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>BIC/SWIFT</label>
-                <input
-                  type="text"
-                  value={binanceEurBic}
-                  onChange={e => setBinanceEurBic(e.target.value)}
-                  placeholder="Ej: REVOLT21XXX"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
-                    boxSizing: 'border-box', marginBottom: '12px'
-                  }}
-                />
-
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>Banco</label>
-                <input
-                  type="text"
-                  value={binanceBankName}
-                  onChange={e => setBinanceBankName(e.target.value)}
-                  placeholder="Ej: Revolut Bank UAB"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px',
-                    boxSizing: 'border-box', marginBottom: '12px'
-                  }}
-                />
-
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>Dirección del banco</label>
-                <input
-                  type="text"
-                  value={binanceBankAddress}
-                  onChange={e => setBinanceBankAddress(e.target.value)}
-                  placeholder="Ej: Konstitucijos pr. 21B, Vilnius"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
-                />
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  { label: 'Beneficiario', val: binanceEurName, set: setBinanceEurName, ph: 'Tu nombre en Binance', mono: false },
+                  { label: 'IBAN', val: binanceEurIban, set: setBinanceEurIban, ph: 'LT12 3456 7890 1234 5678', mono: true },
+                  { label: 'BIC / SWIFT', val: binanceEurBic, set: setBinanceEurBic, ph: 'REVOLT21XXX', mono: true },
+                  { label: 'Banco', val: binanceBankName, set: setBinanceBankName, ph: 'Revolut Bank UAB', mono: false },
+                  { label: 'Dirección del banco', val: binanceBankAddress, set: setBinanceBankAddress, ph: 'Konstitucijos pr. 21B, Vilnius', mono: false },
+                ].map(({ label, val, set, ph, mono }) => (
+                  <div key={label}>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</label>
+                    <input type="text" value={val} onChange={e => set(e.target.value)} placeholder={ph}
+                      style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: mono ? "'IBM Plex Mono', monospace" : "'IBM Plex Sans', sans-serif", outline: 'none' }}
+                    />
+                  </div>
+                ))}
               </div>
 
               {/* API Keys */}
-              <h5 style={{ color: '#fbbf24', margin: '0 0 12px 0', fontSize: '14px' }}>🔑 Claves API de Binance</h5>
-              <p style={{ color: '#94a3b8', fontSize: '12px', lineHeight: '1.5', marginBottom: '16px' }}>
-                Crealas en Binance → Gestión de API → Nueva clave. Permisos: lectura, trade, retiro.
+              <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 8px' }}>Claves API de Binance</p>
+              <p style={{ color: '#474D57', fontSize: '12px', lineHeight: '1.5', marginBottom: '12px' }}>
+                Binance → Gestión de API → Nueva clave. Permisos: lectura, trade, retiro.
               </p>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>API Key</label>
-                <input
-                  type="password"
-                  value={binanceApiKey}
-                  onChange={e => setBinanceApiKey(e.target.value)}
-                  autoComplete="off"
-                  data-form-type="other"
-                  placeholder="Tu API Key"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
-                    boxSizing: 'border-box', marginBottom: '12px'
-                  }}
-                />
-
-                <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>API Secret</label>
-                <input
-                  type="password"
-                  value={binanceApiSecret}
-                  onChange={e => setBinanceApiSecret(e.target.value)}
-                  autoComplete="new-password"
-                  data-form-type="other"
-                  placeholder="Tu API Secret"
-                  style={{
-                    width: '100%', padding: '12px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '8px', fontSize: '14px', fontFamily: 'monospace',
-                    boxSizing: 'border-box'
-                  }}
-                />
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  { label: 'API Key', val: binanceApiKey, set: setBinanceApiKey, ac: 'off' },
+                  { label: 'API Secret', val: binanceApiSecret, set: setBinanceApiSecret, ac: 'new-password' },
+                ].map(({ label, val, set, ac }) => (
+                  <div key={label}>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</label>
+                    <input type="password" value={val} onChange={e => set(e.target.value)} autoComplete={ac} data-form-type="other" placeholder={`Tu ${label}`}
+                      style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                    />
+                  </div>
+                ))}
               </div>
 
               {/* Save / Clear buttons */}
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 <button
                   onTouchEnd={(e) => { e.preventDefault(); handleSaveBinance(); }}
                   onClick={handleSaveBinance}
-                  style={{
-                    flex: 1, padding: '14px',
-                    backgroundColor: binanceSaved ? '#052e16' : '#10b981',
-                    color: binanceSaved ? '#10b981' : '#fff',
-                    border: binanceSaved ? '1px solid #10b981' : 'none',
-                    borderRadius: '10px', fontSize: '14px', fontWeight: 'bold',
-                    cursor: 'pointer', minHeight: '48px'
-                  }}
+                  style={{ flex: 1, padding: '13px', backgroundColor: binanceSaved ? 'rgba(14,203,129,0.1)' : '#0ECB81', color: binanceSaved ? '#0ECB81' : '#181A20', border: binanceSaved ? '1px solid rgba(14,203,129,0.3)' : 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
-                  {binanceSaved ? '✅ ¡Guardado!' : '💾 Guardar'}
+                  {binanceSaved ? '✓ Guardado' : 'Guardar'}
                 </button>
                 <button
                   onTouchEnd={(e) => { e.preventDefault(); handleClearBinance(); }}
                   onClick={handleClearBinance}
-                  style={{
-                    flex: 1, padding: '14px',
-                    backgroundColor: binanceCleared ? '#450a0a' : '#dc2626',
-                    color: binanceCleared ? '#ef4444' : '#fff',
-                    border: binanceCleared ? '1px solid #7f1d1d' : 'none',
-                    borderRadius: '10px', fontSize: '14px', fontWeight: 'bold',
-                    cursor: 'pointer', minHeight: '48px'
-                  }}
+                  style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', color: binanceCleared ? '#0ECB81' : '#F6465D', border: `1px solid ${binanceCleared ? 'rgba(14,203,129,0.3)' : 'rgba(246,70,93,0.3)'}`, borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
-                  {binanceCleared ? '✅ ¡Borrado!' : '🗑️ Borrar todo'}
+                  {binanceCleared ? '✓ Borrado' : 'Borrar todo'}
                 </button>
               </div>
             </div>
@@ -509,46 +413,44 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {/* SUPPORT TAB */}
           {activeTab === 'support' && (
             <div>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>Soporte</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
-                ¿Tenés algún problema o consulta? Estamos para ayudarte.
-              </p>
+              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Soporte</h4>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '16px', border: '1px solid #334155', textAlign: 'center' }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>📧</div>
-                <div style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '8px' }}>Email de soporte</div>
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '16px', marginBottom: '12px', border: '1px solid #2B3139', textAlign: 'center' }}>
+                <div style={{ color: '#848E9C', fontSize: '11px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Email de soporte</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <span style={{ color: '#38bdf8', fontSize: '16px', fontWeight: 'bold' }}>{SUPPORT_EMAIL}</span>
+                  <span style={{ color: '#F0B90B', fontSize: '14px', fontWeight: 600, fontFamily: "'IBM Plex Mono', monospace" }}>{SUPPORT_EMAIL}</span>
                   <button
                     onClick={copySupportEmail}
-                    style={{
-                      background: '#334155', border: 'none', color: copiedEmail ? '#10b981' : '#94a3b8',
-                      borderRadius: '6px', padding: '6px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold'
-                    }}
+                    style={{ background: copiedEmail ? 'rgba(14,203,129,0.1)' : '#2B3139', border: copiedEmail ? '1px solid rgba(14,203,129,0.3)' : 'none', color: copiedEmail ? '#0ECB81' : '#848E9C', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', fontWeight: 600, fontFamily: "'IBM Plex Sans', sans-serif" }}
                   >
-                    {copiedEmail ? '✅' : '📋'}
+                    {copiedEmail ? '✓' : 'Copiar'}
                   </button>
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <h5 style={{ color: '#fbbf24', margin: '0 0 12px 0', fontSize: '14px' }}>🛡️ Tu Seguridad</h5>
-                <ul style={{ margin: 0, padding: '0 0 0 16px', color: '#cbd5e1', fontSize: '13px', lineHeight: '1.8' }}>
-                  <li>Tus claves API se encriptan con AES-256 en tu navegador</li>
-                  <li>Nunca almacenamos tus claves en nuestros servidores</li>
-                  <li>Solo se necesitan permisos de lectura, trade y retiro en Binance</li>
-                  <li>Recomendamos activar IP Whitelist en Binance</li>
-                  <li>Código abierto en <a href="https://github.com/fgiaquintaruiz/arg-bot-frontend" style={{ color: '#38bdf8' }}>GitHub</a></li>
-                </ul>
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '16px', marginBottom: '12px', border: '1px solid #2B3139' }}>
+                <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 10px' }}>Tu Seguridad</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {[
+                    'Claves API encriptadas con AES-256 en tu navegador',
+                    'Nunca almacenamos tus claves en nuestros servidores',
+                    'Solo permisos de lectura, trade y retiro en Binance',
+                    'Activá IP Whitelist en Binance para mayor seguridad',
+                  ].map((item, i) => (
+                    <div key={i} style={{ fontSize: '13px', color: '#848E9C', display: 'flex', gap: '8px' }}>
+                      <span style={{ color: '#0ECB81', flexShrink: 0 }}>✓</span> {item}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div style={{ backgroundColor: '#052e16', borderRadius: '12px', padding: '16px', border: '1px solid #10b981' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>✅</span>
-                  <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '14px' }}>Código Abierto</span>
+              <div style={{ backgroundColor: 'rgba(14,203,129,0.05)', borderRadius: '8px', padding: '14px', border: '1px solid rgba(14,203,129,0.15)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span>✅</span>
+                  <span style={{ color: '#0ECB81', fontWeight: 600, fontSize: '13px' }}>Código Abierto</span>
                 </div>
-                <p style={{ color: '#6ee7b7', fontSize: '12px', margin: 0, lineHeight: '1.6' }}>
-                  ARGBOT es open-source. Podés revisar todo el código en nuestro repositorio de GitHub para verificar que no hay nada sospechoso.
+                <p style={{ color: '#848E9C', fontSize: '12px', margin: 0, lineHeight: '1.6' }}>
+                  Todo el código está en <a href="https://github.com/fgiaquintaruiz/arg-bot-frontend" style={{ color: '#F0B90B', textDecoration: 'none' }}>GitHub</a> para que puedas verificar que no hay nada sospechoso.
                 </p>
               </div>
             </div>

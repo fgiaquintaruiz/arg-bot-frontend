@@ -4,8 +4,20 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
+const vitestGlobals = {
+  describe: 'readonly', it: 'readonly', test: 'readonly', expect: 'readonly',
+  beforeEach: 'readonly', afterEach: 'readonly', beforeAll: 'readonly',
+  afterAll: 'readonly', vi: 'readonly', suite: 'readonly',
+  global: 'readonly', // jsdom test environment exposes global
+}
+
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores([
+    'dist',
+    'src/tests/jest/**',       // legacy Jest tests — not run by Vitest
+    'src/tests/cucumber/**',   // legacy Cucumber tests — not run by Vitest
+    'src/test/setup.js',       // old Jest setup file
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -24,6 +36,16 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+  // Test files — Vitest globals + relax unused-vars to warn
+  {
+    files: ['**/*.test.{js,jsx}', '**/tests/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: { ...globals.browser, ...vitestGlobals },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]', args: 'none' }],
     },
   },
 ])
