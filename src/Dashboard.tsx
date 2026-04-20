@@ -380,14 +380,14 @@ export default function Dashboard({ user }: { user: any }) {
                 </div>
             </div>
 
-            {/* Content — scroll aquí, no en el body */}
+            {/* Content — único contenedor de scroll, todo lo demás sin overflow propio */}
             <div style={{
                 flex: 1,
                 width: '100%',
-                overflowY: 'auto',
+                overflowY: 'scroll',        // scroll siempre visible → wheel funciona sin hover-focus
                 WebkitOverflowScrolling: 'touch',
-                overscrollBehaviorY: 'contain', // evita pull-to-refresh en Android PWA
-                padding: '24px 20px',
+                overscrollBehaviorY: 'none', // bloquea pull-to-refresh en Android PWA
+                padding: '24px 20px 60px',  // paddingBottom generoso para scroll completo
                 boxSizing: 'border-box',
             }}>
                 <div style={{ maxWidth: '420px', margin: '0 auto' }}>

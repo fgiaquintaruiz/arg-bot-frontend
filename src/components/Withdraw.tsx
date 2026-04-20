@@ -68,7 +68,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     };
 
     return (
-        <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139', maxHeight: '85vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139' }}>
 
             {/* Header */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>

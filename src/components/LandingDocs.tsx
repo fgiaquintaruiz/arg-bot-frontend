@@ -77,22 +77,24 @@ export default function LandingDocs() {
                 </div>
             </div>
 
-            {/* Card 4: Trust badges */}
+            {/* Card 4: Trust — lista compacta, sin grid de rectángulos */}
             <div style={{ ...card, border: '1px solid rgba(14,203,129,0.2)', backgroundColor: 'rgba(14,203,129,0.04)' }}>
-                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#0ECB81', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '12px', color: '#0ECB81', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>✅</span> ¿Por qué confiar en ARGBOT?
                 </h2>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {[
-                        ['🔒', 'AES-256', 'Encriptación local'],
-                        ['🌐', 'Open Source', 'Código en GitHub'],
-                        ['📧', 'Soporte', 'soporte@argbot.app'],
-                        ['🔑', 'Solo lectura', 'Sin acceso a depósitos'],
-                    ].map(([icon, title, sub]) => (
-                        <div key={title} style={{ backgroundColor: '#181A20', padding: '14px', borderRadius: '8px', textAlign: 'center', border: '1px solid #2B3139' }}>
-                            <div style={{ fontSize: '22px', marginBottom: '6px' }}>{icon}</div>
-                            <div style={{ color: '#EAECEF', fontWeight: 600, fontSize: '12px', marginBottom: '2px' }}>{title}</div>
-                            <div style={{ color: '#474D57', fontSize: '11px' }}>{sub}</div>
+                        ['🔒', 'Encriptación AES-256 local', 'Tus claves nunca salen de tu dispositivo sin cifrar.'],
+                        ['🌐', 'Open Source', 'Todo el código está en GitHub para que lo puedas revisar.'],
+                        ['🔑', 'Permisos mínimos', 'Solo lectura, trade y retiro. Sin acceso a depósitos fiat.'],
+                        ['📧', 'Soporte en soporte@argbot.app', ''],
+                    ].map(([icon, title, desc]) => (
+                        <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
+                            <span style={{ flexShrink: 0 }}>{icon}</span>
+                            <span style={{ color: '#848E9C' }}>
+                                <strong style={{ color: '#0ECB81' }}>{title}</strong>
+                                {desc ? ` — ${desc}` : ''}
+                            </span>
                         </div>
                     ))}
                 </div>

@@ -153,9 +153,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
       backgroundColor: '#1E2329',
       borderRadius: '12px',
       border: '1px solid #2B3139',
-      maxHeight: '85vh',
-      overflowY: 'auto',
-      WebkitOverflowScrolling: 'touch',
     }}>
 
       {/* Header */}
