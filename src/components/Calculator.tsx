@@ -108,16 +108,18 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
     setBankAppFailed(false);
     const iban = binanceIBAN.replace(/\s/g, '');
     const amount = displayedEur.toFixed(2);
-    const paytoUri = `payto:${iban}?amount=${amount}&message=${encodeURIComponent(sepaReference)}`;
+    // RFC 8905 payto: URI — payto://iban/IBAN?amount=EUR:X.XX&message=ref
+    // Formato correcto para Santander ES, BBVA, Revolut, CaixaBank, Triodos.
+    // payto:IBAN (sin //iban/) es inválido según el estándar y falla silenciosamente.
+    const paytoUri = `payto://iban/${iban}?amount=EUR:${amount}&message=${encodeURIComponent(sepaReference)}`;
     let appOpened = false;
-    const handleVisibility = () => {
-      if (document.hidden) appOpened = true;
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
+    const markOpened = () => { appOpened = true; };
+    // visibilitychange — Android Chrome / Samsung Internet
+    document.addEventListener('visibilitychange', () => { if (document.hidden) markOpened(); }, { once: true });
+    // pageshow — iOS Safari dispara esto al volver desde una app externa
+    window.addEventListener('pageshow', markOpened, { once: true });
     window.location.href = paytoUri;
     setTimeout(() => {
-      document.removeEventListener('visibilitychange', handleVisibility);
       setTryingBankApp(false);
       if (!appOpened) setBankAppFailed(true);
     }, 3000);
