@@ -4,17 +4,22 @@
   padding: 0;
 }
 
-html, body, #root {
-  width: 100vw;
+html {
+  overflow-x: hidden; /* solo aquí — en body rompe scroll vertical */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  width: 100%;
   min-height: 100vh;
   background-color: #181A20;
   font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
+  overscroll-behavior-y: contain; /* pull-to-refresh en Login mobile */
 }
 
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+#root {
+  min-height: 100vh;
 }
 
 *:focus-visible {
