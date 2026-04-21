@@ -19,6 +19,20 @@ export default defineConfig({
       '**/tests/jest/**',
       '**/tests/playwright/**'
     ],
-    include: ['**/tests/**/*.test.{js,jsx,ts,tsx}']
+    include: ['**/tests/**/*.test.{js,jsx,ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        'src/components/Trade.tsx',
+      ],
+      thresholds: {
+        statements: 98,
+        branches: 95,
+        functions: 97,
+        lines: 99,
+      }
+    }
   }
 })

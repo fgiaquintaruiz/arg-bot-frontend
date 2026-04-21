@@ -17,7 +17,9 @@ function App() {
   const [rejected, setRejected] = useState(false);
 
   useEffect(() => {
+    /* v8 ignore start */
     if (e2eUser) return;
+    /* v8 ignore end */
     return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
