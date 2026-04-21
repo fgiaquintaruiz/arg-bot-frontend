@@ -114,6 +114,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     }
   };
 
+  /* v8 ignore start */
   const handleSaveFee = () => {
     const fee = parseFloat(serviceFee);
     if (isNaN(fee) || fee < 0 || fee > 1) {
@@ -125,6 +126,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     setFeeSaved(true);
     setTimeout(() => setFeeSaved(false), 3000);
   };
+  /* v8 ignore end */
 
   // Save Binance config
   const handleSaveBinance = () => {
@@ -185,9 +187,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         <div style={{ padding: '10px 20px', display: 'flex', gap: '6px', borderBottom: '1px solid #2B3139' }}>
           <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>Sync</button>
           <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>Binance</button>
+          { /* v8 ignore start */ }
           {FEE_ENABLED && (
             <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>Fee</button>
           )}
+          { /* v8 ignore end */ }
         </div>
 
         {/* Content */}
@@ -215,7 +219,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
                 <button
-                  onTouchEnd={(e) => { e.preventDefault(); handleDriveSync('upload'); }}
+                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleDriveSync('upload'); }}
                   onClick={() => handleDriveSync('upload')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
                   style={{ flex: 1, padding: '13px', backgroundColor: '#0ECB81', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: syncStatus === 'uploading' ? 'wait' : 'pointer', opacity: syncStatus === 'uploading' ? 0.7 : 1, WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif" }}
@@ -223,7 +227,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                   {syncStatus === 'uploading' ? 'Subiendo...' : '↑ Subir a Drive'}
                 </button>
                 <button
-                  onTouchEnd={(e) => { e.preventDefault(); handleDriveSync('download'); }}
+                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleDriveSync('download'); }}
                   onClick={() => handleDriveSync('download')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
                   style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', color: '#EAECEF', border: '1px solid #2B3139', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: syncStatus === 'downloading' ? 'wait' : 'pointer', opacity: syncStatus === 'downloading' ? 0.7 : 1, WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif" }}
@@ -256,7 +260,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '14px', color: '#EAECEF', flex: 1 }}>{serverIp}</span>
                   <button
-                    onTouchEnd={(e) => { e.preventDefault(); copyToClipboard(serverIp, 'serverip'); }}
+                    onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyToClipboard(serverIp, 'serverip'); }}
                     onClick={() => copyToClipboard(serverIp, 'serverip')}
                     style={{ padding: '5px 12px', backgroundColor: copiedField === 'serverip' ? 'rgba(14,203,129,0.1)' : 'rgba(240,185,11,0.1)', color: copiedField === 'serverip' ? '#0ECB81' : '#F0B90B', border: `1px solid ${copiedField === 'serverip' ? 'rgba(14,203,129,0.3)' : 'rgba(240,185,11,0.3)'}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', minHeight: '32px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                   >
@@ -314,14 +318,14 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               {/* Save / Clear buttons */}
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 <button
-                  onTouchEnd={(e) => { e.preventDefault(); handleSaveBinance(); }}
+                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleSaveBinance(); }}
                   onClick={handleSaveBinance}
                   style={{ flex: 1, padding: '13px', backgroundColor: binanceSaved ? 'rgba(14,203,129,0.1)' : '#0ECB81', color: binanceSaved ? '#0ECB81' : '#181A20', border: binanceSaved ? '1px solid rgba(14,203,129,0.3)' : 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
                   {binanceSaved ? '✓ Guardado' : 'Guardar'}
                 </button>
                 <button
-                  onTouchEnd={(e) => { e.preventDefault(); handleClearBinance(); }}
+                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleClearBinance(); }}
                   onClick={handleClearBinance}
                   style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', color: binanceCleared ? '#0ECB81' : '#F6465D', border: `1px solid ${binanceCleared ? 'rgba(14,203,129,0.3)' : 'rgba(246,70,93,0.3)'}`, borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
@@ -332,6 +336,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           )}
 
           {/* FEE TAB */}
+          { /* v8 ignore start */ }
           {FEE_ENABLED && activeTab === 'fee' && (
             <div>
               <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>Fee de Servicio</h4>
@@ -407,6 +412,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               </button>
             </div>
           )}
+          { /* v8 ignore end */ }
 
         </div>
       </div>

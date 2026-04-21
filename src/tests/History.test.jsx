@@ -57,4 +57,28 @@ describe('History Component', () => {
     render(<History onClose={() => {}} />);
     expect(screen.getByText(/No hay operaciones registradas aún/)).toBeInTheDocument();
   });
+
+  it('muestra "?" cuando usdcReceived no está definido', () => {
+    const trades = [
+      { date: '2024-01-01T10:00:00.000Z', eur: '100', savings: '5.00' }
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/100 EUR → \? USDC/)).toBeInTheDocument();
+  });
+
+  it('muestra "Sin datos de ahorro" cuando savings es 0', () => {
+    const trades = [
+      { date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50', savings: '0' }
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/Sin datos de ahorro/)).toBeInTheDocument();
+  });
+
+  it('muestra empty state cuando localStorage tiene JSON no-array', () => {
+    localStorage.setItem('trade_history', '{"key":"value"}');
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/No hay operaciones registradas aún/)).toBeInTheDocument();
+  });
 });
