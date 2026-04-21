@@ -7,12 +7,17 @@ import Login from './components/Login';
 import Dashboard from './Dashboard';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// E2E test seam — Playwright sets window.__E2E_USER__ via addInitScript before app code runs.
+// In production this is always undefined → null → Firebase auth runs normally.
+const e2eUser: any = (window as any).__E2E_USER__ ?? null;
+
 function App() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(e2eUser);
+  const [loading, setLoading] = useState(e2eUser === null);
   const [rejected, setRejected] = useState(false);
 
   useEffect(() => {
+    if (e2eUser) return;
     return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);

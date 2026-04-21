@@ -8,6 +8,9 @@
     "prebuild": "node scripts/update-version.mjs",
     "build": "rm -rf dist && vite build",
     "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
     "lint": "eslint .",
     "preview": "vite preview"
   },
