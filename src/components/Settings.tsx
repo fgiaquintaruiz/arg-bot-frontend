@@ -6,7 +6,7 @@ import { API_URL } from '../config';
 const FEE_ENABLED = false;
 
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee' | 'support'>(() => {
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee'>(() => {
     const tab = (initialTab as any) || 'sync';
     return (!FEE_ENABLED && tab === 'fee') ? 'sync' : tab;
   });
@@ -26,9 +26,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [binanceCleared, setBinanceCleared] = useState(false);
   const [feeSaved, setFeeSaved] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [copiedEmail, setCopiedEmail] = useState(false);
-
-  const SUPPORT_EMAIL = 'soporte@argbot.app';
 
   // Fetch server IP for Binance whitelist
   useEffect(() => {
@@ -64,7 +61,12 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           tradeHistory: localStorage.getItem('trade_history') || '[]',
           usdcWallet: localStorage.getItem('usdc_wallet') || '',
           serviceFee: localStorage.getItem('service_fee') || '0.50',
-          feeWhitelist: localStorage.getItem('fee_whitelist') || ''
+          feeWhitelist: localStorage.getItem('fee_whitelist') || '',
+          binanceEurIban: localStorage.getItem('binance_eur_iban') || '',
+          binanceEurName: localStorage.getItem('binance_eur_name') || '',
+          binanceEurBic: localStorage.getItem('binance_eur_bic') || '',
+          binanceBankName: localStorage.getItem('binance_bank_name') || '',
+          binanceBankAddress: localStorage.getItem('binance_bank_address') || '',
         };
 
         console.log('[Settings] Uploading to Google Drive...');
@@ -91,6 +93,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);
           if (data.serviceFee) localStorage.setItem('service_fee', data.serviceFee);
           if (data.feeWhitelist) localStorage.setItem('fee_whitelist', data.feeWhitelist);
+          if (data.binanceEurIban) localStorage.setItem('binance_eur_iban', data.binanceEurIban);
+          if (data.binanceEurName) localStorage.setItem('binance_eur_name', data.binanceEurName);
+          if (data.binanceEurBic) localStorage.setItem('binance_eur_bic', data.binanceEurBic);
+          if (data.binanceBankName) localStorage.setItem('binance_bank_name', data.binanceBankName);
+          if (data.binanceBankAddress) localStorage.setItem('binance_bank_address', data.binanceBankAddress);
 
           setSyncStatus('success');
           setSyncMessage(`✅ Datos restaurados desde Google Drive (${data.timestamp || 'fecha desconocida'}). Recargá la página para aplicar los cambios.`);
@@ -117,14 +124,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     localStorage.setItem('fee_whitelist', feeWhitelist);
     setFeeSaved(true);
     setTimeout(() => setFeeSaved(false), 3000);
-  };
-
-  const copySupportEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(SUPPORT_EMAIL);
-      setCopiedEmail(true);
-      setTimeout(() => setCopiedEmail(false), 2000);
-    } catch { /* fallback not needed for modern browsers */ }
   };
 
   // Save Binance config
@@ -189,7 +188,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {FEE_ENABLED && (
             <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>Fee</button>
           )}
-          <button style={tabStyle('support')} onClick={() => setActiveTab('support')}>Soporte</button>
         </div>
 
         {/* Content */}
@@ -410,51 +408,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
             </div>
           )}
 
-          {/* SUPPORT TAB */}
-          {activeTab === 'support' && (
-            <div>
-              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Soporte</h4>
-
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '16px', marginBottom: '12px', border: '1px solid #2B3139', textAlign: 'center' }}>
-                <div style={{ color: '#848E9C', fontSize: '11px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Email de soporte</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <span style={{ color: '#F0B90B', fontSize: '14px', fontWeight: 600, fontFamily: "'IBM Plex Mono', monospace" }}>{SUPPORT_EMAIL}</span>
-                  <button
-                    onClick={copySupportEmail}
-                    style={{ background: copiedEmail ? 'rgba(14,203,129,0.1)' : '#2B3139', border: copiedEmail ? '1px solid rgba(14,203,129,0.3)' : 'none', color: copiedEmail ? '#0ECB81' : '#848E9C', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', fontWeight: 600, fontFamily: "'IBM Plex Sans', sans-serif" }}
-                  >
-                    {copiedEmail ? '✓' : 'Copiar'}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '16px', marginBottom: '12px', border: '1px solid #2B3139' }}>
-                <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 10px' }}>Tu Seguridad</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    'Claves API encriptadas con AES-256 en tu navegador',
-                    'Nunca almacenamos tus claves en nuestros servidores',
-                    'Solo permisos de lectura, trade y retiro en Binance',
-                    'Activá IP Whitelist en Binance para mayor seguridad',
-                  ].map((item, i) => (
-                    <div key={i} style={{ fontSize: '13px', color: '#848E9C', display: 'flex', gap: '8px' }}>
-                      <span style={{ color: '#0ECB81', flexShrink: 0 }}>✓</span> {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: 'rgba(14,203,129,0.05)', borderRadius: '8px', padding: '14px', border: '1px solid rgba(14,203,129,0.15)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span>✅</span>
-                  <span style={{ color: '#0ECB81', fontWeight: 600, fontSize: '13px' }}>Código Abierto</span>
-                </div>
-                <p style={{ color: '#848E9C', fontSize: '12px', margin: 0, lineHeight: '1.6' }}>
-                  Todo el código está en <a href="https://github.com/fgiaquintaruiz/arg-bot-frontend" style={{ color: '#F0B90B', textDecoration: 'none' }}>GitHub</a> para que puedas verificar que no hay nada sospechoso.
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

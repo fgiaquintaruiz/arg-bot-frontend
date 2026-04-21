@@ -18,7 +18,7 @@ export default function Dashboard({ user }: { user: any }) {
     const hasKeys = !!apiKey && !!apiSecret;
     const [showUpdates, setShowUpdates] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
-    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee' | 'support'>('sync');
+    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee'>('sync');
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
 
     // Listen for custom event to open Settings with specific tab

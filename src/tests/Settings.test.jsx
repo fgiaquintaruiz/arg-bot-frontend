@@ -40,11 +40,11 @@ describe('Settings Component', () => {
     expect(screen.getByText(/Configuración/)).toBeInTheDocument();
   });
 
-  it('should show sync, binance and support tabs (fee tab is gated)', () => {
+  it('should show sync and binance tabs (fee and support tabs are removed/gated)', () => {
     render(<Settings onClose={() => {}} user={mockUser} />);
     expect(screen.getByText('Sync')).toBeInTheDocument();
     expect(screen.getByText('Binance')).toBeInTheDocument();
-    expect(screen.getByText('Soporte')).toBeInTheDocument();
+    expect(screen.queryByText('Soporte')).not.toBeInTheDocument();
   });
 
   it('should NOT render the Fee tab while FEE_ENABLED is false', () => {
@@ -121,10 +121,25 @@ describe('Settings Component', () => {
     alertMock.mockRestore();
   });
 
-  it('should show support tab with email', () => {
+  it('should include SEPA fields in Drive sync upload payload', async () => {
+    const { uploadToDrive } = await import('../googleDrive');
+    localStorage.setItem('binance_eur_iban', 'LT96323000000001');
+    localStorage.setItem('binance_eur_name', 'Test User');
+    localStorage.setItem('binance_eur_bic', 'REVOLT21XXX');
+    localStorage.setItem('binance_bank_name', 'Revolut Bank UAB');
+    localStorage.setItem('binance_bank_address', 'Vilnius, Lithuania');
     render(<Settings onClose={() => {}} user={mockUser} />);
-    fireEvent.click(screen.getByText('Soporte'));
-    expect(screen.getByText(/soporte@argbot.app/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('↑ Subir a Drive'));
+    await new Promise(r => setTimeout(r, 50));
+    expect(uploadToDrive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        binanceEurIban: 'LT96323000000001',
+        binanceEurName: 'Test User',
+        binanceEurBic: 'REVOLT21XXX',
+        binanceBankName: 'Revolut Bank UAB',
+        binanceBankAddress: 'Vilnius, Lithuania',
+      })
+    );
   });
 
   it('should open to specified initial tab', () => {

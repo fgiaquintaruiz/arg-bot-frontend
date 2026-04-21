@@ -118,11 +118,17 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
     document.addEventListener('visibilitychange', () => { if (document.hidden) markOpened(); }, { once: true });
     // pageshow — iOS Safari dispara esto al volver desde una app externa
     window.addEventListener('pageshow', markOpened, { once: true });
-    window.location.href = paytoUri;
+    // blur — Chrome desktop + algunos Android browsers
+    window.addEventListener('blur', markOpened, { once: true });
+    const a = document.createElement('a');
+    a.href = paytoUri;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setTimeout(() => {
       setTryingBankApp(false);
       if (!appOpened) setBankAppFailed(true);
-    }, 3000);
+    }, 5000);
   };
 
   const openSettings = () => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
