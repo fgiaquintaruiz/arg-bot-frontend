@@ -2,55 +2,68 @@
 const CLIENT_ID = '207884217858-ssnie582pel88miikiuodl38qm8esqbp.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const BACKUP_FILENAME = 'argbot-backup.json';
+const TOKEN_KEY = 'gd_token';
+const TOKEN_EXPIRY_KEY = 'gd_token_expiry';
+// Google tokens duran 3600s — refrescamos 5 min antes para no fallar a mitad
+const TOKEN_TTL_MS = 55 * 60 * 1000;
 
 let tokenClient: any = null;
-let currentAccessToken: string | null = null;
+let userEmailHint: string | null = null;
 
-// Load Google Identity Services script
+// Llamar desde Settings al montar, con el email del usuario logueado.
+// Evita que Google muestre el account picker cuando hay múltiples cuentas.
+export const setUserHint = (email: string) => {
+  userEmailHint = email;
+};
+
 const loadGIS = (): Promise<void> => {
   return new Promise((resolve, reject) => {
-    if (window.google?.accounts?.oauth2) {
-      resolve();
-      return;
-    }
+    if (window.google?.accounts?.oauth2) { resolve(); return; }
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      console.log('[GoogleDrive] Google Identity Services loaded');
-      resolve();
-    };
-    script.onerror = () => {
-      console.error('[GoogleDrive] Failed to load Google Identity Services');
-      reject(new Error('No se pudo cargar Google Identity Services'));
-    };
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('No se pudo cargar Google Identity Services'));
     document.head.appendChild(script);
   });
 };
 
-// Authenticate and get access token
+const getCachedToken = (): string | null => {
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  const expiry = sessionStorage.getItem(TOKEN_EXPIRY_KEY);
+  if (!token || !expiry) return null;
+  if (Date.now() > parseInt(expiry, 10)) {
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
+    return null;
+  }
+  return token;
+};
+
+const cacheToken = (token: string) => {
+  sessionStorage.setItem(TOKEN_KEY, token);
+  sessionStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + TOKEN_TTL_MS));
+};
+
 const getAccessToken = async (forceConsent = false): Promise<string | null> => {
-  console.log('[GoogleDrive] Requesting access token, forceConsent:', forceConsent);
+  // Token válido en sessionStorage → evita el popup completamente
+  if (!forceConsent) {
+    const cached = getCachedToken();
+    if (cached) return cached;
+  }
+
   await loadGIS();
 
-  return new Promise((resolve, reject) => {
-    if (!window.google?.accounts?.oauth2) {
-      reject(new Error('Google Identity Services no disponible'));
-      return;
-    }
+  return new Promise((resolve) => {
+    if (!window.google?.accounts?.oauth2) { resolve(null); return; }
 
     const doRequest = (client: any) => {
       client.callback = (response: any) => {
         if (response.access_token) {
-          console.log('[GoogleDrive] Got access token');
-          currentAccessToken = response.access_token;
+          cacheToken(response.access_token);
           resolve(response.access_token);
-        } else if (response.error) {
-          console.error('[GoogleDrive] OAuth error:', response);
-          resolve(null);
         } else {
-          console.log('[GoogleDrive] User cancelled');
           resolve(null);
         }
       };
@@ -63,24 +76,22 @@ const getAccessToken = async (forceConsent = false): Promise<string | null> => {
       tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
-        callback: () => {}, // Will be overridden per call
+        // login_hint evita el account picker cuando ya sabemos qué cuenta usar
+        ...(userEmailHint ? { login_hint: userEmailHint } : {}),
+        callback: () => {},
       });
       doRequest(tokenClient);
     }
   });
 };
 
-// Make authenticated request to Google Drive API
 const driveRequest = async (url: string, options: RequestInit = {}) => {
-  const token = currentAccessToken || await getAccessToken();
+  const token = getCachedToken() || await getAccessToken();
   if (!token) throw new Error('No se pudo obtener acceso a Google Drive');
 
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    },
+    headers: { 'Authorization': `Bearer ${token}`, ...options.headers },
   });
 
   if (!response.ok) {
@@ -91,72 +102,44 @@ const driveRequest = async (url: string, options: RequestInit = {}) => {
   return response;
 };
 
-// Upload data to Google Drive
 export const uploadToDrive = async (data: any): Promise<boolean> => {
   try {
-    console.log('[GoogleDrive] Starting upload...');
-
-    // First try silent token
-    let token = await getAccessToken(false);
-    if (!token) {
-      // If silent failed, ask for consent
-      console.log('[GoogleDrive] Silent auth failed, requesting consent...');
-      token = await getAccessToken(true);
-      if (!token) return false;
-    }
+    const token = getCachedToken() || await getAccessToken(false) || await getAccessToken(true);
+    if (!token) return false;
 
     const content = JSON.stringify(data);
     const blob = new Blob([content], { type: 'application/json' });
-
-    // Check if file already exists
     let fileId = localStorage.getItem('drive_file_id');
 
     if (!fileId) {
-      // Search for existing file by name
-      console.log('[GoogleDrive] Searching for existing backup file...');
       const searchRes = await driveRequest(
         `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(BACKUP_FILENAME)}'&fields=files(id)`
       );
       const searchData = await searchRes.json();
-
-      if (searchData.files && searchData.files.length > 0) {
+      if (searchData.files?.length > 0) {
         fileId = searchData.files[0].id;
-        localStorage.setItem('drive_file_id', fileId);
-        console.log('[GoogleDrive] Found existing file:', fileId);
+        localStorage.setItem('drive_file_id', fileId!);
       }
     }
 
-    if (fileId) {
-      // Update existing file
-      console.log('[GoogleDrive] Updating existing file:', fileId);
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify({ name: BACKUP_FILENAME })], { type: 'application/json' }));
-      form.append('file', blob);
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify({ name: BACKUP_FILENAME })], { type: 'application/json' }));
+    form.append('file', blob);
 
+    if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form,
       });
-
-      console.log('[GoogleDrive] File updated successfully');
     } else {
-      // Create new file
-      console.log('[GoogleDrive] Creating new file...');
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify({ name: BACKUP_FILENAME })], { type: 'application/json' }));
-      form.append('file', blob);
-
       const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form,
       });
-
       const result = await response.json();
-      fileId = result.id;
-      localStorage.setItem('drive_file_id', fileId);
-      console.log('[GoogleDrive] File created with ID:', fileId);
+      localStorage.setItem('drive_file_id', result.id);
     }
 
     return true;
@@ -166,52 +149,28 @@ export const uploadToDrive = async (data: any): Promise<boolean> => {
   }
 };
 
-// Download data from Google Drive
 export const downloadFromDrive = async (): Promise<any | null> => {
   try {
-    console.log('[GoogleDrive] Starting download...');
+    const token = getCachedToken() || await getAccessToken(false) || await getAccessToken(true);
+    if (!token) return null;
 
-    // First try silent token
-    let token = await getAccessToken(false);
-    if (!token) {
-      console.log('[GoogleDrive] Silent auth failed, requesting consent...');
-      token = await getAccessToken(true);
-      if (!token) return null;
-    }
-
-    // Search for the backup file
-    console.log('[GoogleDrive] Searching for backup file...');
     const searchRes = await driveRequest(
       `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(BACKUP_FILENAME)}'&fields=files(id,name)`
     );
     const searchData = await searchRes.json();
 
-    console.log('[GoogleDrive] Search result:', searchData);
-
-    if (!searchData.files || searchData.files.length === 0) {
-      console.log('[GoogleDrive] No backup file found');
-      return null;
-    }
+    if (!searchData.files?.length) return null;
 
     const fileId = searchData.files[0].id;
     localStorage.setItem('drive_file_id', fileId);
 
-    // Download file content
-    console.log('[GoogleDrive] Downloading file content:', fileId);
     const downloadRes = await fetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-      {
-        headers: { 'Authorization': `Bearer ${token}` },
-      }
+      { headers: { 'Authorization': `Bearer ${token}` } }
     );
 
-    if (!downloadRes.ok) {
-      throw new Error(`Download failed: ${downloadRes.status}`);
-    }
-
-    const data = await downloadRes.json();
-    console.log('[GoogleDrive] Download successful');
-    return data;
+    if (!downloadRes.ok) throw new Error(`Download failed: ${downloadRes.status}`);
+    return await downloadRes.json();
   } catch (err: any) {
     console.error('[GoogleDrive] Download failed:', err);
     return null;

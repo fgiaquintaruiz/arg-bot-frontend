@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { uploadToDrive, downloadFromDrive } from '../googleDrive';
+import { uploadToDrive, downloadFromDrive, setUserHint } from '../googleDrive';
 import { API_URL } from '../config';
 
 // Service fee is disabled pending written authorization from redacted (contractual requirement). Flip to `true` once authorization is obtained — rest of the fee logic is preserved intentionally.
@@ -26,6 +26,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [binanceCleared, setBinanceCleared] = useState(false);
   const [feeSaved, setFeeSaved] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Registrar el email del usuario para evitar el account picker de Google
+  useEffect(() => {
+    if (user?.email) setUserHint(user.email);
+  }, [user]);
 
   // Fetch server IP for Binance whitelist
   useEffect(() => {
