@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { logout } from './authService';
 import pkg from '../package.json';
-import { API_URL } from './config';
+import { getApiUrl } from './config';
 import Calculator from './components/Calculator';
 import Trade from './components/Trade';
 import Withdraw from './components/Withdraw';
 import History from './components/History';
 import Updates from './components/Updates';
 import Settings from './components/Settings';
+import BackendToggle from './components/BackendToggle';
 
 export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
@@ -49,9 +50,8 @@ export default function Dashboard({ user }: { user: any }) {
         return () => clearInterval(interval);
     }, []);
 
-    // Initial data fetch — only on mount/user change
-    useEffect(() => {
-        fetch(`${API_URL}/api/data`, {
+    const fetchMarketData = () => {
+        fetch(`${getApiUrl()}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret })
@@ -70,12 +70,21 @@ export default function Dashboard({ user }: { user: any }) {
                     fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 }
                 });
             });
+    };
+
+    // Initial data fetch — on mount/user change and backend switch
+    useEffect(() => { fetchMarketData(); }, [user]);
+
+    useEffect(() => {
+        const onBackendChanged = () => fetchMarketData();
+        window.addEventListener('backend-changed', onBackendChanged);
+        return () => window.removeEventListener('backend-changed', onBackendChanged);
     }, [user]);
 
     // Keep-alive polling every 9 minutes to prevent Render sleep
     useEffect(() => {
         const pingBackend = () => {
-            fetch(`${API_URL}/api/data`, {
+            fetch(`${getApiUrl()}/api/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userEmail: user.email, apiKey: '', apiSecret: '' })
@@ -339,6 +348,8 @@ export default function Dashboard({ user }: { user: any }) {
                         v{pkg.version}
                     </span>
                 </div>
+
+                <BackendToggle />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
