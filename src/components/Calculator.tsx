@@ -130,9 +130,9 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
     setTimeout(() => {
       setTryingBankApp(false);
       /* v8 ignore start */
-      if (!appOpened) setBankAppFailed(true);
+      if (!appOpened) { setBankAppFailed(true); setShowSepaDetails(true); }
       /* v8 ignore end */
-    }, 5000);
+    }, 1500);
   };
 
   const openSettings = () => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
@@ -383,23 +383,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
             <div style={{ color: '#848E9C', fontSize: '12px', lineHeight: '1.5', marginBottom: '10px' }}>
               El formato <code style={{ backgroundColor: '#2B3139', padding: '2px 6px', borderRadius: '4px', color: '#EAECEF' }}>payto:</code> es un estándar europeo que algunos bancos soportan. Copiá los datos manualmente.
             </div>
-            <button
-              onClick={() => { setBankAppFailed(false); setShowSepaDetails(true); }}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#2B3139',
-                color: '#EAECEF',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: "'IBM Plex Sans', sans-serif",
-              }}
-            >
-              Mostrar datos para copiar
-            </button>
           </div>
         )}
 
