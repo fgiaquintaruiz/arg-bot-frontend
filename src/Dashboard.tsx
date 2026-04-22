@@ -303,6 +303,23 @@ export default function Dashboard({ user }: { user: any }) {
             color: '#EAECEF',
             overflow: 'hidden', // contenedor fijo; el scroll va en el área de contenido
         }}>
+            {/* Testnet banner */}
+            {data?.testnet && (
+                <div style={{
+                    backgroundColor: 'rgba(240,185,11,0.12)',
+                    borderBottom: '1px solid rgba(240,185,11,0.3)',
+                    color: '#F0B90B',
+                    padding: '6px 16px',
+                    textAlign: 'center',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '0.5px',
+                    flexShrink: 0,
+                }}>
+                    ⚠ BINANCE TESTNET — datos y saldos de prueba, no reales
+                </div>
+            )}
+
             {/* Access restricted banner */}
             <div style={{
                 backgroundColor: 'rgba(246,70,93,0.1)',
