@@ -354,13 +354,14 @@ export default function Dashboard({ user }: { user: any }) {
                         ARG<span style={{ color: '#F0B90B' }}>BOT</span>
                     </span>
                     <span style={{
-                        fontSize: '10px',
-                        color: '#474D57',
+                        fontSize: '11px',
+                        color: '#848E9C',
                         backgroundColor: '#2B3139',
-                        padding: '2px 6px',
+                        padding: '2px 7px',
                         borderRadius: '4px',
-                        fontWeight: 500,
+                        fontWeight: 600,
                         fontFamily: "'IBM Plex Mono', monospace",
+                        letterSpacing: '0.2px',
                     }}>
                         v{pkg.version}
                     </span>
