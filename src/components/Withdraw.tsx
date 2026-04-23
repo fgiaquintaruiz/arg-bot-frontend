@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Building2, User, Pencil, AlertTriangle } from 'lucide-react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
 
 export interface CoreData { balances: { eur: string; usdc: string }; fees: { tradingRate: number; withdrawalUSDC_BEP20: number }; }
-interface WithdrawProps { data: CoreData; onClose?: () => void; onSuccess?: () => void; }
+interface WithdrawProps { data: CoreData; onClose?: () => void; onSuccess?: () => void; variant?: 'standalone' | 'embedded'; }
 
-export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
+export default function Withdraw({ data, onClose, onSuccess, variant = 'standalone' }: WithdrawProps) {
     const [address, setAddress] = useState<string>(localStorage.getItem('usdc_wallet') || '');
     const [amount, setAmount] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
@@ -74,7 +75,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
 
             {/* Header */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '18px' }}>🏦</span>
+                <Building2 size={16} color="#848E9C" />
                 <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>
                     Retirar USDC
                 </h3>
@@ -109,7 +110,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
                     >
                         {selectedEntry ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(14,203,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>👤</div>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(14,203,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><User size={16} color="#0ECB81" /></div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: '#EAECEF', fontWeight: 600, fontSize: '14px', userSelect: 'none' }}>{selectedEntry.name}</div>
                                     <div style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#848E9C', fontSize: '12px', marginTop: '2px', userSelect: 'none' }}>{truncateAddress(selectedEntry.address)}</div>
@@ -120,7 +121,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
                                 Seleccioná una dirección →
                             </div>
                         )}
-                        <span style={{ color: '#848E9C', fontSize: '14px', marginLeft: '8px', flexShrink: 0 }}>✏️</span>
+                        <Pencil size={14} color="#848E9C" style={{ marginLeft: '8px', flexShrink: 0 }} />
                     </button>
                 ) : (
                     <div style={{ backgroundColor: '#181A20', border: '1px solid #2B3139', borderRadius: '8px', padding: '16px', marginBottom: '12px', textAlign: 'center' }}>
@@ -138,7 +139,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
                 {/* BSC warning — only when no address selected */}
                 {!selectedEntry && (
                     <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.15)', color: '#F0B90B', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '14px', lineHeight: '1.5' }}>
-                        ⚠️ <strong>Red BSC (BEP20) exclusiva.</strong> Enviá a la red equivocada y perdés los fondos.
+                        <AlertTriangle size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /><strong>Red BSC (BEP20) exclusiva.</strong> Enviá a la red equivocada y perdés los fondos.
                     </div>
                 )}
 

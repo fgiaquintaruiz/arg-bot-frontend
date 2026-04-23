@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Calculator, ArrowLeftRight, Building2, ClipboardList, Lock, Settings2, AlertTriangle } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
 import { getApiUrl } from './config';
-import Calculator from './components/Calculator';
+import TradingWizard from './components/TradingWizard';
 import Trade from './components/Trade';
 import Withdraw from './components/Withdraw';
 import History from './components/History';
@@ -97,7 +98,7 @@ export default function Dashboard({ user }: { user: any }) {
     const renderView = () => {
         switch (currentView) {
             case 'calculator':
-                return <Calculator data={data} onBack={() => setCurrentView('main')} />;
+                return <TradingWizard data={data} onBack={() => setCurrentView('main')} onRefreshData={fetchMarketData} />;
             case 'trade':
                 return <Trade data={data} onClose={() => setCurrentView('main')} onSuccess={() => setCurrentView('main')} />;
             case 'withdraw':
@@ -135,7 +136,7 @@ export default function Dashboard({ user }: { user: any }) {
                         alignItems: 'center',
                         gap: '8px',
                     }}>
-                        <span style={{ fontSize: '14px' }}>⚠️</span>
+                        <AlertTriangle size={14} color="#F6465D" style={{ flexShrink: 0 }} />
                         <div>
                             <p style={{ margin: 0, color: '#F6465D', fontSize: '12px', fontWeight: 600 }}>Error al conectar con Binance</p>
                             <p style={{ margin: 0, color: '#848E9C', fontSize: '11px', marginTop: '2px' }}>{data.binanceError}</p>
@@ -193,7 +194,7 @@ export default function Dashboard({ user }: { user: any }) {
                             fontFamily: "'IBM Plex Sans', sans-serif",
                         }}
                     >
-                        <span style={{ fontSize: '20px' }}>🧮</span>
+                        <Calculator size={18} />
                         Calculadora
                     </button>
 
@@ -218,7 +219,7 @@ export default function Dashboard({ user }: { user: any }) {
                             transition: 'background-color 0.15s',
                         }}
                     >
-                        <span style={{ fontSize: '22px' }}>💱</span>
+                        <ArrowLeftRight size={20} />
                         Cambiar EUR
                         {!hasKeys && (
                             <span style={{
@@ -228,7 +229,10 @@ export default function Dashboard({ user }: { user: any }) {
                                 padding: '2px 6px',
                                 borderRadius: '4px',
                                 fontWeight: 500,
-                            }}>🔒 Config API</span>
+                                display: 'flex', alignItems: 'center', gap: '3px',
+                            }}>
+                                <Lock size={9} /> Config API
+                            </span>
                         )}
                     </button>
 
@@ -253,7 +257,7 @@ export default function Dashboard({ user }: { user: any }) {
                             transition: 'background-color 0.15s',
                         }}
                     >
-                        <span style={{ fontSize: '22px' }}>🏦</span>
+                        <Building2 size={20} />
                         Retirar ARS
                         {!hasKeys && (
                             <span style={{
@@ -263,7 +267,10 @@ export default function Dashboard({ user }: { user: any }) {
                                 padding: '2px 6px',
                                 borderRadius: '4px',
                                 fontWeight: 500,
-                            }}>🔒 Config API</span>
+                                display: 'flex', alignItems: 'center', gap: '3px',
+                            }}>
+                                <Lock size={9} /> Config API
+                            </span>
                         )}
                     </button>
 
@@ -287,7 +294,7 @@ export default function Dashboard({ user }: { user: any }) {
                             gap: '8px',
                         }}
                     >
-                        <span style={{ fontSize: '16px' }}>📋</span>
+                        <ClipboardList size={16} />
                         Historial de operaciones
                     </button>
                 </div>
@@ -336,7 +343,7 @@ export default function Dashboard({ user }: { user: any }) {
                     letterSpacing: '0.5px',
                     flexShrink: 0,
                 }}>
-                    ⚠ BINANCE TESTNET — datos y saldos de prueba, no reales
+                    BINANCE TESTNET — datos y saldos de prueba, no reales
                 </div>
             )}
 
@@ -369,7 +376,7 @@ export default function Dashboard({ user }: { user: any }) {
                 boxSizing: 'border-box',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '18px', lineHeight: 1 }}>🤖</span>
+                    <span style={{ fontSize: '16px', lineHeight: 1, color: '#F0B90B', fontWeight: 900 }}>⬡</span>
                     <span style={{ fontWeight: 700, fontSize: '1rem', color: '#EAECEF', letterSpacing: '-0.3px' }}>
                         ARG<span style={{ color: '#F0B90B' }}>BOT</span>
                     </span>
@@ -407,7 +414,7 @@ export default function Dashboard({ user }: { user: any }) {
                             alignItems: 'center',
                         }}
                     >
-                        ⚙️
+                        <Settings2 size={18} />
                     </button>
                     <button
                         onClick={logout}

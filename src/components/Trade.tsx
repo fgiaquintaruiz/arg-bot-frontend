@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { ArrowLeftRight } from 'lucide-react';
 import { API_URL } from '../config';
 
 export interface CoreData { balances: { eur: string; usdc: string }; rate: string; usdcArsRate?: string; fees: { tradingRate: number; withdrawalUSDC_BEP20: number }; }
-interface TradeProps { data: CoreData; onClose: () => void; onSuccess: () => void; }
+interface TradeProps { data: CoreData; onClose?: () => void; onSuccess: () => void; }
 
 export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const [eurInput, setEurInput] = useState<string>('');
@@ -62,7 +63,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
 
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '18px' }}>💱</span>
+        <ArrowLeftRight size={16} color="#848E9C" />
         <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>
           Cambiar EUR a USDC
         </h3>
@@ -162,14 +163,16 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
             >
               Ejecutar cambio
             </button>
-            <button
-              onClick={onClose}
-              aria-label="Volver al menú"
-              style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
-              disabled={loading}
-            >
-              ← Volver al menú
-            </button>
+            {onClose && (
+              <button
+                onClick={onClose}
+                aria-label="Volver al menú"
+                style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                disabled={loading}
+              >
+                ← Volver al menú
+              </button>
+            )}
           </>
         )}
       </div>

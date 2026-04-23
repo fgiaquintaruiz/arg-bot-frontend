@@ -1,0 +1,608 @@
+import React, { useState } from 'react';
+import {
+  Calculator as CalcIcon,
+  Smartphone,
+  ArrowLeftRight,
+  Building2,
+  Banknote,
+  Check,
+  Lock,
+  AlertTriangle,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import Trade from './Trade';
+import Withdraw from './Withdraw';
+
+interface TradingWizardProps {
+  data: any;
+  onBack?: () => void;
+  onRefreshData?: () => void;
+}
+
+const CARD: React.CSSProperties = {
+  backgroundColor: '#1E2329',
+  borderRadius: '12px',
+  border: '1px solid #2B3139',
+  marginBottom: '12px',
+  overflow: 'hidden',
+};
+
+const ROW_LABEL: React.CSSProperties = {
+  fontSize: '11px',
+  color: '#474D57',
+  marginBottom: '3px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.4px',
+};
+
+const STEP_LABEL_ROW: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '10px 0 6px',
+  fontSize: '11px',
+  color: '#474D57',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  fontWeight: 600,
+};
+
+export default function TradingWizard({ data, onBack, onRefreshData }: TradingWizardProps) {
+  const [activeStep, setActiveStep] = useState(0);
+
+  // Step 0 — Calculator state
+  const [editMode, setEditMode] = useState<'ars' | 'eur'>('ars');
+  const [arsAmount, setArsAmount] = useState('500000');
+  const [eurAmount, setEurAmount] = useState('');
+
+  // Step 1 — SEPA state
+  const [showSepaDetails, setShowSepaDetails] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
+  const [tryingBankApp, setTryingBankApp] = useState(false);
+  const [bankAppFailed, setBankAppFailed] = useState(false);
+
+  if (!data) return (
+    <div style={{ textAlign: 'center', padding: '40px 20px', color: '#848E9C', fontSize: '14px' }}>
+      Cargando tasas de mercado...
+    </div>
+  );
+
+  // Math
+  const usdcArs = parseFloat(data.usdcArsRate) || 1121.00;
+  const eurUsdc = parseFloat(data.rate) || 1.08;
+  const withdrawalFee = data.fees?.withdrawalUSDC_BEP20 ?? 0.8;
+  const tradingFeeRate = 0.001;
+  const sepaFee = 1.00;
+
+  const calcFromArs = (ars: number) => {
+    const usdcNeeded = ars / usdcArs;
+    const usdcAfterWithdrawal = usdcNeeded + withdrawalFee;
+    const eurBeforeTradeFee = usdcAfterWithdrawal / eurUsdc;
+    return eurBeforeTradeFee + eurBeforeTradeFee * tradingFeeRate + sepaFee;
+  };
+
+  const calcFromEur = (eur: number) => {
+    const netEur = eur - sepaFee;
+    if (netEur <= 0) return { usdc: 0, ars: 0 };
+    const grossUsdc = netEur * eurUsdc;
+    const netUsdc = grossUsdc - grossUsdc * tradingFeeRate - withdrawalFee;
+    return { usdc: Math.max(0, netUsdc), ars: Math.max(0, netUsdc * usdcArs) };
+  };
+
+  let displayedArs: number;
+  let displayedEur: number;
+  if (editMode === 'ars') {
+    displayedArs = parseFloat(arsAmount) || 0;
+    displayedEur = calcFromArs(displayedArs);
+  } else {
+    displayedEur = parseFloat(eurAmount) || 0;
+    const r = calcFromEur(displayedEur);
+    displayedArs = r.ars;
+  }
+
+  const usdcForBroker = displayedArs / usdcArs;
+  const usdcAtBinance = usdcForBroker + withdrawalFee;
+  const beforeTradeFee = usdcAtBinance / eurUsdc;
+  const tradingFee = beforeTradeFee * tradingFeeRate;
+  const ahorro = (displayedEur + sepaFee) * 1.10 - displayedEur;
+
+  // SEPA
+  const binanceIBAN = localStorage.getItem('binance_eur_iban') || '';
+  const binanceName = localStorage.getItem('binance_eur_name') || 'Binance Europe Services Ltd';
+  const binanceBIC = localStorage.getItem('binance_eur_bic') || 'REVOLT21XXX';
+  const binanceBank = localStorage.getItem('binance_bank_name') || '';
+  const binanceBankAddr = localStorage.getItem('binance_bank_address') || '';
+  const userEmail = localStorage.getItem('user_email') || '';
+  const sepaReference = userEmail ? `${userEmail} Binance Deposit` : 'Deposito ARGBOT';
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const copyAllSepaDetails = async () => {
+    /* v8 ignore start */
+    if (!binanceIBAN) return;
+    let allText = `Beneficiario: ${binanceName}\nIBAN: ${binanceIBAN.replace(/\s/g, '')}\nBIC/SWIFT: ${binanceBIC}`;
+    if (binanceBank) allText += `\nBanco: ${binanceBank}`;
+    if (binanceBankAddr) allText += `\nDirección: ${binanceBankAddr}`;
+    allText += `\nMonto: ${displayedEur.toFixed(2)} EUR\nConcepto: ${sepaReference}`;
+    try { await navigator.clipboard.writeText(allText); } catch { /* fallback */ }
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 3000);
+    /* v8 ignore end */
+  };
+
+  const openBankApp = () => {
+    if (!binanceIBAN) { setShowSepaDetails(true); return; }
+    setTryingBankApp(true);
+    setBankAppFailed(false);
+    const iban = binanceIBAN.replace(/\s/g, '');
+    const paytoUri = `payto://iban/${iban}?amount=EUR:${displayedEur.toFixed(2)}&message=${encodeURIComponent(sepaReference)}`;
+    let appOpened = false;
+    const markOpened = () => { appOpened = true; };
+    document.addEventListener('visibilitychange', /* v8 ignore next */ () => { if (document.hidden) markOpened(); }, { once: true });
+    window.addEventListener('pageshow', /* v8 ignore next */ markOpened, { once: true });
+    window.addEventListener('blur', /* v8 ignore next */ markOpened, { once: true });
+    const a = document.createElement('a');
+    a.href = paytoUri;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => {
+      setTryingBankApp(false);
+      /* v8 ignore start */
+      if (!appOpened) { setBankAppFailed(true); setShowSepaDetails(true); }
+      /* v8 ignore end */
+    }, 1500);
+  };
+
+  const openSettings = () => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
+  const advance = () => setActiveStep(s => s + 1);
+
+  const copyBtn = (field: string): React.CSSProperties => ({
+    background: '#2B3139',
+    border: 'none',
+    color: copiedField === field ? '#0ECB81' : '#848E9C',
+    borderRadius: '4px',
+    padding: '4px 10px',
+    fontSize: '11px',
+    cursor: 'pointer',
+    minHeight: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontFamily: "'IBM Plex Sans', sans-serif",
+    flexShrink: 0,
+  });
+
+  // Step header indicator
+  const StepBadge = ({ step, icon: Icon, label }: { step: number; icon: any; label: string }) => {
+    const done = step < activeStep;
+    const active = step === activeStep;
+    return (
+      <div style={{
+        padding: '14px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        backgroundColor: done ? 'rgba(14,203,129,0.04)' : 'transparent',
+        borderBottom: active ? '1px solid #2B3139' : 'none',
+      }}>
+        <div style={{
+          width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+          backgroundColor: done ? 'rgba(14,203,129,0.15)' : active ? 'rgba(240,185,11,0.12)' : '#2B3139',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {done ? <Check size={14} color="#0ECB81" /> : active ? <Icon size={14} color="#F0B90B" /> : <Lock size={12} color="#474D57" />}
+        </div>
+        <span style={{
+          fontSize: '14px',
+          fontWeight: active ? 700 : done ? 500 : 400,
+          color: done ? '#0ECB81' : active ? '#EAECEF' : '#474D57',
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          flex: 1,
+        }}>
+          {label}
+        </span>
+        {done && <span style={{ fontSize: '11px', color: '#474D57' }}>Completado</span>}
+        {!done && !active && (
+          <span style={{ fontSize: '10px', color: '#474D57', backgroundColor: '#2B3139', padding: '2px 8px', borderRadius: '4px' }}>
+            Pendiente
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+
+      {/* ── Paso 0: Simulación ── */}
+      <div style={CARD}>
+        <StepBadge step={0} icon={CalcIcon} label="Simulación" />
+
+        {activeStep === 0 && (
+          <div style={{ padding: '20px' }}>
+            {!binanceIBAN && (
+              <div style={{
+                backgroundColor: 'rgba(240,185,11,0.08)', border: '1px solid rgba(240,185,11,0.2)',
+                borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
+                fontSize: '12px', color: '#F0B90B', display: 'flex', gap: '6px', alignItems: 'flex-start',
+              }}>
+                <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '1px' }} />
+                <span>
+                  Configurá tu IBAN de Binance en{' '}
+                  <span
+                    onClick={openSettings}
+                    onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openSettings(); }}
+                    style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Configuración → Binance
+                  </span>
+                </span>
+              </div>
+            )}
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={ROW_LABEL}>Querés recibir (ARS)</label>
+              <input
+                type="number"
+                value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? displayedArs.toFixed(2) : ''}
+                onChange={e => { setEditMode('ars'); setArsAmount(e.target.value); }}
+                style={{
+                  width: '100%', padding: '13px 14px', backgroundColor: '#181A20',
+                  color: '#EAECEF', border: editMode === 'ars' ? '1px solid #F0B90B' : '1px solid #2B3139',
+                  borderRadius: '8px', fontSize: '16px', fontWeight: 600, boxSizing: 'border-box',
+                  fontFamily: "'IBM Plex Mono', monospace", outline: 'none',
+                }}
+                placeholder="500000"
+              />
+            </div>
+
+            <div style={{
+              marginBottom: '16px', backgroundColor: '#181A20', borderRadius: '8px',
+              padding: '12px 14px', border: editMode === 'eur' ? '1px solid #F0B90B' : '1px solid #2B3139',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={ROW_LABEL}>Costo Final (EUR)</label>
+                {editMode === 'ars' && <span style={{ fontSize: '10px', color: '#F0B90B', fontWeight: 500 }}>Calculado</span>}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#0ECB81', fontSize: '20px', fontWeight: 700, flexShrink: 0, fontFamily: "'IBM Plex Mono', monospace" }}>€</span>
+                <input
+                  type="number"
+                  value={editMode === 'eur' ? eurAmount : displayedEur > 0 ? displayedEur.toFixed(2) : ''}
+                  onChange={e => { setEditMode('eur'); setEurAmount(e.target.value); }}
+                  style={{
+                    width: '100%', padding: '4px 0', backgroundColor: 'transparent',
+                    color: '#0ECB81', border: 'none', fontSize: '22px', fontWeight: 700,
+                    boxSizing: 'border-box', minWidth: 0, outline: 'none',
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#181A20', padding: '14px', borderRadius: '8px',
+              fontSize: '13px', marginBottom: '14px', border: '1px solid #2B3139',
+            }}>
+              {[
+                { label: 'Depósito SEPA', value: `+ ${sepaFee.toFixed(2)} €`, danger: true },
+                { label: `EUR→USDC (${eurUsdc.toFixed(4)})`, value: `${beforeTradeFee.toFixed(2)} €`, danger: false },
+                { label: 'Fee trading (0.1%)', value: `+ ${tradingFee.toFixed(4)} €`, danger: true },
+                { label: 'Retiro Binance BEP20', value: `+ ${withdrawalFee.toFixed(2)} USDC`, danger: false },
+                { label: `USDC destino (${usdcArs})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
+              ].map((row, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: i < 4 ? '8px' : 0, alignItems: 'center' }}>
+                  <span style={{ color: '#848E9C', fontSize: '12px' }}>{row.label}</span>
+                  <span style={{ color: row.danger ? '#F6465D' : '#EAECEF', fontFamily: "'IBM Plex Mono', monospace", fontSize: '12px', fontWeight: 500 }}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{
+              textAlign: 'center', padding: '10px 14px',
+              backgroundColor: 'rgba(14,203,129,0.08)', borderRadius: '8px',
+              border: '1px solid rgba(14,203,129,0.2)', marginBottom: '16px',
+            }}>
+              <span style={{ fontWeight: 600, color: '#0ECB81', fontSize: '14px' }}>
+                Ahorro vs Remitly: +{ahorro.toFixed(2)} €
+              </span>
+            </div>
+
+            <button
+              onClick={advance}
+              disabled={displayedEur <= 0}
+              style={{
+                width: '100%', padding: '13px',
+                backgroundColor: displayedEur > 0 ? '#F0B90B' : '#2B3139',
+                color: displayedEur > 0 ? '#181A20' : '#474D57',
+                border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700,
+                cursor: displayedEur > 0 ? 'pointer' : 'not-allowed',
+                fontFamily: "'IBM Plex Sans', sans-serif",
+              }}
+            >
+              Continuar con la transferencia →
+            </button>
+          </div>
+        )}
+
+        {activeStep > 0 && (
+          <div style={{ padding: '10px 16px 14px', borderTop: '1px solid #2B3139' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+              <span style={{ color: '#848E9C' }}>Enviás</span>
+              <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600 }}>{displayedEur.toFixed(2)} EUR</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginTop: '4px' }}>
+              <span style={{ color: '#848E9C' }}>Recibís</span>
+              <span style={{ color: '#EAECEF', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600 }}>
+                {displayedArs.toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Paso 1: Transferencia SEPA ── */}
+      {activeStep >= 1 && (
+        <div style={CARD}>
+          <StepBadge step={1} icon={Smartphone} label="Transferir al banco" />
+
+          {activeStep === 1 && (
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                <button
+                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openBankApp(); }}
+                  onClick={openBankApp}
+                  disabled={tryingBankApp}
+                  style={{
+                    width: '100%', padding: '13px',
+                    backgroundColor: tryingBankApp ? '#0a8a58' : '#0ECB81',
+                    color: '#181A20', border: 'none', borderRadius: '8px',
+                    fontSize: '14px', fontWeight: 700, cursor: tryingBankApp ? 'wait' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: '8px', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif",
+                  }}
+                >
+                  <Smartphone size={16} />
+                  {tryingBankApp ? 'Abriendo tu banco...' : 'Abrir app del banco'}
+                </button>
+
+                <button
+                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); setShowSepaDetails(v => !v); }}
+                  onClick={() => setShowSepaDetails(v => !v)}
+                  style={{
+                    width: '100%', padding: '13px', backgroundColor: 'transparent',
+                    color: '#848E9C', border: '1px solid #2B3139', borderRadius: '8px',
+                    fontSize: '14px', fontWeight: 500, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: '8px', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif",
+                  }}
+                >
+                  Ver datos para copiar
+                  {showSepaDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+              </div>
+
+              {bankAppFailed && (
+                <div style={{ backgroundColor: '#181A20', border: '1px solid #2B3139', borderRadius: '8px', padding: '14px', marginBottom: '12px' }}>
+                  <div style={{ color: '#F0B90B', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                    Tu banco no abrió automáticamente
+                  </div>
+                  <div style={{ color: '#848E9C', fontSize: '12px', lineHeight: '1.5' }}>
+                    El formato <code style={{ backgroundColor: '#2B3139', padding: '2px 6px', borderRadius: '4px', color: '#EAECEF' }}>payto:</code> es un estándar europeo que algunos bancos soportan. Copiá los datos manualmente.
+                  </div>
+                </div>
+              )}
+
+              {showSepaDetails && (
+                <div style={{ backgroundColor: '#181A20', borderRadius: '8px', border: '1px solid #2B3139', padding: '16px', marginBottom: '16px' }}>
+                  <p style={{ margin: '0 0 12px', color: '#848E9C', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    Datos de transferencia SEPA
+                  </p>
+
+                  {binanceIBAN && (
+                    <button
+                      onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyAllSepaDetails(); }}
+                      onClick={copyAllSepaDetails}
+                      style={{
+                        width: '100%', padding: '11px',
+                        backgroundColor: copiedAll ? 'rgba(14,203,129,0.1)' : '#2B3139',
+                        color: copiedAll ? '#0ECB81' : '#EAECEF',
+                        border: `1px solid ${copiedAll ? 'rgba(14,203,129,0.3)' : '#474D57'}`,
+                        borderRadius: '6px', fontSize: '13px', fontWeight: 600,
+                        cursor: 'pointer', marginBottom: '14px', minHeight: '44px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                        fontFamily: "'IBM Plex Sans', sans-serif",
+                      }}
+                    >
+                      {copiedAll ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todos los datos</>}
+                    </button>
+                  )}
+
+                  {binanceIBAN ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {[
+                        { label: 'Beneficiario', value: binanceName, field: 'name', mono: false },
+                        { label: 'IBAN', value: binanceIBAN, copyVal: binanceIBAN.replace(/\s/g, ''), field: 'iban', mono: true },
+                        { label: 'BIC / SWIFT', value: binanceBIC, field: 'bic', mono: true },
+                        ...(binanceBank ? [{ label: 'Banco', value: binanceBank, field: 'bank', mono: false }] : []),
+                        ...(binanceBankAddr ? [{ label: 'Dirección del banco', value: binanceBankAddr, field: 'addr', mono: false }] : []),
+                      ].map((row: any) => (
+                        <div key={row.field}>
+                          <div style={ROW_LABEL}>{row.label}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{
+                              color: '#EAECEF', fontSize: '13px', flex: 1, wordBreak: 'break-all',
+                              fontFamily: row.mono ? "'IBM Plex Mono', monospace" : "'IBM Plex Sans', sans-serif",
+                            }}>{row.value}</span>
+                            <button onClick={() => copyToClipboard(row.copyVal ?? row.value, row.field)} style={copyBtn(row.field)}>
+                              {copiedField === row.field ? <Check size={12} /> : <Copy size={12} />}
+                              {copiedField === row.field ? '' : 'Copiar'}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div>
+                        <div style={ROW_LABEL}>Monto</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ color: '#0ECB81', fontSize: '18px', fontWeight: 700, flex: 1, fontFamily: "'IBM Plex Mono', monospace" }}>
+                            {displayedEur.toFixed(2)} EUR
+                          </span>
+                          <button onClick={() => copyToClipboard(displayedEur.toFixed(2), 'amount')} style={copyBtn('amount')}>
+                            {copiedField === 'amount' ? <Check size={12} /> : <Copy size={12} />}
+                            {copiedField === 'amount' ? '' : 'Copiar'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={ROW_LABEL}>Concepto</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ color: '#F0B90B', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", flex: 1, wordBreak: 'break-all' }}>
+                            {sepaReference}
+                          </span>
+                          <button onClick={() => copyToClipboard(sepaReference, 'ref')} style={copyBtn('ref')}>
+                            {copiedField === 'ref' ? <Check size={12} /> : <Copy size={12} />}
+                            {copiedField === 'ref' ? '' : 'Copiar'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <p style={{ margin: 0, fontSize: '11px', color: '#474D57', textAlign: 'center' }}>
+                        Solo transferencia SEPA — no SWIFT
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '16px', color: '#848E9C', fontSize: '13px' }}>
+                      Configurá tu IBAN de Binance en{' '}
+                      <span
+                        onClick={openSettings}
+                        onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openSettings(); }}
+                        style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                      >
+                        Configuración → Binance
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={advance}
+                style={{
+                  width: '100%', padding: '13px', backgroundColor: 'transparent',
+                  color: '#0ECB81', border: '1px solid rgba(14,203,129,0.3)',
+                  borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              >
+                Ya realicé la transferencia →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Paso 2: Trade ── */}
+      {activeStep >= 2 && (
+        <>
+          {activeStep === 2 && (
+            <div style={STEP_LABEL_ROW}>
+              <ArrowLeftRight size={12} />
+              Paso 3 — Cambiar EUR → USDC
+            </div>
+          )}
+          {activeStep === 2 && (
+            <Trade
+              data={data}
+              onSuccess={() => { onRefreshData?.(); advance(); }}
+            />
+          )}
+          {activeStep > 2 && (
+            <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
+              <StepBadge step={2} icon={ArrowLeftRight} label="Cambiar EUR → USDC" />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Paso 3: Withdraw ── */}
+      {activeStep >= 3 && (
+        <>
+          {activeStep === 3 && (
+            <div style={STEP_LABEL_ROW}>
+              <Building2 size={12} />
+              Paso 4 — Retirar USDC a Bitso
+            </div>
+          )}
+          {activeStep === 3 && (
+            <Withdraw
+              data={data}
+              onSuccess={() => { onRefreshData?.(); advance(); }}
+            />
+          )}
+          {activeStep > 3 && (
+            <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
+              <StepBadge step={3} icon={Building2} label="Retirar USDC a Bitso" />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Paso 4: Bitso → ARS (placeholder) ── */}
+      {activeStep >= 4 && (
+        <div style={CARD}>
+          <StepBadge step={4} icon={Banknote} label="Recibir ARS en Bitso" />
+          {activeStep === 4 && (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p style={{ color: '#848E9C', fontSize: '13px', margin: '0 0 6px' }}>
+                Próximamente — integración con Bitso para conversión directa a ARS.
+              </p>
+              <p style={{ color: '#474D57', fontSize: '12px', margin: 0 }}>
+                Por ahora, convertí manualmente en la app de Bitso.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Back */}
+      {onBack && (
+        <button
+          onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); onBack(); }}
+          onClick={onBack}
+          aria-label="Volver al menú"
+          style={{
+            width: '100%', padding: '14px', backgroundColor: 'transparent',
+            border: 'none', color: '#848E9C', borderRadius: '8px',
+            fontSize: '14px', fontWeight: 500, cursor: 'pointer',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            gap: '6px', fontFamily: "'IBM Plex Sans', sans-serif",
+          }}
+        >
+          ← Volver al menú
+        </button>
+      )}
+    </div>
+  );
+}
