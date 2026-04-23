@@ -123,6 +123,26 @@ export default function Dashboard({ user }: { user: any }) {
                     </h3>
                 </div>
 
+                {/* Binance error notice */}
+                {data?.binanceError && (
+                    <div style={{
+                        backgroundColor: 'rgba(246,70,93,0.08)',
+                        border: '1px solid rgba(246,70,93,0.25)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        marginBottom: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}>
+                        <span style={{ fontSize: '14px' }}>⚠️</span>
+                        <div>
+                            <p style={{ margin: 0, color: '#F6465D', fontSize: '12px', fontWeight: 600 }}>Error al conectar con Binance</p>
+                            <p style={{ margin: 0, color: '#848E9C', fontSize: '11px', marginTop: '2px' }}>{data.binanceError}</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Live rate strip */}
                 <div style={{
                     display: 'flex',
