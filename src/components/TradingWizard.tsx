@@ -569,18 +569,66 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
         </>
       )}
 
-      {/* ── Paso 4: Bitso → ARS (placeholder) ── */}
+      {/* ── Paso 4: Ripio USDC → ARS ── */}
       {activeStep >= 4 && (
         <div style={CARD}>
-          <StepBadge step={4} icon={Banknote} label="Recibir ARS en Bitso" />
+          <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en Ripio" />
           {activeStep === 4 && (
-            <div style={{ padding: '20px', textAlign: 'center' }}>
-              <p style={{ color: '#848E9C', fontSize: '13px', margin: '0 0 6px' }}>
-                Próximamente — integración con Bitso para conversión directa a ARS.
-              </p>
-              <p style={{ color: '#474D57', fontSize: '12px', margin: 0 }}>
-                Por ahora, convertí manualmente en la app de Bitso.
-              </p>
+            <div style={{ padding: '20px' }}>
+              {data.ripioUsdcArsRate ? (
+                <>
+                  <div style={{
+                    backgroundColor: '#181A20', borderRadius: '8px',
+                    border: '1px solid #2B3139', padding: '14px', marginBottom: '14px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: '#848E9C', fontSize: '12px' }}>Rate USDC/ARS (Ripio bid)</span>
+                      <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace", fontSize: '13px', fontWeight: 600 }}>
+                        {parseFloat(data.ripioUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #2B3139', paddingTop: '10px', marginTop: '4px' }}>
+                      <span style={{ color: '#EAECEF', fontSize: '13px', fontWeight: 600 }}>Estimado a recibir</span>
+                      <span style={{ color: '#0ECB81', fontSize: '18px', fontWeight: 700, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        {(usdcForBroker * parseFloat(data.ripioUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.15)',
+                    borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
+                    fontSize: '12px', color: '#848E9C', lineHeight: '1.5',
+                  }}>
+                    El retiro de ARS a CVU/CBU se hace manualmente desde la app de Ripio. El rate de arriba es el precio de compra actual — puede variar al momento del trade.
+                  </div>
+                </>
+              ) : (
+                <div style={{
+                  backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.15)',
+                  borderRadius: '8px', padding: '14px', marginBottom: '16px',
+                  fontSize: '13px', color: '#848E9C', textAlign: 'center',
+                }}>
+                  Rate de Ripio no disponible. Verificá en la app de Ripio.
+                </div>
+              )}
+
+              <a
+                href="https://exchange.ripio.com/app/trade/USDC_ARS"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  width: '100%', padding: '13px', boxSizing: 'border-box',
+                  backgroundColor: '#2B3139', color: '#EAECEF',
+                  border: '1px solid #474D57', borderRadius: '8px',
+                  fontSize: '14px', fontWeight: 600, textDecoration: 'none',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              >
+                <Banknote size={16} />
+                Abrir Ripio USDC/ARS
+              </a>
             </div>
           )}
         </div>
