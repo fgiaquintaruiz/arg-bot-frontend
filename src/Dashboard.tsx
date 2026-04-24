@@ -4,8 +4,6 @@ import { logout } from './authService';
 import pkg from '../package.json';
 import { getApiUrl } from './config';
 import TradingWizard from './components/TradingWizard';
-import Trade from './components/Trade';
-import Withdraw from './components/Withdraw';
 import History from './components/History';
 import Updates from './components/Updates';
 import Settings from './components/Settings';
@@ -96,21 +94,10 @@ export default function Dashboard({ user }: { user: any }) {
     }, [user]);
 
     const renderView = () => {
-        switch (currentView) {
-            case 'calculator':
-                return <TradingWizard data={data} onRefreshData={fetchMarketData} />;
-            /* v8 ignore next */
-            case 'trade':
-                return <Trade data={data} onClose={() => setCurrentView('calculator')} onSuccess={() => setCurrentView('calculator')} />;
-            /* v8 ignore next */
-            case 'withdraw':
-                return <Withdraw data={data} onClose={() => setCurrentView('calculator')} onSuccess={() => setCurrentView('calculator')} />;
-            case 'history':
-                return <History onClose={() => setCurrentView('calculator')} />;
-            /* v8 ignore next */
-            default:
-                return <TradingWizard data={data} onRefreshData={fetchMarketData} />;
+        if (currentView === 'history') {
+            return <History onClose={() => setCurrentView('calculator')} />;
         }
+        return <TradingWizard data={data} onRefreshData={fetchMarketData} />;
     };
 
     return (
