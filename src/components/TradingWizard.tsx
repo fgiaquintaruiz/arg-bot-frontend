@@ -31,7 +31,6 @@ function buildEpcPayload(iban: string, bic: string, name: string, amount: number
 
 interface TradingWizardProps {
   data: any;
-  onBack?: () => void;
   onRefreshData?: () => void;
 }
 
@@ -63,7 +62,7 @@ const STEP_LABEL_ROW: React.CSSProperties = {
   fontWeight: 600,
 };
 
-export default function TradingWizard({ data, onBack, onRefreshData }: TradingWizardProps) {
+export default function TradingWizard({ data, onRefreshData }: TradingWizardProps) {
   const [activeStep, setActiveStep] = useState(0);
 
   // Step 0 — Calculator state
@@ -161,6 +160,7 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
 
   const openSettings = () => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
   const advance = () => setActiveStep(s => s + 1);
+  const retrocede = () => setActiveStep(s => Math.max(0, s - 1));
 
   const copyBtn = (field: string): React.CSSProperties => ({
     background: '#2B3139',
@@ -347,6 +347,17 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
 
           {activeStep === 1 && (
             <div style={{ padding: '20px' }}>
+              <button
+                onClick={retrocede}
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
+                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              >
+                ← Paso anterior
+              </button>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                 {binanceIBAN ? (
                   <div style={{
@@ -516,10 +527,23 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
             </div>
           )}
           {activeStep === 2 && (
-            <Trade
-              data={data}
-              onSuccess={() => { onRefreshData?.(); advance(); }}
-            />
+            <>
+              <button
+                onClick={retrocede}
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
+                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              >
+                ← Paso anterior
+              </button>
+              <Trade
+                data={data}
+                onSuccess={() => { onRefreshData?.(); advance(); }}
+              />
+            </>
           )}
           {activeStep > 2 && (
             <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
@@ -539,10 +563,23 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
             </div>
           )}
           {activeStep === 3 && (
-            <Withdraw
-              data={data}
-              onSuccess={() => { onRefreshData?.(); advance(); }}
-            />
+            <>
+              <button
+                onClick={retrocede}
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
+                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              >
+                ← Paso anterior
+              </button>
+              <Withdraw
+                data={data}
+                onSuccess={() => { onRefreshData?.(); advance(); }}
+              />
+            </>
           )}
           {activeStep > 3 && (
             <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
@@ -558,6 +595,17 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
           <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en Ripio" />
           {activeStep === 4 && (
             <div style={{ padding: '20px' }}>
+              <button
+                onClick={retrocede}
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
+                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}
+              >
+                ← Paso anterior
+              </button>
               {data.ripioUsdcArsRate ? (
                 <>
                   <div style={{
@@ -617,21 +665,16 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
         </div>
       )}
 
-      {/* Back */}
-      {onBack && (
+      {activeStep > 0 && (
         <button
-          onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); onBack(); }}
-          onClick={onBack}
-          aria-label="Volver al menú"
+          onClick={() => setActiveStep(0)}
           style={{
-            width: '100%', padding: '14px', backgroundColor: 'transparent',
-            border: 'none', color: '#848E9C', borderRadius: '8px',
-            fontSize: '14px', fontWeight: 500, cursor: 'pointer',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            gap: '6px', fontFamily: "'IBM Plex Sans', sans-serif",
+            width: '100%', padding: '12px', backgroundColor: 'transparent',
+            color: '#474D57', border: '1px solid #2B3139', borderRadius: '8px',
+            fontSize: '13px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif",
           }}
         >
-          ← Volver al menú
+          ↺ Reiniciar simulación
         </button>
       )}
     </div>

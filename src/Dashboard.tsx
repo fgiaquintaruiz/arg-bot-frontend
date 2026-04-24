@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, ArrowLeftRight, Building2, ClipboardList, Lock, Settings2, AlertTriangle } from 'lucide-react';
+import { Settings2, AlertTriangle, RotateCcw } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
 import { getApiUrl } from './config';
@@ -13,7 +13,7 @@ import BackendToggle from './components/BackendToggle';
 
 export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
-    const [currentView, setCurrentView] = useState('main');
+    const [currentView, setCurrentView] = useState('calculator');
 
     const apiKey = localStorage.getItem('binance_key');
     const apiSecret = localStorage.getItem('binance_secret');
@@ -98,227 +98,17 @@ export default function Dashboard({ user }: { user: any }) {
     const renderView = () => {
         switch (currentView) {
             case 'calculator':
-                return <TradingWizard data={data} onBack={() => setCurrentView('main')} onRefreshData={fetchMarketData} />;
+                return <TradingWizard data={data} onRefreshData={fetchMarketData} />;
             case 'trade':
-                return <Trade data={data} onClose={() => setCurrentView('main')} onSuccess={() => setCurrentView('main')} />;
+                return <Trade data={data} onClose={() => setCurrentView('calculator')} onSuccess={() => setCurrentView('calculator')} />;
             case 'withdraw':
-                return <Withdraw data={data} onClose={() => setCurrentView('main')} onSuccess={() => setCurrentView('main')} />;
+                return <Withdraw data={data} onClose={() => setCurrentView('calculator')} onSuccess={() => setCurrentView('calculator')} />;
             case 'history':
-                return <History onClose={() => setCurrentView('main')} />;
+                return <History onClose={() => setCurrentView('calculator')} />;
             default:
-                return <MainMenu />;
+                return <TradingWizard data={data} onRefreshData={fetchMarketData} />;
         }
     };
-
-    function MainMenu() {
-        const eurUsdc = data ? parseFloat(data.rate).toFixed(4) : '—';
-        const usdcArs = data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
-
-        return (
-            <div style={{ width: '100%' }}>
-                {/* Greeting */}
-                <div style={{ marginBottom: '24px' }}>
-                    <p style={{ color: '#848E9C', fontSize: '13px', marginBottom: '2px' }}>Bienvenido de vuelta,</p>
-                    <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1.3rem', fontWeight: 700 }}>
-                        {user.displayName?.split(' ')[0] || 'Usuario'}
-                    </h3>
-                </div>
-
-                {/* Binance error notice */}
-                {data?.binanceError && (
-                    <div style={{
-                        backgroundColor: 'rgba(246,70,93,0.08)',
-                        border: '1px solid rgba(246,70,93,0.25)',
-                        borderRadius: '8px',
-                        padding: '10px 14px',
-                        marginBottom: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                    }}>
-                        <AlertTriangle size={14} color="#F6465D" style={{ flexShrink: 0 }} />
-                        <div>
-                            <p style={{ margin: 0, color: '#F6465D', fontSize: '12px', fontWeight: 600 }}>Error al conectar con Binance</p>
-                            <p style={{ margin: 0, color: '#848E9C', fontSize: '11px', marginTop: '2px' }}>{data.binanceError}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Live rate strip */}
-                <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    marginBottom: '20px',
-                }}>
-                    <div style={{
-                        flex: 1,
-                        backgroundColor: '#1E2329',
-                        border: '1px solid #2B3139',
-                        borderRadius: '8px',
-                        padding: '10px 14px',
-                    }}>
-                        <p style={{ color: '#848E9C', fontSize: '11px', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EUR / USDC</p>
-                        <p style={{ color: '#0ECB81', fontSize: '15px', fontWeight: 600, margin: 0, fontFamily: "'IBM Plex Mono', monospace" }}>{eurUsdc}</p>
-                    </div>
-                    <div style={{
-                        flex: 1,
-                        backgroundColor: '#1E2329',
-                        border: '1px solid #2B3139',
-                        borderRadius: '8px',
-                        padding: '10px 14px',
-                    }}>
-                        <p style={{ color: '#848E9C', fontSize: '11px', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>USDC / ARS</p>
-                        <p style={{ color: '#0ECB81', fontSize: '15px', fontWeight: 600, margin: 0, fontFamily: "'IBM Plex Mono', monospace" }}>{usdcArs}</p>
-                    </div>
-                </div>
-
-                {/* Action grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    {/* Calculadora — CTA primario en amarillo */}
-                    <button
-                        onClick={() => setCurrentView('calculator')}
-                        style={{
-                            gridColumn: '1 / -1',
-                            padding: '18px 16px',
-                            backgroundColor: '#F0B90B',
-                            color: '#181A20',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontWeight: 700,
-                            fontSize: '15px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '10px',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                        }}
-                    >
-                        <Calculator size={18} />
-                        Calculadora
-                    </button>
-
-                    {/* Cambiar EUR */}
-                    <button
-                        onClick={() => hasKeys && setCurrentView('trade')}
-                        style={{
-                            opacity: hasKeys ? 1 : 0.45,
-                            cursor: hasKeys ? 'pointer' : 'not-allowed',
-                            padding: '18px 12px',
-                            backgroundColor: '#1E2329',
-                            color: '#0ECB81',
-                            border: '1px solid #2B3139',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '8px',
-                            transition: 'background-color 0.15s',
-                        }}
-                    >
-                        <ArrowLeftRight size={20} />
-                        Cambiar EUR
-                        {!hasKeys && (
-                            <span style={{
-                                fontSize: '10px',
-                                color: '#F6465D',
-                                backgroundColor: 'rgba(246,70,93,0.12)',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                fontWeight: 500,
-                                display: 'flex', alignItems: 'center', gap: '3px',
-                            }}>
-                                <Lock size={9} /> Config API
-                            </span>
-                        )}
-                    </button>
-
-                    {/* Retirar */}
-                    <button
-                        onClick={() => hasKeys && setCurrentView('withdraw')}
-                        style={{
-                            opacity: hasKeys ? 1 : 0.45,
-                            cursor: hasKeys ? 'pointer' : 'not-allowed',
-                            padding: '18px 12px',
-                            backgroundColor: '#1E2329',
-                            color: '#C3A1FF',
-                            border: '1px solid #2B3139',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '8px',
-                            transition: 'background-color 0.15s',
-                        }}
-                    >
-                        <Building2 size={20} />
-                        Retirar ARS
-                        {!hasKeys && (
-                            <span style={{
-                                fontSize: '10px',
-                                color: '#F6465D',
-                                backgroundColor: 'rgba(246,70,93,0.12)',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                fontWeight: 500,
-                                display: 'flex', alignItems: 'center', gap: '3px',
-                            }}>
-                                <Lock size={9} /> Config API
-                            </span>
-                        )}
-                    </button>
-
-                    {/* Historial */}
-                    <button
-                        onClick={() => setCurrentView('history')}
-                        style={{
-                            gridColumn: '1 / -1',
-                            padding: '14px 16px',
-                            backgroundColor: '#1E2329',
-                            color: '#848E9C',
-                            border: '1px solid #2B3139',
-                            borderRadius: '8px',
-                            fontWeight: 500,
-                            fontSize: '14px',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                        }}
-                    >
-                        <ClipboardList size={16} />
-                        Historial de operaciones
-                    </button>
-                </div>
-
-                {/* Footer link */}
-                <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                    <button
-                        onClick={() => setShowUpdates(true)}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#848E9C',
-                            cursor: 'pointer',
-                            fontSize: '13px',
-                            padding: '8px',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                        }}
-                    >
-                        Novedades y Roadmap →
-                    </button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div style={{
@@ -398,6 +188,23 @@ export default function Dashboard({ user }: { user: any }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
+                        onClick={() => setCurrentView('history')}
+                        title="Historial"
+                        aria-label="Ver historial"
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#848E9C',
+                            cursor: 'pointer',
+                            padding: '8px',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <RotateCcw size={17} />
+                    </button>
+                    <button
                         onClick={() => setShowSettings(true)}
                         title="Configuración"
                         aria-label="Abrir configuración"
@@ -434,6 +241,32 @@ export default function Dashboard({ user }: { user: any }) {
                         Salir
                     </button>
                 </div>
+            </div>
+
+            {/* Rate strip */}
+            <div style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '16px',
+                padding: '6px 20px',
+                backgroundColor: '#1E2329',
+                borderBottom: '1px solid #2B3139',
+                flexShrink: 0,
+                boxSizing: 'border-box',
+            }}>
+                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
+                    EUR/USDC <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                        {data ? parseFloat(data.rate).toFixed(4) : '—'}
+                    </span>
+                </span>
+                <span style={{ color: '#2B3139' }}>·</span>
+                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
+                    USDC/ARS <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                        {data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                    </span>
+                </span>
             </div>
 
             {/* Content — único contenedor de scroll, todo lo demás sin overflow propio */}
