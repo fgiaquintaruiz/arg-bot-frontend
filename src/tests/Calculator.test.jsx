@@ -75,9 +75,9 @@ describe('Calculator Component', () => {
     expect(screen.queryByText(/Volver al menú/)).not.toBeInTheDocument();
   });
 
-  it('should display SEPA transfer button', () => {
+  it('sin IBAN: muestra mensaje de configuración para el QR', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByText(/Abrir app del banco/)).toBeInTheDocument();
+    expect(screen.getByText(/Configurá tu IBAN de Binance en Ajustes para ver el QR de pago/)).toBeInTheDocument();
   });
 
   it('should display copy data button', () => {
@@ -313,73 +313,6 @@ describe('Calculator Component', () => {
       expect(screen.getByText('✅ Copiado')).toBeInTheDocument();
       act(() => { vi.advanceTimersByTime(3000); });
       expect(screen.getByText('Copiar todos los datos')).toBeInTheDocument();
-    });
-  });
-
-  // ─── openBankApp ─────────────────────────────────────────────────────────────
-
-  describe('openBankApp', () => {
-    it('sin IBAN: abre el panel SEPA en lugar de lanzar app', () => {
-      render(<Calculator data={mockData} />);
-      expect(screen.queryByText('Datos de transferencia SEPA')).not.toBeInTheDocument();
-      fireEvent.click(screen.getByText(/Abrir app del banco/));
-      expect(screen.getByText('Datos de transferencia SEPA')).toBeInTheDocument();
-    });
-
-    it('con IBAN: cambia el texto del botón a "Abriendo tu banco..."', () => {
-      vi.useFakeTimers();
-      localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
-
-      render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Abrir app del banco/));
-
-      expect(screen.getByText('Abriendo tu banco...')).toBeInTheDocument();
-    });
-
-    it('con IBAN: botón queda deshabilitado mientras tryingBankApp=true', () => {
-      vi.useFakeTimers();
-      localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
-
-      render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Abrir app del banco/));
-
-      expect(screen.getByText('Abriendo tu banco...').closest('button')).toBeDisabled();
-    });
-
-    it('con IBAN: después de 5s sin respuesta del banco → muestra mensaje de fallo', () => {
-      vi.useFakeTimers();
-      localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
-
-      render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Abrir app del banco/));
-      act(() => { vi.advanceTimersByTime(5000); });
-
-      expect(screen.getByText('Tu banco no abrió automáticamente')).toBeInTheDocument();
-    });
-
-    it('bankAppFailed: click en "Mostrar datos para copiar" abre panel y oculta el mensaje', () => {
-      vi.useFakeTimers();
-      localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
-
-      render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Abrir app del banco/));
-      act(() => { vi.advanceTimersByTime(5000); });
-
-      fireEvent.click(screen.getByText('Mostrar datos para copiar'));
-
-      expect(screen.queryByText('Tu banco no abrió automáticamente')).not.toBeInTheDocument();
-      expect(screen.getByText('Datos de transferencia SEPA')).toBeInTheDocument();
-    });
-
-    it('con IBAN: botón vuelve a "Abrir app del banco" después de 5s', () => {
-      vi.useFakeTimers();
-      localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
-
-      render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Abrir app del banco/));
-      act(() => { vi.advanceTimersByTime(5000); });
-
-      expect(screen.getByText(/Abrir app del banco/)).toBeInTheDocument();
     });
   });
 

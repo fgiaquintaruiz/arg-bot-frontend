@@ -42,9 +42,8 @@ test.describe('Calculator', () => {
     await expect(page.getByText(/Configurá tu IBAN de Binance/)).toBeVisible();
   });
 
-  test('"Abrir app del banco" without IBAN opens SEPA details instead', async ({ authenticatedPage: page }) => {
-    await page.getByRole('button', { name: /Abrir app del banco/ }).click();
-    await expect(page.getByText('Datos de transferencia SEPA')).toBeVisible();
+  test('sin IBAN: muestra mensaje de configuración para el QR de pago', async ({ authenticatedPage: page }) => {
+    await expect(page.getByText('Configurá tu IBAN de Binance en Ajustes para ver el QR de pago.')).toBeVisible();
   });
 
   test('"Ver datos para copiar" toggles SEPA details panel', async ({ authenticatedPage: page }) => {

@@ -1,4 +1,18 @@
 import React, { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+
+function buildEpcPayload(iban: string, bic: string, name: string, amount: number, reference: string): string {
+  return [
+    'BCD', '002', '1', 'SCT',
+    bic,
+    name.substring(0, 70),
+    iban,
+    `EUR${amount.toFixed(2)}`,
+    '', '',
+    reference.substring(0, 140),
+    '',
+  ].join('\n');
+}
 
 export default function Calculator({ data, onBack }: { data: any, onBack?: () => void }) {
   const [editMode, setEditMode] = useState<'ars' | 'eur'>('ars');
@@ -7,8 +21,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
   const [showSepaDetails, setShowSepaDetails] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
-  const [tryingBankApp, setTryingBankApp] = useState(false);
-  const [bankAppFailed, setBankAppFailed] = useState(false);
 
   if (!data) return (
     <div style={{ textAlign: 'center', padding: '40px 20px', color: '#848E9C', fontSize: '14px' }}>
@@ -101,37 +113,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
 
   const handleArsChange = (val: string) => { setEditMode('ars'); setArsAmount(val); };
   const handleEurChange = (val: string) => { setEditMode('eur'); setEurAmount(val); };
-
-  const openBankApp = () => {
-    if (!binanceIBAN) { setShowSepaDetails(true); return; }
-    setTryingBankApp(true);
-    setBankAppFailed(false);
-    const iban = binanceIBAN.replace(/\s/g, '');
-    const amount = displayedEur.toFixed(2);
-    // RFC 8905 payto: URI — payto://iban/IBAN?amount=EUR:X.XX&message=ref
-    // Formato correcto para Santander ES, BBVA, Revolut, CaixaBank, Triodos.
-    // payto:IBAN (sin //iban/) es inválido según el estándar y falla silenciosamente.
-    const paytoUri = `payto://iban/${iban}?amount=EUR:${amount}&message=${encodeURIComponent(sepaReference)}`;
-    let appOpened = false;
-    const markOpened = () => { appOpened = true; };
-    // visibilitychange — Android Chrome / Samsung Internet
-    document.addEventListener('visibilitychange', /* v8 ignore next */ () => { if (document.hidden) markOpened(); }, { once: true });
-    // pageshow — iOS Safari dispara esto al volver desde una app externa
-    window.addEventListener('pageshow', /* v8 ignore next */ markOpened, { once: true });
-    // blur — Chrome desktop + algunos Android browsers
-    window.addEventListener('blur', /* v8 ignore next */ markOpened, { once: true });
-    const a = document.createElement('a');
-    a.href = paytoUri;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => {
-      setTryingBankApp(false);
-      /* v8 ignore start */
-      if (!appOpened) { setBankAppFailed(true); setShowSepaDetails(true); }
-      /* v8 ignore end */
-    }, 1500);
-  };
 
   const openSettings = () => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
 
@@ -302,30 +283,37 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
 
         {/* SEPA buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-          <button
-            onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openBankApp(); }}
-            onClick={openBankApp}
-            disabled={tryingBankApp}
-            style={{
-              width: '100%',
-              padding: '13px',
-              backgroundColor: tryingBankApp ? '#0a8a58' : '#0ECB81',
-              color: '#181A20',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: tryingBankApp ? 'wait' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              minHeight: '48px',
-              fontFamily: "'IBM Plex Sans', sans-serif",
-            }}
-          >
-            {tryingBankApp ? 'Abriendo tu banco...' : '📱 Abrir app del banco'}
-          </button>
+          {binanceIBAN ? (
+            <div style={{
+              backgroundColor: '#FFFFFF', borderRadius: '12px',
+              padding: '16px', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: '10px',
+            }}>
+              <QRCodeSVG
+                value={buildEpcPayload(
+                  binanceIBAN.replace(/\s/g, ''),
+                  binanceBIC,
+                  binanceName,
+                  displayedEur,
+                  sepaReference,
+                )}
+                size={200}
+                bgColor="#FFFFFF"
+                fgColor="#000000"
+                level="M"
+              />
+              <span style={{ color: '#181A20', fontSize: '12px', textAlign: 'center', fontWeight: 500 }}>
+                Escaneá con tu app bancaria → Transferencia SEPA
+              </span>
+            </div>
+          ) : (
+            <div style={{
+              backgroundColor: 'rgba(240,185,11,0.08)', border: '1px solid rgba(240,185,11,0.2)',
+              borderRadius: '8px', padding: '12px', fontSize: '13px', color: '#848E9C',
+            }}>
+              Configurá tu IBAN de Binance en Ajustes para ver el QR de pago.
+            </div>
+          )}
 
           <button
             onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); setShowSepaDetails(!showSepaDetails); }}
@@ -351,24 +339,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
             Ver datos para copiar {showSepaDetails ? '▲' : '▼'}
           </button>
         </div>
-
-        {/* Bank app failed message */}
-        {bankAppFailed && (
-          <div style={{
-            backgroundColor: '#181A20',
-            border: '1px solid #2B3139',
-            borderRadius: '8px',
-            padding: '14px',
-            marginBottom: '12px',
-          }}>
-            <div style={{ color: '#F0B90B', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-              Tu banco no abrió automáticamente
-            </div>
-            <div style={{ color: '#848E9C', fontSize: '12px', lineHeight: '1.5', marginBottom: '10px' }}>
-              El formato <code style={{ backgroundColor: '#2B3139', padding: '2px 6px', borderRadius: '4px', color: '#EAECEF' }}>payto:</code> es un estándar europeo que algunos bancos soportan. Copiá los datos manualmente.
-            </div>
-          </div>
-        )}
 
         {/* SEPA Details panel */}
         {showSepaDetails && (
