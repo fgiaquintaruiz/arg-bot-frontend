@@ -34,7 +34,6 @@ const mockData = {
 };
 
 describe('TradingWizard', () => {
-  const onBack = vi.fn();
   const onRefreshData = vi.fn();
 
   beforeEach(() => {
@@ -43,14 +42,14 @@ describe('TradingWizard', () => {
   });
 
   it('renderiza el paso inicial (step 0) con el campo de ARS', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     expect(screen.getByText('Simulación')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('500000')).toBeInTheDocument();
   });
 
   it('muestra QR EPC cuando hay IBAN en localStorage', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
 
@@ -61,7 +60,7 @@ describe('TradingWizard', () => {
   });
 
   it('muestra advertencia de configuración cuando NO hay IBAN', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
 
@@ -71,7 +70,7 @@ describe('TradingWizard', () => {
   });
 
   it('el disclaimer de Ripio aparece en el step 4', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     // Step 0 → 1
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
@@ -90,14 +89,14 @@ describe('TradingWizard', () => {
     expect(screen.getByText('Cargando tasas de mercado...')).toBeInTheDocument();
   });
 
-  it('el botón onBack llama a la función proporcionada', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
-    fireEvent.click(screen.getByRole('button', { name: /Volver al menú/ }));
-    expect(onBack).toHaveBeenCalledTimes(1);
+  it('muestra botón Reiniciar al avanzar al step 1', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    expect(screen.getByText(/Reiniciar simulación/)).toBeInTheDocument();
   });
 
   it('editar el campo EUR activa el modo eur y recalcula ARS', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const eurInput = screen.getByPlaceholderText('0.00');
     fireEvent.change(eurInput, { target: { value: '500' } });
     // El campo ARS ahora debería mostrar el valor calculado
@@ -107,7 +106,7 @@ describe('TradingWizard', () => {
 
   it('muestra datos SEPA al expandir "Ver datos para copiar" en step 1', async () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
     fireEvent.click(screen.getByText('Ver datos para copiar'));
@@ -122,7 +121,7 @@ describe('TradingWizard', () => {
       clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     });
 
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
     fireEvent.click(screen.getByText('Ver datos para copiar'));
@@ -138,7 +137,7 @@ describe('TradingWizard', () => {
     const eventSpy = vi.fn();
     window.addEventListener('open-settings', eventSpy);
 
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     // El link de Ajustes aparece en step 0 cuando no hay IBAN
     fireEvent.click(screen.getByText('Configuración → Binance'));
@@ -152,13 +151,13 @@ describe('TradingWizard', () => {
       balances: { eur: '100.00', usdc: '50.00' },
       // usdcArsRate, rate y fees ausentes — activan los || y ?? fallbacks
     };
-    render(<TradingWizard data={dataMinima} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={dataMinima} onRefreshData={onRefreshData} />);
     // Renderiza sin explotar — los fallbacks (1121, 1.08, 0.8) se usaron
     expect(screen.getByText('Simulación')).toBeInTheDocument();
   });
 
   it('borrar el ARS input no rompe el cálculo (|| 0 branch en arsAmount)', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const arsInput = screen.getByPlaceholderText('500000');
     // Limpiar el campo ARS → arsAmount = '' → parseFloat('') || 0
     fireEvent.change(arsInput, { target: { value: '' } });
@@ -168,7 +167,7 @@ describe('TradingWizard', () => {
   });
 
   it('usar EUR input con valor vacío no rompe el cálculo (|| 0 branch)', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const eurInput = screen.getByPlaceholderText('0.00');
     // Activar editMode=eur con valor vacío → parseFloat('') || 0
     fireEvent.change(eurInput, { target: { value: '' } });
@@ -176,7 +175,7 @@ describe('TradingWizard', () => {
   });
 
   it('EUR input con valor igual a sepaFee activa rama netEur <= 0 en calcFromEur', () => {
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const eurInput = screen.getByPlaceholderText('0.00');
     // sepaFee = 1.00 → netEur = 1 - 1 = 0 → branch netEur <= 0
     fireEvent.change(eurInput, { target: { value: '1' } });
@@ -186,7 +185,7 @@ describe('TradingWizard', () => {
   it('sepaReference usa email cuando user_email está en localStorage', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     localStorage.setItem('user_email', 'test@example.com');
-    render(<TradingWizard data={mockData} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
 
@@ -196,7 +195,7 @@ describe('TradingWizard', () => {
 
   it('step 4 muestra mensaje fallback cuando ripioUsdcArsRate es nulo', () => {
     const dataWithoutRipio = { ...mockData, ripioUsdcArsRate: null };
-    render(<TradingWizard data={dataWithoutRipio} onBack={onBack} onRefreshData={onRefreshData} />);
+    render(<TradingWizard data={dataWithoutRipio} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
     fireEvent.click(screen.getByText('Ya realicé la transferencia →'));

@@ -89,22 +89,12 @@ describe('Dashboard', () => {
     expect(screen.getByText(/Acceso restringido/)).toBeInTheDocument();
   });
 
-  it('muestra el primer nombre del usuario en el greeting', async () => {
+  it('muestra el rate strip con EUR/USDC y USDC/ARS', async () => {
     render(<Dashboard user={mockUser} />);
-    await waitFor(() => expect(screen.getByText('Juan')).toBeInTheDocument());
-  });
-
-  it('usa "Usuario" como fallback cuando displayName es null', async () => {
-    render(<Dashboard user={{ email: 'test@example.com', displayName: null }} />);
-    await waitFor(() => expect(screen.getByText('Usuario')).toBeInTheDocument());
-  });
-
-  it('muestra los botones del menú principal', () => {
-    render(<Dashboard user={mockUser} />);
-    expect(screen.getByText('Calculadora')).toBeInTheDocument();
-    expect(screen.getByText('Cambiar EUR')).toBeInTheDocument();
-    expect(screen.getByText('Retirar ARS')).toBeInTheDocument();
-    expect(screen.getByText('Historial de operaciones')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/EUR\/USDC/)).toBeInTheDocument();
+      expect(screen.getByText(/USDC\/ARS/)).toBeInTheDocument();
+    });
   });
 
   // ─── Fetch inicial ──────────────────────────────────────────────────────────
@@ -115,7 +105,8 @@ describe('Dashboard', () => {
       expect.stringContaining('/api/data'),
       expect.objectContaining({ method: 'POST' })
     ));
-    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    const apiCall = global.fetch.mock.calls.find(([url]) => url.includes('/api/data'));
+    const body = JSON.parse(apiCall[1].body);
     expect(body.userEmail).toBe('test@example.com');
   });
 
@@ -148,112 +139,19 @@ describe('Dashboard', () => {
     await waitFor(() => expect(screen.getByText('1.0800')).toBeInTheDocument());
   });
 
-  // ─── Navegación entre vistas ─────────────────────────────────────────────────
+  // ─── Navegación via header ────────────────────────────────────────────────────
 
-  it('click Calculadora → muestra Calculator', () => {
+  it('click RotateCcw (historial) → muestra History', () => {
     render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Calculadora'));
-    expect(screen.getByTestId('calculator-mock')).toBeInTheDocument();
-  });
-
-  it('Calculator onBack → vuelve al menú principal', () => {
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Calculadora'));
-    fireEvent.click(screen.getByText('Back from Calculator'));
-    expect(screen.queryByTestId('calculator-mock')).not.toBeInTheDocument();
-    expect(screen.getByText('Calculadora')).toBeInTheDocument();
-  });
-
-  it('click Historial → muestra History', () => {
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Historial de operaciones'));
+    fireEvent.click(screen.getByLabelText('Ver historial'));
     expect(screen.getByTestId('history-mock')).toBeInTheDocument();
   });
 
-  it('History onClose → vuelve al menú', () => {
+  it('History onClose → vuelve al wizard', () => {
     render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Historial de operaciones'));
+    fireEvent.click(screen.getByLabelText('Ver historial'));
     fireEvent.click(screen.getByText('Close History'));
     expect(screen.queryByTestId('history-mock')).not.toBeInTheDocument();
-  });
-
-  it('click Cambiar EUR con API keys → muestra Trade', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Cambiar EUR'));
-    expect(screen.getByTestId('trade-mock')).toBeInTheDocument();
-  });
-
-  it('Trade onClose → vuelve al menú', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Cambiar EUR'));
-    fireEvent.click(screen.getByText('Close Trade'));
-    expect(screen.queryByTestId('trade-mock')).not.toBeInTheDocument();
-  });
-
-  it('Trade onSuccess → vuelve al menú', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Cambiar EUR'));
-    fireEvent.click(screen.getByText('Trade Success'));
-    expect(screen.queryByTestId('trade-mock')).not.toBeInTheDocument();
-  });
-
-  it('click Retirar ARS con API keys → muestra Withdraw', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Retirar ARS'));
-    expect(screen.getByTestId('withdraw-mock')).toBeInTheDocument();
-  });
-
-  it('Withdraw onClose → vuelve al menú', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Retirar ARS'));
-    fireEvent.click(screen.getByText('Close Withdraw'));
-    expect(screen.queryByTestId('withdraw-mock')).not.toBeInTheDocument();
-  });
-
-  it('Withdraw onSuccess → vuelve al menú', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Retirar ARS'));
-    fireEvent.click(screen.getByText('Withdraw Success'));
-    expect(screen.queryByTestId('withdraw-mock')).not.toBeInTheDocument();
-  });
-
-  // ─── Sin API keys ────────────────────────────────────────────────────────────
-
-  it('sin API keys: click Cambiar EUR no navega a Trade', () => {
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Cambiar EUR'));
-    expect(screen.queryByTestId('trade-mock')).not.toBeInTheDocument();
-  });
-
-  it('sin API keys: click Retirar ARS no navega a Withdraw', () => {
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Retirar ARS'));
-    expect(screen.queryByTestId('withdraw-mock')).not.toBeInTheDocument();
-  });
-
-  it('sin API keys: muestra badge 🔒 Config API en ambos botones', () => {
-    render(<Dashboard user={mockUser} />);
-    const lockBadges = screen.getAllByText(/Config API/);
-    expect(lockBadges.length).toBe(2);
-  });
-
-  it('con API keys: no muestra badges 🔒 Config API', () => {
-    localStorage.setItem('binance_key', 'key');
-    localStorage.setItem('binance_secret', 'secret');
-    render(<Dashboard user={mockUser} />);
-    expect(screen.queryByText(/Config API/)).not.toBeInTheDocument();
   });
 
   // ─── Modales ─────────────────────────────────────────────────────────────────
@@ -271,18 +169,6 @@ describe('Dashboard', () => {
     expect(screen.queryByTestId('settings-mock')).not.toBeInTheDocument();
   });
 
-  it('click Novedades y Roadmap → abre Updates', () => {
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText(/Novedades y Roadmap/));
-    expect(screen.getByTestId('updates-mock')).toBeInTheDocument();
-  });
-
-  it('Updates onClose → cierra el modal', () => {
-    render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText(/Novedades y Roadmap/));
-    fireEvent.click(screen.getByText('Close Updates'));
-    expect(screen.queryByTestId('updates-mock')).not.toBeInTheDocument();
-  });
 
   it('click Salir → llama a logout()', () => {
     render(<Dashboard user={mockUser} />);
