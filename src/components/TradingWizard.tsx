@@ -600,7 +600,7 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
                     borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
                     fontSize: '12px', color: '#848E9C', lineHeight: '1.5',
                   }}>
-                    El retiro de ARS a CVU/CBU se hace manualmente desde la app de Ripio. El rate de arriba es el precio de compra actual — puede variar al momento del trade.
+                    El monto estimado se calcula usando el bid de Ripio en tiempo real. Las comisiones de Ripio no están incluidas — el ARS final recibido será menor. El retiro de ARS a CVU/CBU se hace manualmente desde la app de Ripio.
                   </div>
                 </>
               ) : (
