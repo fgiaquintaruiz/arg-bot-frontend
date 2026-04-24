@@ -87,7 +87,8 @@ describe('Calculator Component', () => {
 
   it('should show IBAN config warning when no IBAN configured', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByText(/Configurá tu IBAN/)).toBeInTheDocument();
+    // Puede haber múltiples instancias del mensaje (fee breakdown + panel SEPA)
+    expect(screen.getAllByText(/Configurá tu IBAN/).length).toBeGreaterThanOrEqual(1);
   });
 
   // ─── Lógica de cálculo ───────────────────────────────────────────────────────

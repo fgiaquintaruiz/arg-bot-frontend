@@ -7,6 +7,10 @@ import Dashboard from '../Dashboard';
 
 vi.mock('../authService', () => ({ logout: vi.fn() }));
 
+vi.mock('../components/TradingWizard', () => ({
+  default: () => <div data-testid="wizard-mock" />,
+}));
+
 vi.mock('../components/Calculator', () => ({
   default: ({ onBack }) => (
     <div data-testid="calculator-mock">

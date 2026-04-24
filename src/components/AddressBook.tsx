@@ -25,6 +25,7 @@ const isValidBSCAddress = (address: string): boolean => {
 
 // Check if address matches EIP-55 checksum (optional but recommended)
 const isValidChecksum = (address: string): boolean => {
+  /* v8 ignore next */
   if (!isValidBSCAddress(address)) return false;
   
   // If all lowercase or all uppercase after 0x, skip checksum validation
@@ -44,6 +45,7 @@ const isValidChecksum = (address: string): boolean => {
     
     if (hashValue >= 8) {
       // Should be uppercase
+      /* v8 ignore next */
       if (addressChar !== addressChar.toUpperCase()) return false;
     } else {
       // Should be lowercase

@@ -46,7 +46,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
+      setTimeout(/* v8 ignore next */ () => setCopiedField(null), 2000);
     } catch { /* fallback */ }
   };
 

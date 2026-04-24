@@ -46,7 +46,15 @@ vi.mock('../components/Trade', () => ({ default: () => <div data-testid="trade" 
 vi.mock('../components/Withdraw', () => ({ default: () => <div data-testid="withdraw" /> }));
 vi.mock('../components/History', () => ({ default: () => <div data-testid="history" /> }));
 vi.mock('../components/Settings', () => ({ default: () => <div data-testid="settings" /> }));
-vi.mock('../config', () => ({ API_URL: 'http://localhost:10001' }));
+vi.mock('../components/BackendToggle', () => ({ default: () => <div data-testid="backend-toggle" /> }));
+vi.mock('../components/TradingWizard', () => ({ default: () => <div data-testid="trading-wizard" /> }));
+vi.mock('../config', () => ({
+  API_URL: 'http://localhost:10001',
+  BACKENDS: { node: { key: 'node', label: 'Node', url: 'http://localhost:10001' }, kotlin: { key: 'kotlin', label: 'Kotlin', url: '' } },
+  getActiveBackend: () => 'node',
+  setActiveBackend: vi.fn(),
+  getApiUrl: () => 'http://localhost:10001',
+}));
 
 // ─── Imports that DON'T need module reset ────────────────────────────────────
 // (For env-var-sensitive imports we use vi.resetModules() + dynamic import per test)

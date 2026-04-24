@@ -67,13 +67,16 @@ describe('History Component', () => {
     expect(screen.getByText(/100 EUR → \? USDC/)).toBeInTheDocument();
   });
 
-  it('muestra "Sin datos de ahorro" cuando savings es 0', () => {
+  it('no muestra banner de ahorro cuando savings es 0', () => {
     const trades = [
       { date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50', savings: '0' }
     ];
     localStorage.setItem('trade_history', JSON.stringify(trades));
     render(<History onClose={() => {}} />);
-    expect(screen.getByText(/Sin datos de ahorro/)).toBeInTheDocument();
+    // Cuando savings=0, el banner "Ahorro total acumulado" no debe mostrarse
+    expect(screen.queryByText(/Ahorro total acumulado/)).not.toBeInTheDocument();
+    // Pero la operación sí se lista
+    expect(screen.getByText(/100 EUR → 107\.50 USDC/)).toBeInTheDocument();
   });
 
   it('muestra empty state cuando localStorage tiene JSON no-array', () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Settings from '../components/Settings';
@@ -7,6 +7,7 @@ import Settings from '../components/Settings';
 const mockUser = { email: 'test@gmail.com', displayName: 'Test User' };
 
 vi.mock('../googleDrive', () => ({
+  setUserHint: vi.fn(),
   uploadToDrive: vi.fn().mockResolvedValue(true),
   downloadFromDrive: vi.fn().mockResolvedValue({
     version: 1,
@@ -390,4 +391,33 @@ describe('Settings Component', () => {
     await waitFor(() => expect(mockWrite).toHaveBeenCalledWith('1.2.3.4'));
     expect(screen.getByText('✓ Copiada')).toBeInTheDocument();
   });
+
+  it('renderiza sin crashear cuando user no tiene email (branch user?.email falsy)', () => {
+    render(<Settings onClose={() => {}} user={{ displayName: 'Sin Email' }} />);
+    expect(screen.getByText(/Configuración/)).toBeInTheDocument();
+  });
+
+  it('handleSaveBinance: ✓ Guardado desaparece después de 3 segundos (setTimeout callback)', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: false });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    fireEvent.click(screen.getByText('Guardar'));
+    expect(screen.getByText('✓ Guardado')).toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(screen.queryByText('✓ Guardado')).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('handleClearBinance: ✓ Borrado desaparece después de 3 segundos (setTimeout callback)', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: false });
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    fireEvent.click(screen.getByText('Borrar todo'));
+    expect(screen.getByText('✓ Borrado')).toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(screen.queryByText('✓ Borrado')).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
 });

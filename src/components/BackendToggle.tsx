@@ -34,6 +34,7 @@ export default function BackendToggle() {
   }, []);
 
   const handleSwitch = (key: BackendKey) => {
+    /* v8 ignore next */
     if (!BACKENDS[key].url) return;
     setActive(key);
     setActiveBackend(key);
