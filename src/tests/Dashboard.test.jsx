@@ -58,6 +58,8 @@ const mockApiResponse = {
   balances: { eur: '150.00', usdc: '1000.00' },
   rate: '1.08',
   usdcArsRate: '1150.50',
+  ripioUsdcArsRate: '1200.00',
+  nexoUsdcArsRate: '1100.00',
   fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 },
 };
 

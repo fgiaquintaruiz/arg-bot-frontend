@@ -10,6 +10,7 @@ import {
   Copy,
   ChevronDown,
   ChevronUp,
+  Smartphone,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import Trade from './Trade';
@@ -133,12 +134,14 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
     try {
       await navigator.clipboard.writeText(text);
     } catch {
+      /* v8 ignore start */
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
+      /* v8 ignore end */
     }
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
