@@ -43,8 +43,8 @@ test.describe('PWA and Mobile behavior', () => {
 
   test('Calculator view is scrollable to see all breakdown rows', async ({ authenticatedPage: page }) => {
     await page.getByRole('button', { name: /Calculadora/ }).click();
-    await page.getByText(/Ahorro vs Remitly/).scrollIntoViewIfNeeded();
-    await expect(page.getByText(/Ahorro vs Remitly/)).toBeVisible();
+    await page.getByText(/Depósito SEPA/).scrollIntoViewIfNeeded();
+    await expect(page.getByText(/Depósito SEPA/)).toBeVisible();
   });
 
   test('History view is accessible from Dashboard', async ({ authenticatedPage: page }) => {

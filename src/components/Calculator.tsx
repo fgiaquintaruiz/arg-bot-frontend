@@ -98,8 +98,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
   const usdcAtBinance = usdcForBroker + withdrawalFee;
   const beforeTradeFee = usdcAtBinance / eurUsdc;
   const tradingFee = beforeTradeFee * tradingFeeRate;
-  const remitlyEur = (displayedEur + sepaFee) * 1.10;
-  const ahorro = remitlyEur - displayedEur;
 
   const handleArsChange = (val: string) => { setEditMode('ars'); setArsAmount(val); };
   const handleEurChange = (val: string) => { setEditMode('eur'); setEurAmount(val); };
@@ -300,20 +298,6 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
               }}>{row.value}</span>
             </div>
           ))}
-        </div>
-
-        {/* Savings */}
-        <div style={{
-          textAlign: 'center',
-          padding: '10px 14px',
-          backgroundColor: 'rgba(14,203,129,0.08)',
-          borderRadius: '8px',
-          border: '1px solid rgba(14,203,129,0.2)',
-          marginBottom: '16px',
-        }}>
-          <span style={{ fontWeight: 600, color: '#0ECB81', fontSize: '14px' }}>
-            Ahorro vs Remitly: +{ahorro.toFixed(2)} €
-          </span>
         </div>
 
         {/* SEPA buttons */}

@@ -58,9 +58,9 @@ describe('Calculator Component', () => {
     expect(screen.getByPlaceholderText('0.00')).toBeInTheDocument();
   });
 
-  it('should display savings section', () => {
+  it('should display fee breakdown section', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByText(/Ahorro vs Remitly/)).toBeInTheDocument();
+    expect(screen.getByText(/Depósito SEPA/)).toBeInTheDocument();
   });
 
   it('should call onBack when back button is clicked', () => {
@@ -152,7 +152,7 @@ describe('Calculator Component', () => {
       fireEvent.change(arsInput, { target: { value: '-100000' } });
       // El cálculo parseFloat('-100000') = -100000, lo toma igual
       // Sólo verificamos que no crashea
-      expect(screen.getByText(/Ahorro vs Remitly/)).toBeInTheDocument();
+      expect(screen.getByText(/Depósito SEPA/)).toBeInTheDocument();
     });
 
     it('muestra breakdown con fees correctos del mock', () => {

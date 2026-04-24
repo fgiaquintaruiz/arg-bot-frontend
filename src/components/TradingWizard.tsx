@@ -119,7 +119,6 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
   const usdcAtBinance = usdcForBroker + withdrawalFee;
   const beforeTradeFee = usdcAtBinance / eurUsdc;
   const tradingFee = beforeTradeFee * tradingFeeRate;
-  const ahorro = (displayedEur + sepaFee) * 1.10 - displayedEur;
 
   // SEPA
   const binanceIBAN = localStorage.getItem('binance_eur_iban') || '';
@@ -306,16 +305,6 @@ export default function TradingWizard({ data, onBack, onRefreshData }: TradingWi
                   </span>
                 </div>
               ))}
-            </div>
-
-            <div style={{
-              textAlign: 'center', padding: '10px 14px',
-              backgroundColor: 'rgba(14,203,129,0.08)', borderRadius: '8px',
-              border: '1px solid rgba(14,203,129,0.2)', marginBottom: '16px',
-            }}>
-              <span style={{ fontWeight: 600, color: '#0ECB81', fontSize: '14px' }}>
-                Ahorro vs Remitly: +{ahorro.toFixed(2)} €
-              </span>
             </div>
 
             <button

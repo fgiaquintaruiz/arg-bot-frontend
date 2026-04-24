@@ -37,20 +37,14 @@ export default function History({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {history.map((h, i) => {
-              const savings = parseFloat(h.savings) || 0;
-              return (
-                <div key={i} style={{ backgroundColor: '#181A20', padding: '14px 16px', borderRadius: '8px', border: '1px solid #2B3139' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
-                    <span style={{ color: '#EAECEF', fontWeight: 600, fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace" }}>{h.eur} EUR → {h.usdcReceived || '?'} USDC</span>
-                    <span style={{ color: '#474D57', fontSize: '11px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                  </div>
-                  <div style={{ fontSize: '12px', color: savings > 0 ? '#0ECB81' : '#474D57' }}>
-                    {savings > 0 ? `Ahorro vs Remitly: +${savings.toFixed(2)} €` : 'Sin datos de ahorro'}
-                  </div>
+            {history.map((h, i) => (
+              <div key={i} style={{ backgroundColor: '#181A20', padding: '14px 16px', borderRadius: '8px', border: '1px solid #2B3139' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
+                  <span style={{ color: '#EAECEF', fontWeight: 600, fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace" }}>{h.eur} EUR → {h.usdcReceived || '?'} USDC</span>
+                  <span style={{ color: '#474D57', fontSize: '11px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 

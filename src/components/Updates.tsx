@@ -23,14 +23,14 @@ export default function Updates({ onClose }: { onClose: () => void }) {
 - **Rediseño UI:** Paleta Binance-inspired, IBM Plex Sans, radios 8-12px y tasas en vivo en el Dashboard.
 - **Calculadora bidireccional:** Editá ARS → ves el EUR necesario, o editá EUR → ves los ARS resultantes.
 - **Libreta de direcciones BSC:** Guardá wallets con validación EIP-55 y nombre amigable. Retiro solo permite direcciones de la libreta.
-- **Historial con ahorro:** Cada operación registra el ahorro vs Remitly. El Dashboard muestra las tasas EUR/USDC y USDC/ARS en vivo.
+- **Historial de operaciones:** Cada operación registra fecha, monto EUR, USDC recibido y fee. El Dashboard muestra las tasas EUR/USDC y USDC/ARS en vivo.
 - **Sincronización Google Drive:** Subí y bajá tu config (claves API, libreta, historial) desde Drive. OAuth silencioso, sin contraseña adicional.
 - **Transferencia SEPA asistida:** Botón para abrir tu app bancaria con los datos de Binance pre-rellenados. Fallback con copia manual si el banco no soporta \`payto:\`.
 
 ### 🔥 Prioridad alta (próximos lanzamientos)
 - **Fee de servicio:** Cobro opcional por transferencia — pendiente autorización escrita de redacted (cláusula 3.1). El feature está completo, se activa con un flip de flag.
 - **Seguridad backend JWT:** Verificación de tokens Google con \`firebase-admin\` para proteger la API y blindar futuras rutas de estadísticas.
-- **Métricas en vivo:** Panel público con total de operaciones, usuarios activos y ahorro acumulado vs Remitly — prueba social de la plataforma.
+- **Métricas en vivo:** Panel público con total de operaciones, usuarios activos y estadísticas de uso — prueba social de la plataforma.
 
 ### 🚀 Próximamente
 - **Notificaciones:** Alerta por email o Telegram cuando se completa un retiro exitoso.

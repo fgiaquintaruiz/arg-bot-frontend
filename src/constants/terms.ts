@@ -23,7 +23,7 @@ El uso del servicio requiere que generes credenciales ("API Key" y "API Secret")
 - Whitelist (Lista Blanca): Es tu responsabilidad exclusiva y obligatoria configurar la Lista Blanca de IP en Binance, habilitando únicamente la dirección IP de nuestro servidor (proporcionada en la Plataforma) y limitando las direcciones de retiro a tus propias billeteras personales.
 
 5. Independencia Corporativa
-ARGBOT es una herramienta de desarrollo independiente. No tenemos ninguna afiliación corporativa, patrocinio, asociación ni acuerdo comercial con Binance, Nexo, Lemon, Remitly, Western Union ni ninguna otra marca mencionada en la Plataforma. Las cotizaciones se obtienen de la API pública de Nexo a fines meramente informativos y de cálculo.
+ARGBOT es una herramienta de desarrollo independiente. No tenemos ninguna afiliación corporativa, patrocinio, asociación ni acuerdo comercial con Binance, Nexo, Lemon, Western Union ni ninguna otra marca mencionada en la Plataforma. Las cotizaciones se obtienen de la API pública de Nexo a fines meramente informativos y de cálculo.
 
 6. Exención y Limitación de Responsabilidad (Cláusula "As-Is")
 El servicio se proporciona "tal cual" (As-Is) y "según disponibilidad". ARGBOT y sus desarrolladores no asumen responsabilidad alguna por:

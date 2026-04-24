@@ -38,10 +38,6 @@ test.describe('Calculator', () => {
     await expect(page.getByText(/USDC destino/)).toBeVisible();
   });
 
-  test('shows savings vs Remitly in green', async ({ authenticatedPage: page }) => {
-    await expect(page.getByText(/Ahorro vs Remitly/)).toBeVisible();
-  });
-
   test('shows IBAN warning when IBAN not configured', async ({ authenticatedPage: page }) => {
     await expect(page.getByText(/Configurá tu IBAN de Binance/)).toBeVisible();
   });
