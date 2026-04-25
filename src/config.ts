@@ -1,6 +1,6 @@
 export const BACKENDS = {
   node:   { key: 'node',   label: 'Node',   url: import.meta.env.VITE_API_URL        || 'http://localhost:10007' },
-  kotlin: { key: 'kotlin', label: 'Kotlin', url: import.meta.env.VITE_KOTLIN_API_URL || '' },
+  kotlin: { key: 'kotlin', label: 'Kotlin', url: import.meta.env.VITE_KOTLIN_API_URL || 'https://arg-bot-backend-kotlin.onrender.com' },
 } as const;
 
 export type BackendKey = keyof typeof BACKENDS;
