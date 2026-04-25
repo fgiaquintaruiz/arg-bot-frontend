@@ -42,7 +42,11 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
       setSuccessMsg('¡Cambio ejecutado con éxito!');
       const history = JSON.parse(localStorage.getItem("trade_history") || "[]");
-      history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2) });
+      const usdcArs = parseFloat(data.usdcArsRate || '0');
+      const eurUsdc = parseFloat(data.rate || '0');
+      const eurArsRate = usdcArs > 0 && eurUsdc > 0 ? (eurUsdc * usdcArs).toFixed(2) : undefined;
+      const arsAmount = usdcArs > 0 ? (netUsdc * usdcArs).toFixed(0) : undefined;
+      history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate });
       localStorage.setItem("trade_history", JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);

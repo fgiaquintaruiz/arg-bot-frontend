@@ -84,4 +84,38 @@ describe('History Component', () => {
     render(<History onClose={() => {}} />);
     expect(screen.getByText(/No hay operaciones registradas aún/)).toBeInTheDocument();
   });
+
+  it('muestra arsAmount y eurArsRate cuando la entrada los tiene', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        arsAmount: '120000',
+        eurArsRate: '1200.00',
+      }
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+
+    expect(screen.getByText(/120000 ARS/)).toBeInTheDocument();
+    expect(screen.getByText(/1 EUR = 1200\.00 ARS/)).toBeInTheDocument();
+  });
+
+  it('muestra "—" cuando la entrada NO tiene arsAmount (entrada vieja)', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        // sin arsAmount ni eurArsRate
+      }
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+
+    expect(screen.getByText('—')).toBeInTheDocument();
+  });
 });

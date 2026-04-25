@@ -43,6 +43,16 @@ export default function History({ onClose }: { onClose: () => void }) {
                   <span style={{ color: '#EAECEF', fontWeight: 600, fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace" }}>{h.eur} EUR → {h.usdcReceived || '?'} USDC</span>
                   <span style={{ color: '#474D57', fontSize: '11px' }}>{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                 </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#848E9C', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>
+                    {h.arsAmount ? `${h.arsAmount} ARS` : '—'}
+                  </span>
+                  {h.eurArsRate && (
+                    <span style={{ color: '#474D57', fontSize: '11px', fontFamily: "'IBM Plex Mono', monospace" }}>
+                      1 EUR = {h.eurArsRate} ARS
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
