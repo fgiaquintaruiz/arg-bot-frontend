@@ -75,14 +75,25 @@ describe('Calculator Component', () => {
     expect(screen.queryByText(/Volver al menú/)).not.toBeInTheDocument();
   });
 
-  it('sin IBAN: muestra mensaje de configuración para el QR', () => {
+  it('sin IBAN: muestra empty state con mensaje "No tenés cuenta SEPA configurada"', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByText(/Configurá tu IBAN de Binance en Ajustes para ver el QR de pago/)).toBeInTheDocument();
+    expect(screen.getByText(/No tenés cuenta SEPA configurada/)).toBeInTheDocument();
   });
 
-  it('should display copy data button', () => {
+  it('sin IBAN: no hay QR en la pantalla', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.getByText(/Ver datos para copiar/)).toBeInTheDocument();
+    expect(document.querySelector('[data-testid="qr-code"]')).not.toBeInTheDocument();
+  });
+
+  it('con IBAN: muestra el IBAN directamente sin QR', () => {
+    localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
+    render(<Calculator data={mockData} />);
+    expect(screen.getByText('ES91 2100 0418 4502 0005 1332')).toBeInTheDocument();
+  });
+
+  it('panel SEPA siempre visible: muestra título "Datos de transferencia SEPA"', () => {
+    render(<Calculator data={mockData} />);
+    expect(screen.getByText('Datos de transferencia SEPA')).toBeInTheDocument();
   });
 
   it('should show IBAN config warning when no IBAN configured', () => {
@@ -198,8 +209,7 @@ describe('Calculator Component', () => {
     it('copia al clipboard y muestra ✓ en el botón correcto', async () => {
       const mockWrite = setupClipboard();
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
-
+      // Panel siempre visible — no hay que hacer click para abrirlo
       const copyButtons = screen.getAllByText('Copiar');
       fireEvent.click(copyButtons[0]);
 
@@ -211,8 +221,7 @@ describe('Calculator Component', () => {
       vi.useFakeTimers();
       setupClipboard();
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
-
+      // Panel siempre visible
       const copyButtons = screen.getAllByText('Copiar');
       await act(async () => { fireEvent.click(copyButtons[0]); });
 
@@ -228,8 +237,7 @@ describe('Calculator Component', () => {
       document.execCommand = execCommandMock;
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
-
+      // Panel siempre visible
       const copyButtons = screen.getAllByText('Copiar');
       fireEvent.click(copyButtons[0]);
 
@@ -239,8 +247,7 @@ describe('Calculator Component', () => {
     it('copiar monto muestra ✓ en el botón de monto', async () => {
       setupClipboard();
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
-
+      // Panel siempre visible
       // El botón de monto es el último en la lista de campos SEPA + concepto
       const copyButtons = screen.getAllByText('Copiar');
       const amountCopyBtn = copyButtons[copyButtons.length - 2]; // monto es el penúltimo
@@ -255,7 +262,7 @@ describe('Calculator Component', () => {
   describe('copyAllSepaDetails', () => {
     it('sin IBAN: botón "Copiar todos los datos" no aparece', () => {
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
+      // Panel siempre visible — no hay toggle
       expect(screen.queryByText('Copiar todos los datos')).not.toBeInTheDocument();
     });
 
@@ -264,7 +271,6 @@ describe('Calculator Component', () => {
       const mockWrite = setupClipboard();
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
       fireEvent.click(screen.getByText('Copiar todos los datos'));
 
       await waitFor(() => expect(mockWrite).toHaveBeenCalledTimes(1));
@@ -281,7 +287,6 @@ describe('Calculator Component', () => {
       const mockWrite = setupClipboard();
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
       fireEvent.click(screen.getByText('Copiar todos los datos'));
 
       await waitFor(() => {
@@ -296,7 +301,6 @@ describe('Calculator Component', () => {
       setupClipboard();
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
       fireEvent.click(screen.getByText('Copiar todos los datos'));
 
       await waitFor(() => expect(screen.getByText('✅ Copiado')).toBeInTheDocument());
@@ -308,7 +312,6 @@ describe('Calculator Component', () => {
       setupClipboard();
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
       await act(async () => { fireEvent.click(screen.getByText('Copiar todos los datos')); });
 
       expect(screen.getByText('✅ Copiado')).toBeInTheDocument();
@@ -338,22 +341,17 @@ describe('Calculator Component', () => {
   // ─── Panel SEPA details ───────────────────────────────────────────────────────
 
   describe('Panel SEPA details', () => {
-    it('toggle: click abre y segundo click cierra el panel', () => {
+    it('panel siempre visible: muestra título del panel sin interacción', () => {
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar ▼/));
       expect(screen.getByText('Datos de transferencia SEPA')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByText(/Ver datos para copiar ▲/));
-      expect(screen.queryByText('Datos de transferencia SEPA')).not.toBeInTheDocument();
     });
 
-    it('con IBAN: muestra Beneficiario, IBAN, BIC con sus valores', () => {
+    it('con IBAN: muestra IBAN, Beneficiario, BIC con sus valores', () => {
       localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
       localStorage.setItem('binance_eur_name', 'Mi Banco Custom');
       localStorage.setItem('binance_eur_bic', 'MYBICXXXX');
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       expect(screen.getByText('Mi Banco Custom')).toBeInTheDocument();
       expect(screen.getByText('ES91 2100 0418 4502 0005 1332')).toBeInTheDocument();
@@ -366,7 +364,6 @@ describe('Calculator Component', () => {
       localStorage.setItem('binance_bank_address', 'London, UK');
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       expect(screen.getByText('Revolut')).toBeInTheDocument();
       expect(screen.getByText('London, UK')).toBeInTheDocument();
@@ -377,17 +374,13 @@ describe('Calculator Component', () => {
       // sin binance_bank_name ni binance_bank_address
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       expect(screen.queryByText('Banco')).not.toBeInTheDocument();
     });
 
-    it('sin IBAN: panel muestra mensaje de configuración con link', () => {
+    it('sin IBAN: panel muestra empty state (sin link de configuración en el panel)', () => {
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
-
-      const settingsLinks = screen.getAllByText('Configuración → Binance');
-      expect(settingsLinks.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/No tenés cuenta SEPA configurada/)).toBeInTheDocument();
     });
 
     it('sepaReference usa email del usuario cuando está en localStorage', () => {
@@ -395,7 +388,6 @@ describe('Calculator Component', () => {
       localStorage.setItem('user_email', 'test@example.com');
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       expect(screen.getByText('test@example.com Binance Deposit')).toBeInTheDocument();
     });
@@ -405,7 +397,6 @@ describe('Calculator Component', () => {
       // sin user_email
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       expect(screen.getByText('Deposito ARGBOT')).toBeInTheDocument();
     });
@@ -414,7 +405,6 @@ describe('Calculator Component', () => {
       localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       // El monto aparece como "XXX.XX EUR" en el panel SEPA
       expect(screen.getByText(/\d+\.\d+ EUR/)).toBeInTheDocument();
@@ -424,7 +414,6 @@ describe('Calculator Component', () => {
       localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
 
       expect(screen.getByText(/Solo transferencia SEPA — no SWIFT/)).toBeInTheDocument();
     });
@@ -433,8 +422,7 @@ describe('Calculator Component', () => {
       localStorage.setItem('binance_eur_iban', 'ES91 2100 0418 4502 0005 1332');
 
       render(<Calculator data={mockData} />);
-      fireEvent.click(screen.getByText(/Ver datos para copiar/));
-
+      // Panel siempre visible — no hay que hacer click para abrirlo
       // El último botón "Copiar" es el de concepto (ref)
       const copyButtons = screen.getAllByText('Copiar');
       fireEvent.click(copyButtons[copyButtons.length - 1]);

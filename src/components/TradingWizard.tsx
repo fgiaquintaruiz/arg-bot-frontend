@@ -8,26 +8,10 @@ import {
   Lock,
   AlertTriangle,
   Copy,
-  ChevronDown,
-  ChevronUp,
   Smartphone,
 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 import Trade from './Trade';
 import Withdraw from './Withdraw';
-
-function buildEpcPayload(iban: string, bic: string, name: string, amount: number, reference: string): string {
-  return [
-    'BCD', '002', '1', 'SCT',
-    bic,
-    name.substring(0, 70),
-    iban,
-    `EUR${amount.toFixed(2)}`,
-    '', '',
-    reference.substring(0, 140),
-    '',
-  ].join('\n');
-}
 
 interface TradingWizardProps {
   data: any;
@@ -71,7 +55,6 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   const [eurAmount, setEurAmount] = useState('');
 
   // Step 1 — SEPA state
-  const [showSepaDetails, setShowSepaDetails] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
 
@@ -363,62 +346,14 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               >
                 ← Paso anterior
               </button>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', border: '1px solid #2B3139', padding: '16px', marginBottom: '16px' }}>
+                <p style={{ margin: '0 0 12px', color: '#848E9C', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                  Datos de transferencia SEPA
+                </p>
+
                 {binanceIBAN ? (
-                  <div style={{
-                    backgroundColor: '#FFFFFF', borderRadius: '12px',
-                    padding: '16px', display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', gap: '10px',
-                  }}>
-                    <QRCodeSVG
-                      value={buildEpcPayload(
-                        binanceIBAN.replace(/\s/g, ''),
-                        binanceBIC,
-                        binanceName,
-                        displayedEur,
-                        sepaReference,
-                      )}
-                      size={200}
-                      bgColor="#FFFFFF"
-                      fgColor="#000000"
-                      level="M"
-                    />
-                    <span style={{ color: '#181A20', fontSize: '12px', textAlign: 'center', fontWeight: 500 }}>
-                      Escaneá con tu app bancaria → Transferencia SEPA
-                    </span>
-                  </div>
-                ) : (
-                  <div style={{
-                    backgroundColor: 'rgba(240,185,11,0.08)', border: '1px solid rgba(240,185,11,0.2)',
-                    borderRadius: '8px', padding: '12px', fontSize: '13px', color: '#848E9C',
-                  }}>
-                    Configurá tu IBAN de Binance en Ajustes para ver el QR de pago.
-                  </div>
-                )}
-
-                <button
-                  onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); setShowSepaDetails(v => !v); }}
-                  onClick={() => setShowSepaDetails(v => !v)}
-                  style={{
-                    width: '100%', padding: '13px', backgroundColor: 'transparent',
-                    color: '#848E9C', border: '1px solid #2B3139', borderRadius: '8px',
-                    fontSize: '14px', fontWeight: 500, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    gap: '8px', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif",
-                  }}
-                >
-                  Ver datos para copiar
-                  {showSepaDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                </button>
-              </div>
-
-              {showSepaDetails && (
-                <div style={{ backgroundColor: '#181A20', borderRadius: '8px', border: '1px solid #2B3139', padding: '16px', marginBottom: '16px' }}>
-                  <p style={{ margin: '0 0 12px', color: '#848E9C', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-                    Datos de transferencia SEPA
-                  </p>
-
-                  {binanceIBAN && (
+                  <>
                     <button
                       onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyAllSepaDetails(); }}
                       onClick={copyAllSepaDetails}
@@ -435,13 +370,11 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                     >
                       {copiedAll ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todos los datos</>}
                     </button>
-                  )}
 
-                  {binanceIBAN ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {[
-                        { label: 'Beneficiario', value: binanceName, field: 'name', mono: false },
                         { label: 'IBAN', value: binanceIBAN, copyVal: binanceIBAN.replace(/\s/g, ''), field: 'iban', mono: true },
+                        { label: 'Beneficiario', value: binanceName, field: 'name', mono: false },
                         { label: 'BIC / SWIFT', value: binanceBIC, field: 'bic', mono: true },
                         ...(binanceBank ? [{ label: 'Banco', value: binanceBank, field: 'bank', mono: false }] : []),
                         ...(binanceBankAddr ? [{ label: 'Dirección del banco', value: binanceBankAddr, field: 'addr', mono: false }] : []),
@@ -491,20 +424,13 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                         Solo transferencia SEPA — no SWIFT
                       </p>
                     </div>
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '16px', color: '#848E9C', fontSize: '13px' }}>
-                      Configurá tu IBAN de Binance en{' '}
-                      <span
-                        onClick={openSettings}
-                        onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openSettings(); }}
-                        style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
-                      >
-                        Configuración → Binance
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '16px', color: '#848E9C', fontSize: '13px' }}>
+                    No tenés cuenta SEPA configurada. Agregá tu IBAN en ⚙️ Configuración.
+                  </div>
+                )}
+              </div>
 
               <button
                 onClick={advance}

@@ -4,10 +4,6 @@ import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TradingWizard from '../components/TradingWizard';
 
-vi.mock('qrcode.react', () => ({
-  QRCodeSVG: ({ value }) => <div data-testid="qr-code" data-value={value} />,
-}));
-
 vi.mock('../components/Trade', () => ({
   default: ({ onSuccess }) => (
     <div data-testid="trade-mock">
@@ -47,26 +43,22 @@ describe('TradingWizard', () => {
     expect(screen.getByPlaceholderText('500000')).toBeInTheDocument();
   });
 
-  it('muestra QR EPC cuando hay IBAN en localStorage', () => {
+  it('step 1 con IBAN: muestra datos SEPA directamente (sin QR)', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
 
-    const qr = screen.getByTestId('qr-code');
-    expect(qr).toBeInTheDocument();
-    expect(qr.getAttribute('data-value')).toContain('ES1234567890123456789012');
-    expect(qr.getAttribute('data-value')).toContain('SCT');
+    expect(screen.getByText('ES1234567890123456789012')).toBeInTheDocument();
+    expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument();
   });
 
-  it('muestra advertencia de configuración cuando NO hay IBAN', () => {
+  it('step 1 sin IBAN: muestra empty state de configuración', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
 
-    expect(
-      screen.getByText('Configurá tu IBAN de Binance en Ajustes para ver el QR de pago.')
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No tenés cuenta SEPA configurada/)).toBeInTheDocument();
   });
 
   it('el disclaimer de Ripio aparece en el step 4', () => {
@@ -104,15 +96,14 @@ describe('TradingWizard', () => {
     expect(arsInput.value).not.toBe('500000');
   });
 
-  it('muestra datos SEPA al expandir "Ver datos para copiar" en step 1', async () => {
+  it('muestra datos SEPA en step 1 sin necesidad de expandir', async () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
-    fireEvent.click(screen.getByText('Ver datos para copiar'));
 
-    expect(screen.getByText('Beneficiario')).toBeInTheDocument();
     expect(screen.getByText('IBAN')).toBeInTheDocument();
+    expect(screen.getByText('ES1234567890123456789012')).toBeInTheDocument();
   });
 
   it('click en Copiar del campo IBAN llama a copyToClipboard', async () => {
@@ -124,7 +115,6 @@ describe('TradingWizard', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
-    fireEvent.click(screen.getByText('Ver datos para copiar'));
 
     const copyButtons = screen.getAllByText('Copiar');
     fireEvent.click(copyButtons[0]);
@@ -189,8 +179,7 @@ describe('TradingWizard', () => {
 
     fireEvent.click(screen.getByText('Continuar con la transferencia →'));
 
-    const qr = screen.getByTestId('qr-code');
-    expect(qr.getAttribute('data-value')).toContain('test@example.com');
+    expect(screen.getByText('test@example.com Binance Deposit')).toBeInTheDocument();
   });
 
   it('step 4 muestra mensaje fallback cuando ripioUsdcArsRate es nulo', () => {
@@ -203,6 +192,23 @@ describe('TradingWizard', () => {
     fireEvent.click(screen.getByText('Withdraw Success'));
 
     expect(screen.getByText('Rate de Ripio no disponible. Verificá en la app de Ripio.')).toBeInTheDocument();
+  });
+
+  it('step 1: cuando IBAN está configurado, muestra el IBAN con botón copiar (sin QR)', () => {
+    localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+
+    expect(screen.getByText('ES1234567890123456789012')).toBeInTheDocument();
+    expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument();
+  });
+
+  it('step 1: cuando IBAN NO está configurado, muestra empty state con texto de configuración', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+
+    expect(screen.getByText(/No tenés cuenta SEPA configurada/)).toBeInTheDocument();
+    expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument();
   });
 
   it('los steps se numeran correctamente: "1. Simulación", "2. Transferir al banco"', () => {
