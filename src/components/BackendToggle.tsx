@@ -9,7 +9,15 @@ const fetchVersion = async (url: string): Promise<BackendInfo> => {
     const res = await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) return { version: '—', online: false };
     const data = await res.json();
-    return { version: data.version || data.info?.build?.version || '—', online: true };
+    return {
+      version: data.version
+        || data.info?.build?.version
+        || data.build?.version
+        || data.app?.version
+        || data.application?.version
+        || '—',
+      online: true,
+    };
   } catch {
     return { version: '—', online: false };
   }

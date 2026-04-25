@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Settings2, AlertTriangle, Bot, History as HistoryIcon } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
@@ -11,6 +11,7 @@ import BackendToggle from './components/BackendToggle';
 
 export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
+    const testnetRef = useRef<boolean>(false);
     const [currentView, setCurrentView] = useState('calculator');
 
     const apiKey = localStorage.getItem('binance_key');
@@ -59,7 +60,7 @@ export default function Dashboard({ user }: { user: any }) {
                 if (!res.ok) throw new Error("Server Error");
                 return res.json();
             })
-            .then(d => setData(d))
+            .then(d => { testnetRef.current = !!d?.testnet; setData(d); })
             .catch(err => {
                 console.error("Error fetching market data", err);
                 setData({
@@ -111,7 +112,7 @@ export default function Dashboard({ user }: { user: any }) {
             overflow: 'hidden', // contenedor fijo; el scroll va en el área de contenido
         }}>
             {/* Testnet banner */}
-            {data?.testnet && (
+            {testnetRef.current && (
                 <div style={{
                     backgroundColor: 'rgba(240,185,11,0.12)',
                     borderBottom: '1px solid rgba(240,185,11,0.3)',
@@ -255,6 +256,18 @@ export default function Dashboard({ user }: { user: any }) {
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
                     USDC/ARS <span style={{ color: '#0ECB81', fontWeight: 600 }}>
                         {data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                    </span>
+                </span>
+                <span style={{ color: '#2B3139' }}>·</span>
+                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
+                    1 EUR = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                        {data ? (parseFloat(data.rate) * parseFloat(data.usdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                    </span>
+                </span>
+                <span style={{ color: '#2B3139' }}>·</span>
+                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
+                    1 USDC = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                        {data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
             </div>
