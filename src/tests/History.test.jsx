@@ -79,6 +79,15 @@ describe('History Component', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
+  it('tiene un botón X en la esquina top-right con aria-label "Cerrar historial"', () => {
+    const mockOnClose = vi.fn();
+    render(<History onClose={mockOnClose} />);
+    const closeBtn = screen.getByRole('button', { name: 'Cerrar historial' });
+    expect(closeBtn).toBeInTheDocument();
+    fireEvent.click(closeBtn);
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
   it('should handle invalid localStorage data gracefully', () => {
     localStorage.setItem('trade_history', 'invalid-json');
     expect(() => render(<History onClose={() => {}} />)).not.toThrow();

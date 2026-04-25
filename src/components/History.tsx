@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, ClipboardList } from 'lucide-react';
 
 function truncateAddress(addr: string): string {
   if (!addr) return '—';
@@ -39,10 +39,18 @@ export default function History({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
+
+      <button
+        aria-label="Cerrar historial"
+        onClick={onClose}
+        style={{ position: 'absolute', top: '12px', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#848E9C', display: 'flex', alignItems: 'center', padding: '2px' }}
+      >
+        <X size={18} />
+      </button>
 
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '18px' }}>📋</span>
+        <ClipboardList size={18} />
         <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>Historial de operaciones</h3>
       </div>
 
