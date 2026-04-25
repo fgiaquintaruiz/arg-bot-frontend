@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Building2, User, Pencil, AlertTriangle } from 'lucide-react';
+import { Building2, User, Pencil, AlertTriangle, X } from 'lucide-react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
 
@@ -189,11 +189,11 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
                 {onClose && (
                     <button
                         onClick={onClose}
-                        aria-label="Volver al menú"
-                        style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                        aria-label="Cerrar"
+                        style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
                         disabled={loading}
                     >
-                        ← Volver al menú
+                        <X size={14} /> Cerrar
                     </button>
                 )}
             </div>

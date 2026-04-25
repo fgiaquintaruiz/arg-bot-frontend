@@ -66,13 +66,13 @@ describe('Calculator Component', () => {
   it('should call onBack when back button is clicked', () => {
     const mockOnBack = vi.fn();
     render(<Calculator data={mockData} onBack={mockOnBack} />);
-    fireEvent.click(screen.getByText(/Volver al menú/));
+    fireEvent.click(screen.getByText(/Cerrar/));
     expect(mockOnBack).toHaveBeenCalledTimes(1);
   });
 
   it('should not render back button when onBack is not provided', () => {
     render(<Calculator data={mockData} />);
-    expect(screen.queryByText(/Volver al menú/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Cerrar/)).not.toBeInTheDocument();
   });
 
   it('sin IBAN: muestra empty state con mensaje "No tenés cuenta SEPA configurada"', () => {

@@ -106,7 +106,7 @@ describe('Withdraw Component', () => {
   it('should call onClose when back button is clicked', () => {
     const mockOnClose = vi.fn();
     render(<Withdraw data={mockData} onClose={mockOnClose} onSuccess={() => {}} />);
-    fireEvent.click(screen.getByText(/Volver al menú/));
+    fireEvent.click(screen.getByText(/Cerrar/));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
@@ -360,7 +360,7 @@ describe('Withdraw Component', () => {
       resolveFetch({ ok: true, json: async () => ({ success: true }) });
     });
 
-    it('durante el fetch: botón "Volver al menú" queda deshabilitado', async () => {
+    it('durante el fetch: botón "Cerrar" queda deshabilitado', async () => {
       let resolveFetch;
       global.fetch.mockReturnValueOnce(new Promise((r) => { resolveFetch = r; }));
       const mockOnClose = vi.fn();
@@ -368,7 +368,7 @@ describe('Withdraw Component', () => {
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
       fireEvent.click(screen.getByText('Confirmar retiro'));
 
-      expect(screen.getByText(/Volver al menú/).closest('button')).toBeDisabled();
+      expect(screen.getByText(/Cerrar/).closest('button')).toBeDisabled();
 
       resolveFetch({ ok: true, json: async () => ({ success: true }) });
     });

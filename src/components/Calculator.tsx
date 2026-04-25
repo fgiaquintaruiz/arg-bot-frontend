@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 
 export default function Calculator({ data, onBack }: { data: any, onBack?: () => void }) {
   const [editMode, setEditMode] = useState<'ars' | 'eur'>('ars');
@@ -371,7 +372,7 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
           <button
             onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); onBack(); }}
             onClick={onBack}
-            aria-label="Volver al menú"
+            aria-label="Cerrar"
             style={{
               width: '100%',
               padding: '14px',
@@ -389,7 +390,7 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
               fontFamily: "'IBM Plex Sans', sans-serif",
             }}
           >
-            ← Volver al menú
+            <X size={14} /> Cerrar
           </button>
         )}
       </div>

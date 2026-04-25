@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, X } from 'lucide-react';
 import { API_URL } from '../config';
 
 export interface CoreData { balances: { eur: string; usdc: string }; rate: string; usdcArsRate?: string; fees: { tradingRate: number; withdrawalUSDC_BEP20: number }; }
@@ -171,11 +171,11 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
             {onClose && (
               <button
                 onClick={onClose}
-                aria-label="Volver al menú"
-                style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                aria-label="Cerrar"
+                style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
                 disabled={loading}
               >
-                ← Volver al menú
+                <X size={14} /> Cerrar
               </button>
             )}
           </>

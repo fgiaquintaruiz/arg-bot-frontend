@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, Check } from 'lucide-react';
+import { Pencil, Check, X } from 'lucide-react';
 
 function truncateAddress(addr: string): string {
   if (!addr) return '—';
@@ -153,8 +153,8 @@ export default function History({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <button onClick={onClose} aria-label="Volver al menú" style={{ width: '100%', padding: '14px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginTop: '16px', fontFamily: "'IBM Plex Sans', sans-serif" }}>
-          ← Volver al menú
+        <button onClick={onClose} aria-label="Cerrar" style={{ width: '100%', padding: '14px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginTop: '16px', fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <X size={14} /> Cerrar
         </button>
       </div>
     </div>

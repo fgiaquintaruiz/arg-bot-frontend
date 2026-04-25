@@ -75,7 +75,7 @@ describe('History Component', () => {
   it('should call onClose when back button is clicked', () => {
     const mockOnClose = vi.fn();
     render(<History onClose={mockOnClose} />);
-    fireEvent.click(screen.getByText(/Volver al menú/));
+    fireEvent.click(screen.getByText(/Cerrar/));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 

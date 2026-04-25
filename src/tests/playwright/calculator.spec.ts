@@ -68,7 +68,7 @@ test.describe('Calculator', () => {
   });
 
   test('back button returns to main menu', async ({ authenticatedPage: page }) => {
-    await page.getByRole('button', { name: /Volver al menú/ }).click();
+    await page.getByRole('button', { name: /Cerrar/ }).click();
     await expect(page.getByRole('button', { name: /Calculadora/ })).toBeVisible();
     await expect(page.getByText('Bienvenido de vuelta,')).toBeVisible();
   });
