@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings2, AlertTriangle } from 'lucide-react';
+import { Settings2, AlertTriangle, Bot } from 'lucide-react';
 import historyIcon from './assets/history-icon.png';
 import { logout } from './authService';
 import pkg from '../package.json';
@@ -157,7 +157,7 @@ export default function Dashboard({ user }: { user: any }) {
                 boxSizing: 'border-box',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '16px', lineHeight: 1, color: '#F0B90B', fontWeight: 900 }}>⬡</span>
+                    <Bot size={16} color="#F0B90B" />
                     <span style={{ fontWeight: 700, fontSize: '1rem', color: '#EAECEF', letterSpacing: '-0.3px' }}>
                         ARG<span style={{ color: '#F0B90B' }}>BOT</span>
                     </span>
