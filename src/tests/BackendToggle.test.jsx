@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('../config', () => ({
   getApiUrl: () => 'http://localhost:8080',
@@ -46,5 +46,19 @@ describe('BackendToggle Component', () => {
     });
     const dot = screen.getByText('Kotlin').parentElement.querySelector('span:first-child');
     expect(dot).toHaveStyle({ backgroundColor: '#0ECB81' });
+  });
+
+  it('primera carga no dispara reload aunque la versión sea nueva', async () => {
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: reloadMock },
+      configurable: true,
+      writable: true,
+    });
+    render(<BackendToggle />);
+    await waitFor(() => {
+      expect(screen.getByText('1.0.0')).toBeInTheDocument();
+    });
+    expect(reloadMock).not.toHaveBeenCalled();
   });
 });

@@ -9,6 +9,8 @@ import Updates from './components/Updates';
 import Settings from './components/Settings';
 import BackendToggle from './components/BackendToggle';
 
+const AUTOMATIC_UPDATE = true;
+
 export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
     const testnetRef = useRef<boolean>(false);
@@ -21,6 +23,7 @@ export default function Dashboard({ user }: { user: any }) {
     const [showSettings, setShowSettings] = useState(false);
     const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee'>('sync');
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+    const [versionUpdating, setVersionUpdating] = useState(false);
 
     // Listen for custom event to open Settings with specific tab
     useEffect(() => {
@@ -42,7 +45,12 @@ export default function Dashboard({ user }: { user: any }) {
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data.version && data.version !== pkg.version) {
-                    setShowUpdateBanner(true);
+                    if (AUTOMATIC_UPDATE) {
+                        setVersionUpdating(true);
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        setShowUpdateBanner(true);
+                    }
                 }
             } catch { /* silent fail */ }
         };
@@ -157,14 +165,18 @@ export default function Dashboard({ user }: { user: any }) {
                     </span>
                     <span style={{
                         fontSize: '11px',
-                        color: '#848E9C',
+                        color: versionUpdating ? '#F0B90B' : '#848E9C',
                         backgroundColor: '#2B3139',
                         padding: '2px 7px',
                         borderRadius: '4px',
                         fontWeight: 600,
                         fontFamily: "'IBM Plex Mono', monospace",
                         letterSpacing: '0.2px',
+                        ...(versionUpdating ? {
+                            animation: 'pulse 0.5s ease-in-out infinite',
+                        } : {}),
                     }}>
+                        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
                         v{pkg.version}
                     </span>
                 </div>
@@ -285,39 +297,6 @@ export default function Dashboard({ user }: { user: any }) {
             {showUpdates && <Updates onClose={/* v8 ignore next */ () => setShowUpdates(false)} />}
             {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
 
-            {/* Update banner */}
-            {showUpdateBanner && (
-                <div style={{
-                    position: 'fixed', bottom: 0, left: 0, right: 0,
-                    backgroundColor: '#1E2329',
-                    borderTop: '1px solid #F0B90B',
-                    padding: '14px 20px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    zIndex: 9998,
-                }}>
-                    <span style={{ color: '#EAECEF', fontSize: '14px', fontWeight: 500 }}>
-                        Nueva versión disponible
-                    </span>
-                    <button
-                        onClick={() => window.location.reload()}
-                        style={{
-                            backgroundColor: '#F0B90B',
-                            color: '#181A20',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '8px 18px',
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                        }}
-                    >
-                        Actualizar
-                    </button>
-                </div>
-            )}
         </div>
     );
 }

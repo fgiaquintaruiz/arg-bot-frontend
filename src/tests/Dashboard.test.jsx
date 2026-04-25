@@ -81,6 +81,7 @@ describe('Dashboard', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   // ─── Render básico ──────────────────────────────────────────────────────────
@@ -247,21 +248,45 @@ describe('Dashboard', () => {
     return () => checkCallback;
   };
 
-  it('version.json con versión diferente → muestra banner de actualización', async () => {
+  it('version.json con versión diferente → activa animación en pill y recarga tras 1.5s', async () => {
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: reloadMock },
+      configurable: true,
+      writable: true,
+    });
+
     const getCallback = setupVersionCheck();
+
+    const originalSetTimeout = globalThis.setTimeout;
+    let setTimeoutCallback;
+    vi.spyOn(global, 'setTimeout').mockImplementation((fn, ms, ...args) => {
+      if (ms === 1500) { setTimeoutCallback = fn; return 0; }
+      return originalSetTimeout(fn, ms, ...args);
+    });
+
     global.fetch
       .mockResolvedValueOnce({ ok: true, json: async () => mockApiResponse })
       .mockResolvedValue({ ok: true, json: async () => ({ version: '999.0.0' }) });
 
     render(<Dashboard user={mockUser} />);
-    await waitFor(() => {}); // let initial fetch settle
+    await waitFor(() => {});
 
     await act(async () => { await getCallback()(); });
-    expect(screen.getByText('Nueva versión disponible')).toBeInTheDocument();
+    expect(screen.queryByText('Nueva versión disponible')).not.toBeInTheDocument();
+
+    act(() => { setTimeoutCallback(); });
+    expect(reloadMock).toHaveBeenCalledTimes(1);
   });
 
-  it('version.json con misma versión → no muestra banner', async () => {
+  it('version.json con misma versión → no activa animación ni recarga', async () => {
     const getCallback = setupVersionCheck();
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: reloadMock },
+      configurable: true,
+      writable: true,
+    });
     const { default: pkg } = await import('../../package.json', { assert: { type: 'json' } });
     global.fetch
       .mockResolvedValueOnce({ ok: true, json: async () => mockApiResponse })
@@ -272,35 +297,10 @@ describe('Dashboard', () => {
 
     await act(async () => { await getCallback()(); });
     expect(screen.queryByText('Nueva versión disponible')).not.toBeInTheDocument();
+    expect(reloadMock).not.toHaveBeenCalled();
   });
 
-  it('version.json fetch falla → no muestra banner (silent fail)', async () => {
-    const getCallback = setupVersionCheck();
-    global.fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => mockApiResponse })
-      .mockRejectedValue(new Error('network error'));
-
-    render(<Dashboard user={mockUser} />);
-    await waitFor(() => {});
-
-    await act(async () => { await getCallback()().catch(() => {}); });
-    expect(screen.queryByText('Nueva versión disponible')).not.toBeInTheDocument();
-  });
-
-  it('version.json !ok → no muestra banner', async () => {
-    const getCallback = setupVersionCheck();
-    global.fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => mockApiResponse })
-      .mockResolvedValue({ ok: false, json: async () => ({}) });
-
-    render(<Dashboard user={mockUser} />);
-    await waitFor(() => {});
-
-    await act(async () => { await getCallback()(); });
-    expect(screen.queryByText('Nueva versión disponible')).not.toBeInTheDocument();
-  });
-
-  it('click Actualizar en el banner → llama a window.location.reload', async () => {
+  it('version.json fetch falla → no activa animación (silent fail)', async () => {
     const getCallback = setupVersionCheck();
     const reloadMock = vi.fn();
     Object.defineProperty(window, 'location', {
@@ -310,13 +310,31 @@ describe('Dashboard', () => {
     });
     global.fetch
       .mockResolvedValueOnce({ ok: true, json: async () => mockApiResponse })
-      .mockResolvedValue({ ok: true, json: async () => ({ version: '999.0.0' }) });
+      .mockRejectedValue(new Error('network error'));
+
+    render(<Dashboard user={mockUser} />);
+    await waitFor(() => {});
+
+    await act(async () => { await getCallback()().catch(() => {}); });
+    expect(reloadMock).not.toHaveBeenCalled();
+  });
+
+  it('version.json !ok → no activa animación', async () => {
+    const getCallback = setupVersionCheck();
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: reloadMock },
+      configurable: true,
+      writable: true,
+    });
+    global.fetch
+      .mockResolvedValueOnce({ ok: true, json: async () => mockApiResponse })
+      .mockResolvedValue({ ok: false, json: async () => ({}) });
 
     render(<Dashboard user={mockUser} />);
     await waitFor(() => {});
 
     await act(async () => { await getCallback()(); });
-    fireEvent.click(screen.getByText('Actualizar'));
-    expect(reloadMock).toHaveBeenCalledTimes(1);
+    expect(reloadMock).not.toHaveBeenCalled();
   });
 });

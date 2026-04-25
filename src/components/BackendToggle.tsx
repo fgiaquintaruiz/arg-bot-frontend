@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getApiUrl } from '../config';
 
 interface BackendInfo { version: string; online: boolean }
@@ -25,9 +25,18 @@ const fetchVersion = async (url: string): Promise<BackendInfo> => {
 
 export default function BackendToggle() {
   const [info, setInfo] = useState<BackendInfo>({ version: '…', online: false });
+  const prevVersionRef = useRef<string>('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    fetchVersion(getApiUrl()).then(setInfo);
+    fetchVersion(getApiUrl()).then(result => {
+      if (prevVersionRef.current !== '' && result.version !== '—' && result.version !== prevVersionRef.current) {
+        setUpdating(true);
+        setTimeout(() => window.location.reload(), 1500);
+      }
+      prevVersionRef.current = result.version;
+      setInfo(result);
+    });
   }, []);
 
   return (
@@ -56,7 +65,13 @@ export default function BackendToggle() {
       }}>
         Kotlin
       </span>
-      <span style={{ color: '#848E9C', fontSize: '10px', fontFamily: "'IBM Plex Mono', monospace" }}>
+      <span style={{
+        color: updating ? '#F0B90B' : '#848E9C',
+        fontSize: '10px',
+        fontFamily: "'IBM Plex Mono', monospace",
+        ...(updating ? { animation: 'pulse 0.5s ease-in-out infinite' } : {}),
+      }}>
+        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
         {info.version}
       </span>
     </div>
