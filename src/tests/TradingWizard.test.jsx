@@ -43,7 +43,7 @@ describe('TradingWizard', () => {
 
   it('renderiza el paso inicial (step 0) con el campo de ARS', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
-    expect(screen.getByText('Simulación')).toBeInTheDocument();
+    expect(screen.getByText('1. Simulación')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('500000')).toBeInTheDocument();
   });
 
@@ -153,7 +153,7 @@ describe('TradingWizard', () => {
     };
     render(<TradingWizard data={dataMinima} onRefreshData={onRefreshData} />);
     // Renderiza sin explotar — los fallbacks (1121, 1.08, 0.8) se usaron
-    expect(screen.getByText('Simulación')).toBeInTheDocument();
+    expect(screen.getByText('1. Simulación')).toBeInTheDocument();
   });
 
   it('borrar el ARS input no rompe el cálculo (|| 0 branch en arsAmount)', () => {
@@ -163,7 +163,7 @@ describe('TradingWizard', () => {
     fireEvent.change(arsInput, { target: { value: '' } });
     // El componente renderiza sin explotar — la rama || 0 fue ejecutada
     expect(arsInput).toBeInTheDocument();
-    expect(screen.getByText('Simulación')).toBeInTheDocument();
+    expect(screen.getByText('1. Simulación')).toBeInTheDocument();
   });
 
   it('usar EUR input con valor vacío no rompe el cálculo (|| 0 branch)', () => {
@@ -203,5 +203,34 @@ describe('TradingWizard', () => {
     fireEvent.click(screen.getByText('Withdraw Success'));
 
     expect(screen.getByText('Rate de Ripio no disponible. Verificá en la app de Ripio.')).toBeInTheDocument();
+  });
+
+  it('los steps se numeran correctamente: "1. Simulación", "2. Transferir al banco"', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    expect(screen.getByText('1. Simulación')).toBeInTheDocument();
+  });
+
+  it('avanzar al step 1 muestra "2. Transferir al banco" numerado', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    expect(screen.getByText('2. Transferir al banco')).toBeInTheDocument();
+  });
+
+  it('clickear un step completado (anterior) navega de vuelta a ese step', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    // Avanzar al step 1
+    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    // El step 0 (Simulación) está completado — debe ser clickeable
+    fireEvent.click(screen.getByText('1. Simulación'));
+    // Debe volver al step 0: el botón "Continuar" debe aparecer de nuevo
+    expect(screen.getByText('Continuar con la transferencia →')).toBeInTheDocument();
+  });
+
+  it('el step activo NO es clickeable (no navega al hacer click)', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    // Step 0 está activo — click no debe cambiar nada
+    fireEvent.click(screen.getByText('1. Simulación'));
+    // El botón "Continuar" sigue visible (sigue en step 0)
+    expect(screen.getByText('Continuar con la transferencia →')).toBeInTheDocument();
   });
 });

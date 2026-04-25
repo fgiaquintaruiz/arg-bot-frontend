@@ -182,15 +182,20 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   const StepBadge = ({ step, icon: Icon, label }: { step: number; icon: any; label: string }) => {
     const done = step < activeStep;
     const active = step === activeStep;
+    const numberedLabel = `${step + 1}. ${label}`;
     return (
-      <div style={{
-        padding: '14px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        backgroundColor: done ? 'rgba(14,203,129,0.04)' : 'transparent',
-        borderBottom: active ? '1px solid #2B3139' : 'none',
-      }}>
+      <div
+        onClick={done ? () => setActiveStep(step) : undefined}
+        style={{
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          backgroundColor: done ? 'rgba(14,203,129,0.04)' : 'transparent',
+          borderBottom: active ? '1px solid #2B3139' : 'none',
+          cursor: done ? 'pointer' : 'default',
+        }}
+      >
         <div style={{
           width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
           backgroundColor: done ? 'rgba(14,203,129,0.15)' : active ? 'rgba(240,185,11,0.12)' : '#2B3139',
@@ -205,7 +210,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           fontFamily: "'IBM Plex Sans', sans-serif",
           flex: 1,
         }}>
-          {label}
+          {numberedLabel}
         </span>
         {done && <span style={{ fontSize: '11px', color: '#474D57' }}>Completado</span>}
         {!done && !active && (
