@@ -46,7 +46,10 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const eurUsdc = parseFloat(data.rate || '0');
       const eurArsRate = usdcArs > 0 && eurUsdc > 0 ? (eurUsdc * usdcArs).toFixed(2) : undefined;
       const arsAmount = usdcArs > 0 ? (netUsdc * usdcArs).toFixed(0) : undefined;
-      history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate });
+      const withdrawalFee = data.fees?.withdrawalUSDC_BEP20 ?? 0.8;
+      const binanceFeeEur = eurUsdc > 0 ? (withdrawalFee / eurUsdc).toFixed(4) : undefined;
+      const usdcDestAddress = localStorage.getItem('usdc_wallet') || undefined;
+      history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate, eurUsdcRate: eurUsdc > 0 ? eurUsdc.toFixed(4) : undefined, binanceFeeEur, usdcDestAddress });
       localStorage.setItem("trade_history", JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);
