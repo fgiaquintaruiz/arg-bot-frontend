@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Settings2, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Settings2, AlertTriangle } from 'lucide-react';
+import historyIcon from './assets/history-icon.png';
 import { logout } from './authService';
 import pkg from '../package.json';
 import { getApiUrl } from './config';
@@ -192,7 +193,7 @@ export default function Dashboard({ user }: { user: any }) {
                             alignItems: 'center',
                         }}
                     >
-                        <RotateCcw size={17} />
+                        <img src={historyIcon} alt="historial" style={{width: '20px', height: '20px'}} />
                     </button>
                     <button
                         onClick={() => setShowSettings(true)}
