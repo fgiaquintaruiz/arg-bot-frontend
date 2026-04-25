@@ -145,7 +145,7 @@ describe('Dashboard', () => {
 
   // ─── Navegación via header ────────────────────────────────────────────────────
 
-  it('click RotateCcw (historial) → muestra History', () => {
+  it('click HistoryIcon (historial) → muestra History', () => {
     render(<Dashboard user={mockUser} />);
     fireEvent.click(screen.getByLabelText('Ver historial'));
     expect(screen.getByTestId('history-mock')).toBeInTheDocument();

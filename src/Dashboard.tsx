@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings2, AlertTriangle, Bot } from 'lucide-react';
-import historyIcon from './assets/history-icon.png';
+import { Settings2, AlertTriangle, Bot, History as HistoryIcon } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
 import { getApiUrl } from './config';
@@ -193,7 +192,7 @@ export default function Dashboard({ user }: { user: any }) {
                             alignItems: 'center',
                         }}
                     >
-                        <img src={historyIcon} alt="historial" style={{width: '20px', height: '20px'}} />
+                        <HistoryIcon size={17} />
                     </button>
                     <button
                         onClick={() => setShowSettings(true)}
