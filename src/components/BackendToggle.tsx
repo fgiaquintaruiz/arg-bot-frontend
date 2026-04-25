@@ -6,7 +6,7 @@ interface BackendInfo { version: string; online: boolean }
 const fetchVersion = async (url: string): Promise<BackendInfo> => {
   if (!url) return { version: '—', online: false };
   try {
-    const res = await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`${url}/api/version`, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) return { version: '—', online: false };
     const data = await res.json();
     return {
