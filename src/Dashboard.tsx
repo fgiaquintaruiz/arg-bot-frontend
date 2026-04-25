@@ -72,14 +72,8 @@ export default function Dashboard({ user }: { user: any }) {
             });
     };
 
-    // Initial data fetch — on mount/user change and backend switch
+    // Initial data fetch — on mount/user change
     useEffect(() => { fetchMarketData(); }, [user]);
-
-    useEffect(() => {
-        const onBackendChanged = () => fetchMarketData();
-        window.addEventListener('backend-changed', onBackendChanged);
-        return () => window.removeEventListener('backend-changed', onBackendChanged);
-    }, [user]);
 
     // Keep-alive polling every 9 minutes to prevent Render sleep
     useEffect(() => {
@@ -255,19 +249,19 @@ export default function Dashboard({ user }: { user: any }) {
                 <span style={{ color: '#2B3139' }}>·</span>
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
                     USDC/ARS <span style={{ color: '#0ECB81', fontWeight: 600 }}>
-                        {data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                        {data?.ripioUsdcArsRate ? parseFloat(data.ripioUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
                     </span>
                 </span>
                 <span style={{ color: '#2B3139' }}>·</span>
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
                     1 EUR = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
-                        {data ? (parseFloat(data.rate) * parseFloat(data.usdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                        {data?.ripioUsdcArsRate ? (parseFloat(data.rate) * parseFloat(data.ripioUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
                 <span style={{ color: '#2B3139' }}>·</span>
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace" }}>
                     1 USDC = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
-                        {data ? parseFloat(data.usdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                        {data?.ripioUsdcArsRate ? parseFloat(data.ripioUsdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
             </div>

@@ -50,9 +50,6 @@ vi.mock('../components/BackendToggle', () => ({ default: () => <div data-testid=
 vi.mock('../components/TradingWizard', () => ({ default: () => <div data-testid="trading-wizard" /> }));
 vi.mock('../config', () => ({
   API_URL: 'http://localhost:10001',
-  BACKENDS: { node: { key: 'node', label: 'Node', url: 'http://localhost:10001' }, kotlin: { key: 'kotlin', label: 'Kotlin', url: '' } },
-  getActiveBackend: () => 'node',
-  setActiveBackend: vi.fn(),
   getApiUrl: () => 'http://localhost:10001',
 }));
 

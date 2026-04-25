@@ -55,6 +55,9 @@ vi.mock('../components/Settings', () => ({
     </div>
   ),
 }));
+vi.mock('../components/BackendToggle', () => ({
+  default: () => <div data-testid="backend-toggle-mock" />,
+}));
 
 const mockUser = { email: 'test@example.com', displayName: 'Juan Pérez' };
 
@@ -126,7 +129,7 @@ describe('Dashboard', () => {
     global.fetch.mockReturnValueOnce(new Promise(r => { resolveFetch = r; }));
     render(<Dashboard user={mockUser} />);
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBe(2); // EUR/USDC y USDC/ARS
+    expect(dashes.length).toBe(4); // EUR/USDC y los tres slots que dependen de ripioUsdcArsRate
     // cleanup
     resolveFetch({ ok: true, json: async () => mockApiResponse });
   });
