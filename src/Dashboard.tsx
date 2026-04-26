@@ -23,6 +23,7 @@ export default function Dashboard({ user }: { user: any }) {
     const hasKeys = !!apiKey && !!apiSecret;
     const [showUpdates, setShowUpdates] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [showTestnetModal, setShowTestnetModal] = useState(false);
     const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee'>('sync');
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
     const [versionUpdating, setVersionUpdating] = useState(false);
@@ -97,6 +98,13 @@ export default function Dashboard({ user }: { user: any }) {
         const interval = setInterval(pingBackend, 9 * 60 * 1000);
         return () => clearInterval(interval);
     }, [user]);
+
+    const handleConfirmRealMode = () => {
+        setIsTestnet(false);
+        localStorage.setItem('argbot_testnet', 'false');
+        fetchMarketData();
+        setShowTestnetModal(false);
+    };
 
     const renderView = () => {
         if (currentView === 'history') {
@@ -189,12 +197,7 @@ export default function Dashboard({ user }: { user: any }) {
                     <button
                         onClick={() => {
                             if (isTestnet) {
-                                const confirmed = window.confirm('⚠️ Vas a conectar con Binance REAL. Tus operaciones afectarán fondos reales. ¿Confirmás?');
-                                if (confirmed) {
-                                    setIsTestnet(false);
-                                    localStorage.setItem('argbot_testnet', 'false');
-                                    fetchMarketData();
-                                }
+                                setShowTestnetModal(true);
                             } else {
                                 setIsTestnet(true);
                                 localStorage.setItem('argbot_testnet', 'true');
@@ -330,6 +333,20 @@ export default function Dashboard({ user }: { user: any }) {
             {/* showUpdates no tiene entrada de UI — dead code */}
             {showUpdates && <Updates onClose={/* v8 ignore next */ () => setShowUpdates(false)} />}
             {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
+
+            {showTestnetModal && (
+                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ backgroundColor: '#1E2329', border: '1px solid #2B3139', borderRadius: '20px', padding: '28px 24px', maxWidth: '340px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                        <div style={{ fontSize: '32px', textAlign: 'center', marginBottom: '12px' }}>⚠️</div>
+                        <h3 style={{ color: '#EAECEF', margin: '0 0 8px', textAlign: 'center', fontSize: '16px' }}>Cambiar a modo REAL</h3>
+                        <p style={{ color: '#848E9C', margin: '0 0 24px', textAlign: 'center', fontSize: '13px', lineHeight: '1.5' }}>Tus operaciones afectarán fondos reales en Binance. ¿Confirmás el cambio?</p>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={() => setShowTestnetModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '20px', border: '1px solid #2B3139', backgroundColor: 'transparent', color: '#848E9C', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>Cancelar</button>
+                            <button onClick={handleConfirmRealMode} style={{ flex: 1, padding: '12px', borderRadius: '20px', border: 'none', backgroundColor: '#F6465D', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
