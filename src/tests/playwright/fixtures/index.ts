@@ -33,7 +33,7 @@ export const test = base.extend<Fixtures>({
     await injectTestUser(page);
     await mockApis(page);
     await page.goto('/');
-    await expect(page.getByText('Calculadora')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('ARGBOT')).toBeVisible({ timeout: 10_000 });
     await use(page);
   },
 
@@ -45,7 +45,7 @@ export const test = base.extend<Fixtures>({
     await page.route(/\/version\.json/, route => route.fulfill({ json: {} }));
     await page.goto('/');
     // Dashboard renders with fallback data even when API fails
-    await expect(page.getByText('Calculadora')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('ARGBOT')).toBeVisible({ timeout: 10_000 });
     await use(page);
   },
 });

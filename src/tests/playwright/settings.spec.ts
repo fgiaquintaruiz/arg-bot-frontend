@@ -45,7 +45,7 @@ test.describe('Settings Modal', () => {
   test('close button dismisses the modal', async ({ authenticatedPage: page }) => {
     await page.getByRole('button', { name: 'Cerrar configuración' }).click();
     await expect(page.getByText('Configuración')).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /Calculadora/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Salir' })).toBeVisible();
   });
 
   test('Drive sync Subir button is enabled', async ({ authenticatedPage: page }) => {
@@ -63,7 +63,7 @@ test.describe('Settings Modal', () => {
   test('settings opens directly on Binance tab via custom event', async ({ authenticatedPage: page }) => {
     // Close current modal first
     await page.getByRole('button', { name: 'Cerrar configuración' }).click();
-    // Dispatch custom event (same as Calculator's IBAN warning link)
+    // Dispatch custom event (same as TradingWizard's IBAN warning link)
     await page.evaluate(() => {
       window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
     });
