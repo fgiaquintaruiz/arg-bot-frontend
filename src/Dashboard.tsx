@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Settings2, AlertTriangle, Bot, History as HistoryIcon } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
+import bundledVersion from '../public/version.json';
 import { getApiUrl } from './config';
 import TradingWizard from './components/TradingWizard';
 import History from './components/History';
@@ -45,7 +46,7 @@ export default function Dashboard({ user }: { user: any }) {
                 const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
-                if (data.version && data.version !== pkg.version) {
+                if (data.buildDate && data.buildDate !== bundledVersion.buildDate) {
                     if (AUTOMATIC_UPDATE) {
                         setVersionUpdating(true);
                         setTimeout(() => window.location.reload(), 1500);
