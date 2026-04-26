@@ -314,10 +314,10 @@ describe('Dashboard', () => {
     });
   });
 
-  it('version.json con versión diferente → activa animación en pill y recarga tras 1.5s', async () => {
-    const reloadMock = vi.fn();
+  it('version.json con versión diferente → activa animación en pill y navega con cache-bust tras 1.5s', async () => {
+    const locationStub = { pathname: '/app', href: '' };
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, reload: reloadMock },
+      value: locationStub,
       configurable: true,
       writable: true,
     });
@@ -344,7 +344,7 @@ describe('Dashboard', () => {
     expect(screen.queryByText('Nueva versión disponible')).not.toBeInTheDocument();
 
     act(() => { setTimeoutCallback(); });
-    expect(reloadMock).toHaveBeenCalledTimes(1);
+    expect(locationStub.href).toMatch(/^\/app\?_t=\d+$/);
   });
 
   it('version.json con misma versión → no activa animación ni recarga', async () => {

@@ -32,7 +32,7 @@ export default function BackendToggle() {
     fetchVersion(getApiUrl()).then(result => {
       if (prevVersionRef.current !== '' && result.version !== '—' && result.version !== prevVersionRef.current) {
         setUpdating(true);
-        setTimeout(() => window.location.reload(), 1500);
+        setTimeout(() => { window.location.href = window.location.pathname + '?_t=' + Date.now(); }, 1500);
       }
       prevVersionRef.current = result.version;
       setInfo(result);

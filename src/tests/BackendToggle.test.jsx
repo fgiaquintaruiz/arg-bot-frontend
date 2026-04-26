@@ -48,10 +48,10 @@ describe('BackendToggle Component', () => {
     expect(dot).toHaveStyle({ backgroundColor: '#0ECB81' });
   });
 
-  it('primera carga no dispara reload aunque la versión sea nueva', async () => {
-    const reloadMock = vi.fn();
+  it('primera carga no dispara navegación aunque la versión sea nueva', async () => {
+    const locationStub = { pathname: '/app', href: '/app' };
     Object.defineProperty(window, 'location', {
-      value: { ...window.location, reload: reloadMock },
+      value: locationStub,
       configurable: true,
       writable: true,
     });
@@ -59,6 +59,6 @@ describe('BackendToggle Component', () => {
     await waitFor(() => {
       expect(screen.getByText('1.0.0')).toBeInTheDocument();
     });
-    expect(reloadMock).not.toHaveBeenCalled();
+    expect(locationStub.href).toBe('/app');
   });
 });
