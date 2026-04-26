@@ -7,7 +7,7 @@ import Calculator from '../components/Calculator';
 const mockData = {
   balances: { eur: '100.00', usdc: '500.00' },
   rate: '1.08',
-  usdcArsRate: '1150.50',
+  ripioUsdcArsRate: '1150.50',
   fees: {
     withdrawalUSDC_BEP20: 0.8,
     tradingRate: 0.001,
@@ -118,23 +118,24 @@ describe('Calculator Component', () => {
       const eurInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(eurInput, { target: { value: '400' } });
       const arsInput = screen.getByPlaceholderText('500000');
-      expect(parseFloat(arsInput.value)).toBeGreaterThan(0);
+      const arsRaw = arsInput.value.replace(/\./g, '').replace(',', '.');
+      expect(parseFloat(arsRaw)).toBeGreaterThan(0);
     });
 
-    it('EUR ≤ sepaFee (1 EUR): usdc=0, ARS muestra vacío', () => {
+    it('EUR > 0: ARS se calcula como conversión bruta (sin deducir sepaFee)', () => {
       render(<Calculator data={mockData} />);
       const eurInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(eurInput, { target: { value: '0.5' } });
       const arsInput = screen.getByPlaceholderText('500000');
-      expect(arsInput.value).toBe('');
+      expect(parseFloat(arsInput.value.replace(/\./g, '').replace(',', '.'))).toBeGreaterThan(0);
     });
 
-    it('EUR exactamente igual a sepaFee (1 EUR): usdc=0, ARS vacío', () => {
+    it('EUR=1: ARS muestra valor de conversión bruta', () => {
       render(<Calculator data={mockData} />);
       const eurInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(eurInput, { target: { value: '1' } });
       const arsInput = screen.getByPlaceholderText('500000');
-      expect(arsInput.value).toBe('');
+      expect(parseFloat(arsInput.value.replace(/\./g, '').replace(',', '.'))).toBeGreaterThan(0);
     });
 
     it('ARS input vacío → displayedArs=0, EUR se sigue calculando', () => {
@@ -146,15 +147,14 @@ describe('Calculator Component', () => {
 
     it('calcFromArs es el inverso aproximado de calcFromEur', () => {
       render(<Calculator data={mockData} />);
-      // Poner EUR manualmente
       const eurInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(eurInput, { target: { value: '435' } });
       const arsInput = screen.getByPlaceholderText('500000');
-      const arsValue = parseFloat(arsInput.value);
-      // Luego cambiar ese ARS de vuelta
+      // ARS value uses es-AR locale format (dots as thousands separator)
+      const arsRaw = arsInput.value.replace(/\./g, '').replace(',', '.');
+      const arsValue = parseFloat(arsRaw);
       fireEvent.change(arsInput, { target: { value: arsValue.toFixed(0) } });
       const eurBack = parseFloat(eurInput.value);
-      // Tolerancia del 1% por redondeo
       expect(Math.abs(eurBack - 435)).toBeLessThan(5);
     });
 
@@ -179,17 +179,17 @@ describe('Calculator Component', () => {
 
   describe('Defaults con data incompleto', () => {
     it('usa tasa EUR/USDC=1.08 por default cuando data.rate es undefined', () => {
-      render(<Calculator data={{ usdcArsRate: '1150.50', fees: { withdrawalUSDC_BEP20: 0.8 } }} />);
+      render(<Calculator data={{ ripioUsdcArsRate: '1150.50', fees: { withdrawalUSDC_BEP20: 0.8 } }} />);
       expect(screen.getByText(/EUR→USDC \(1\.0800\)/)).toBeInTheDocument();
     });
 
-    it('usa usdcArs=1121 por default cuando usdcArsRate es undefined', () => {
+    it('usa usdcArs=1482 por default cuando ripioUsdcArsRate es undefined', () => {
       render(<Calculator data={{ rate: '1.08', fees: { withdrawalUSDC_BEP20: 0.8 } }} />);
-      expect(screen.getByText(/USDC destino \(1121\)/)).toBeInTheDocument();
+      expect(screen.getByText(/USDC destino \(1\.482,00\)/)).toBeInTheDocument();
     });
 
     it('usa withdrawalFee=0.8 por default cuando fees es undefined', () => {
-      render(<Calculator data={{ rate: '1.08', usdcArsRate: '1150.50' }} />);
+      render(<Calculator data={{ rate: '1.08', ripioUsdcArsRate: '1150.50' }} />);
       expect(screen.getByText(/\+ 0\.80 USDC/)).toBeInTheDocument();
     });
 

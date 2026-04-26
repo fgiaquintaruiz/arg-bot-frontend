@@ -14,7 +14,7 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
     </div>
   );
 
-  const usdcArs = parseFloat(data.usdcArsRate) || 1121.00;
+  const usdcArs = parseFloat(data.ripioUsdcArsRate) || 1482.00;
   const eurUsdc = parseFloat(data.rate) || 1.08;
   const withdrawalFee = data.fees?.withdrawalUSDC_BEP20 ?? 0.8;
   const tradingFeeRate = 0.001;
@@ -62,12 +62,12 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
   };
 
   const calcFromEur = (eur: number) => {
-    const netEur = eur - sepaFee;
-    if (netEur <= 0) return { usdc: 0, ars: 0 };
-    const grossUsdc = netEur * eurUsdc;
+    if (eur <= 0) return { usdc: 0, ars: 0 };
+    const ars = eur * eurUsdc * usdcArs;
+    const grossUsdc = eur * eurUsdc;
     const tradingFee = grossUsdc * tradingFeeRate;
-    const netUsdc = grossUsdc - tradingFee - withdrawalFee;
-    return { usdc: Math.max(0, netUsdc), ars: Math.max(0, netUsdc * usdcArs) };
+    const netUsdc = Math.max(0, grossUsdc - tradingFee - withdrawalFee);
+    return { usdc: netUsdc, ars };
   };
 
   const calcFromArs = (ars: number) => {
@@ -179,7 +179,7 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
           <label style={rowLabel}>Querés recibir (ARS)</label>
           <input
             type="number"
-            value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? displayedArs.toFixed(2) : ''}
+            value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? Math.round(displayedArs).toLocaleString('es-AR') : ''}
             onChange={e => handleArsChange(e.target.value)}
             style={{
               width: '100%',
@@ -248,7 +248,7 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
             { label: `EUR→USDC (${eurUsdc.toFixed(4)})`, value: `${beforeTradeFee.toFixed(2)} €`, danger: false },
             { label: 'Fee trading (0.1%)', value: `+ ${tradingFee.toFixed(4)} €`, danger: true },
             { label: 'Retiro Binance BEP20', value: `+ ${withdrawalFee.toFixed(2)} USDC`, danger: false },
-            { label: `USDC destino (${usdcArs})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
+            { label: `USDC destino (${usdcArs.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
           ].map((row, i) => (
             <div key={i} style={{
               display: 'flex',
