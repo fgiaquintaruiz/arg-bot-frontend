@@ -102,6 +102,8 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   const beforeTradeFee = usdcAtBinance / eurUsdc;
   const tradingFee = beforeTradeFee * tradingFeeRate;
 
+  const showLowAmountWarning = parseFloat(eurAmount) > 0 && displayedArs <= 0;
+
   // SEPA
   const binanceIBAN = localStorage.getItem('binance_eur_iban') || '';
   const binanceName = localStorage.getItem('binance_eur_name') || 'Binance Europe Services Ltd';
@@ -253,7 +255,10 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
 
             <div style={{
               marginBottom: '16px', backgroundColor: '#181A20', borderRadius: '8px',
-              padding: '12px 14px', border: editMode === 'eur' ? '1px solid #F0B90B' : '1px solid #2B3139',
+              padding: '12px 14px',
+              border: showLowAmountWarning
+                ? '1px solid #F0B90B'
+                : editMode === 'eur' ? '1px solid #F0B90B' : '1px solid #2B3139',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <label style={ROW_LABEL}>Costo Final (EUR)</label>
@@ -274,6 +279,14 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                   placeholder="0.00"
                 />
               </div>
+              {showLowAmountWarning && (
+                <div style={{
+                  color: '#F0B90B', fontSize: '12px', marginTop: '6px',
+                  fontFamily: "'IBM Plex Sans', sans-serif",
+                }}>
+                  ⚠ Monto muy bajo — los fees consumen toda la conversión. Probá con un monto mayor.
+                </div>
+              )}
             </div>
 
             <div style={{
