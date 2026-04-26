@@ -14,6 +14,7 @@ const AUTOMATIC_UPDATE = true;
 export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
     const testnetRef = useRef<boolean>(false);
+    const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem('argbot_testnet') !== 'false');
     const [currentView, setCurrentView] = useState('calculator');
 
     const apiKey = localStorage.getItem('binance_key');
@@ -62,7 +63,7 @@ export default function Dashboard({ user }: { user: any }) {
         fetch(`${getApiUrl()}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret })
+            body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret, testnet: isTestnet })
         })
             .then(async res => {
                 if (!res.ok) throw new Error("Server Error");
@@ -114,7 +115,7 @@ export default function Dashboard({ user }: { user: any }) {
             overflow: 'hidden', // contenedor fijo; el scroll va en el área de contenido
         }}>
             {/* Testnet banner */}
-            {testnetRef.current && (
+            {isTestnet && (
                 <div style={{
                     backgroundColor: 'rgba(240,185,11,0.12)',
                     borderBottom: '1px solid rgba(240,185,11,0.3)',
@@ -184,6 +185,38 @@ export default function Dashboard({ user }: { user: any }) {
                 <BackendToggle />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                        onClick={() => {
+                            if (isTestnet) {
+                                const confirmed = window.confirm('⚠️ Vas a conectar con Binance REAL. Tus operaciones afectarán fondos reales. ¿Confirmás?');
+                                if (confirmed) {
+                                    setIsTestnet(false);
+                                    localStorage.setItem('argbot_testnet', 'false');
+                                    fetchMarketData();
+                                }
+                            } else {
+                                setIsTestnet(true);
+                                localStorage.setItem('argbot_testnet', 'true');
+                                fetchMarketData();
+                            }
+                        }}
+                        aria-label={isTestnet ? 'Modo testnet activo' : 'Modo real activo'}
+                        style={{
+                            background: 'transparent',
+                            border: isTestnet ? '1px solid rgba(240,185,11,0.4)' : '1px solid rgba(14,203,129,0.4)',
+                            backgroundColor: isTestnet ? 'rgba(240,185,11,0.15)' : 'rgba(14,203,129,0.15)',
+                            color: isTestnet ? '#F0B90B' : '#0ECB81',
+                            cursor: 'pointer',
+                            padding: '6px 14px',
+                            borderRadius: '20px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            letterSpacing: '0.5px',
+                            marginRight: '24px',
+                        }}
+                    >
+                        {isTestnet ? 'TESTNET' : 'REAL'}
+                    </button>
                     <button
                         onClick={() => setCurrentView('history')}
                         title="Historial"

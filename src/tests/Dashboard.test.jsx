@@ -178,6 +178,44 @@ describe('Dashboard', () => {
   });
 
 
+  // ─── Swap TESTNET / REAL ──────────────────────────────────────────────────────
+
+  it('muestra botón TESTNET por defecto', () => {
+    render(<Dashboard user={mockUser} />);
+    expect(screen.getByLabelText('Modo testnet activo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Modo testnet activo')).toHaveTextContent('TESTNET');
+  });
+
+  it('click TESTNET → confirm → cambia a REAL y guarda en localStorage', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByLabelText('Modo testnet activo'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Modo real activo')).toHaveTextContent('REAL');
+    });
+    expect(localStorage.getItem('argbot_testnet')).toBe('false');
+  });
+
+  it('click TESTNET → cancel confirm → permanece en TESTNET', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByLabelText('Modo testnet activo'));
+    expect(screen.getByLabelText('Modo testnet activo')).toHaveTextContent('TESTNET');
+    expect(localStorage.getItem('argbot_testnet')).toBeNull();
+  });
+
+  it('click REAL → cambia a TESTNET sin confirmación', async () => {
+    localStorage.setItem('argbot_testnet', 'false');
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByLabelText('Modo real activo'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Modo testnet activo')).toHaveTextContent('TESTNET');
+    });
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(localStorage.getItem('argbot_testnet')).toBe('true');
+  });
+
   it('click Salir → llama a logout()', () => {
     render(<Dashboard user={mockUser} />);
     fireEvent.click(screen.getByText('Salir'));
