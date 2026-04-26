@@ -178,9 +178,10 @@ export default function Calculator({ data, onBack }: { data: any, onBack?: () =>
         <div style={{ marginBottom: '12px' }}>
           <label style={rowLabel}>Querés recibir (ARS)</label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? Math.round(displayedArs).toLocaleString('es-AR') : ''}
-            onChange={e => handleArsChange(e.target.value)}
+            onChange={e => handleArsChange(e.target.value.replace(/\./g, ''))}
             style={{
               width: '100%',
               padding: '13px 14px',
