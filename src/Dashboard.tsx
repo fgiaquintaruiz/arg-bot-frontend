@@ -57,6 +57,7 @@ export default function Dashboard({ user }: { user: any }) {
                 }
             } catch { /* silent fail */ }
         };
+        checkForUpdates();
         const interval = setInterval(checkForUpdates, 60 * 1000);
         return () => clearInterval(interval);
     }, []);
@@ -188,6 +189,14 @@ export default function Dashboard({ user }: { user: any }) {
                     }}>
                         <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
                         v{pkg.version}
+                    </span>
+                    <span style={{
+                        fontSize: '11px',
+                        color: '#848E9C',
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        letterSpacing: '0.2px',
+                    }}>
+                        v{bundledVersion.version}
                     </span>
                 </div>
 
