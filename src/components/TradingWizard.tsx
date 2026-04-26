@@ -237,9 +237,10 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
             <div style={{ marginBottom: '12px' }}>
               <label style={ROW_LABEL}>Querés recibir (ARS)</label>
               <input
-                type="number"
-                value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? displayedArs.toFixed(2) : ''}
-                onChange={e => { setEditMode('ars'); setArsAmount(e.target.value); }}
+                type="text"
+                inputMode="numeric"
+                value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? Math.round(displayedArs).toLocaleString('es-AR') : ''}
+                onChange={e => { setEditMode('ars'); setArsAmount(e.target.value.replace(/\./g, '')); }}
                 style={{
                   width: '100%', padding: '13px 14px', backgroundColor: '#181A20',
                   color: '#EAECEF', border: editMode === 'ars' ? '1px solid #F0B90B' : '1px solid #2B3139',
