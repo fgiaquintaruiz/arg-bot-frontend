@@ -67,14 +67,13 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   // Math
   const usdcArs = parseFloat(data.usdcArsRate) || 1121.00;
   const eurUsdc = parseFloat(data.rate) || 1.08;
-  const withdrawalFee = data.fees?.withdrawalUSDC_BEP20 ?? 0.8;
+  // Binance no cobra fee de retiro para USDC BEP20 — siempre 0
   const tradingFeeRate = 0.001;
   const sepaFee = 1.00;
 
   const calcFromArs = (ars: number) => {
     const usdcNeeded = ars / usdcArs;
-    const usdcAfterWithdrawal = usdcNeeded + withdrawalFee;
-    const eurBeforeTradeFee = usdcAfterWithdrawal / eurUsdc;
+    const eurBeforeTradeFee = usdcNeeded / eurUsdc;
     return eurBeforeTradeFee + eurBeforeTradeFee * tradingFeeRate + sepaFee;
   };
 
@@ -82,7 +81,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
     const netEur = eur - sepaFee;
     if (netEur <= 0) return { usdc: 0, ars: 0 };
     const grossUsdc = netEur * eurUsdc;
-    const netUsdc = grossUsdc - grossUsdc * tradingFeeRate - withdrawalFee;
+    const netUsdc = grossUsdc - grossUsdc * tradingFeeRate;
     return { usdc: Math.max(0, netUsdc), ars: Math.max(0, netUsdc * usdcArs) };
   };
 
@@ -98,8 +97,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   }
 
   const usdcForBroker = displayedArs / usdcArs;
-  const usdcAtBinance = usdcForBroker + withdrawalFee;
-  const beforeTradeFee = usdcAtBinance / eurUsdc;
+  const beforeTradeFee = usdcForBroker / eurUsdc;
   const tradingFee = beforeTradeFee * tradingFeeRate;
 
   const showLowAmountWarning = parseFloat(eurAmount) > 0 && displayedArs <= 0;
@@ -321,7 +319,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                 { label: 'Depósito SEPA', value: `+ ${sepaFee.toFixed(2)} €`, danger: true },
                 { label: `EUR→USDC (${eurUsdc.toFixed(4)})`, value: `${beforeTradeFee.toFixed(2)} €`, danger: false },
                 { label: 'Fee trading (0.1%)', value: `+ ${tradingFee.toFixed(4)} €`, danger: true },
-                { label: 'Retiro Binance BEP20', value: `+ ${withdrawalFee.toFixed(2)} USDC`, danger: false },
+                { label: 'Retiro Binance BEP20', value: '0 USDC', danger: false },
                 { label: `USDC destino (${usdcArs})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
               ].map((row, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: i < 4 ? '8px' : 0, alignItems: 'center' }}>

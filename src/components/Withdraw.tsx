@@ -3,7 +3,7 @@ import { Building2, User, Pencil, AlertTriangle, X } from 'lucide-react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
 
-export interface CoreData { balances: { eur: string; usdc: string }; fees: { tradingRate: number; withdrawalUSDC_BEP20: number }; }
+export interface CoreData { balances: { eur: string; usdc: string }; fees: { tradingRate: number }; }
 interface WithdrawProps { data: CoreData; onClose?: () => void; onSuccess?: () => void; variant?: 'standalone' | 'embedded'; }
 
 export default function Withdraw({ data, onClose, onSuccess, variant = 'standalone' }: WithdrawProps) {
@@ -13,6 +13,8 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
     const [errorMsg, setErrorMsg] = useState<string>('');
     const [successMsg, setSuccessMsg] = useState<string>('');
     const [showAddressBook, setShowAddressBook] = useState<boolean>(false);
+    const [isConfirming, setIsConfirming] = useState<boolean>(false);
+    const [irreversibleAccepted, setIrreversibleAccepted] = useState<boolean>(false);
 
     useEffect(() => { localStorage.setItem('usdc_wallet', address); }, [address]);
 
@@ -40,7 +42,7 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
         setShowAddressBook(false);
     };
 
-    const handleWithdraw = async () => {
+    const handleInitiateWithdraw = () => {
         /* v8 ignore start */
         if (!hasAddressBookEntry) {
             setErrorMsg('Debes agregar una dirección en la libreta de direcciones primero.');
@@ -60,14 +62,27 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
             setErrorMsg('Saldo insuficiente. Solo tenés ' + data.balances.usdc + ' USDC.');
             return;
         }
+        setErrorMsg('');
+        setIrreversibleAccepted(false);
+        setIsConfirming(true);
+    };
+
+    const handleCancelConfirmation = () => {
+        setIsConfirming(false);
+        setIrreversibleAccepted(false);
+    };
+
+    const handleConfirmWithdraw = async () => {
         setLoading(true); setErrorMsg(''); setSuccessMsg('');
         try {
             const res = await fetch(`${API_URL}/api/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: localStorage.getItem('binance_key'), apiSecret: localStorage.getItem('binance_secret'), address, amountUsdc: amount }) });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
             setSuccessMsg('¡Solicitud de retiro enviada!');
+            setIsConfirming(false);
+            setIrreversibleAccepted(false);
             setTimeout(() => onSuccess && onSuccess(), 2000);
-        } catch (e: any) { setErrorMsg(e.message); } finally { setLoading(false); }
+        } catch (e: any) { setErrorMsg(e.message); setIsConfirming(false); setIrreversibleAccepted(false); } finally { setLoading(false); }
     };
 
     return (
@@ -179,11 +194,11 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
                 )}
 
                 <button
-                    onClick={handleWithdraw}
+                    onClick={handleInitiateWithdraw}
                     style={{ width: '100%', padding: '13px', backgroundColor: '#C3A1FF', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '8px', fontFamily: "'IBM Plex Sans', sans-serif', opacity: loading || !hasAddressBookEntry ? 0.5 : 1" }}
                     disabled={loading || !hasAddressBookEntry}
                 >
-                    {loading ? 'Procesando...' : 'Confirmar retiro'}
+                    {loading ? 'Procesando...' : 'Retirar'}
                 </button>
 
                 {onClose && (
@@ -202,6 +217,79 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px', boxSizing: 'border-box' }}>
                     <div style={{ maxWidth: '500px', width: '100%' }}>
                         <AddressBook onSelect={handleAddressSelect} onClose={() => setShowAddressBook(false)} />
+                    </div>
+                </div>
+            )}
+
+            {isConfirming && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="withdraw-confirm-title"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100, padding: '20px', boxSizing: 'border-box' }}
+                >
+                    <div style={{ maxWidth: '460px', width: '100%', backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139', padding: '20px' }}>
+                        <h3 id="withdraw-confirm-title" style={{ margin: '0 0 14px', color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>
+                            Confirmar retiro
+                        </h3>
+
+                        <div style={{ backgroundColor: '#181A20', border: '1px solid #2B3139', borderRadius: '8px', padding: '14px', marginBottom: '14px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+                                <span style={{ color: '#848E9C' }}>Destino</span>
+                                <span style={{ color: '#EAECEF', fontWeight: 600 }}>{selectedEntry?.name || '—'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                                <span style={{ color: '#848E9C' }}>Dirección</span>
+                                <span style={{ color: '#EAECEF', fontFamily: "'IBM Plex Mono', monospace" }}>{truncateAddress(address)}</span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#F0B90B', textAlign: 'right', marginBottom: '10px' }}>
+                                verificá los últimos 4 caracteres
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+                                <span style={{ color: '#848E9C' }}>Monto</span>
+                                <span style={{ color: '#EAECEF', fontFamily: "'IBM Plex Mono', monospace" }}>{amount} USDC</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+                                <span style={{ color: '#848E9C' }}>Red</span>
+                                <span style={{ color: '#EAECEF' }}>BSC (BEP20)</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+                                <span style={{ color: '#848E9C' }}>Fee</span>
+                                <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace" }}>Fee: 0 USDC</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #2B3139', paddingTop: '10px', marginTop: '4px' }}>
+                                <span style={{ color: '#EAECEF', fontWeight: 600 }}>Total que llega al destino</span>
+                                <span style={{ color: '#0ECB81', fontSize: '16px', fontWeight: 700, fontFamily: "'IBM Plex Mono', monospace" }}>{amount} USDC</span>
+                            </div>
+                        </div>
+
+                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '14px', fontSize: '13px', color: '#EAECEF', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                checked={irreversibleAccepted}
+                                onChange={(e) => setIrreversibleAccepted(e.target.checked)}
+                                style={{ marginTop: '2px', cursor: 'pointer' }}
+                                disabled={loading}
+                            />
+                            <span>Entiendo que esta operación es irreversible</span>
+                        </label>
+
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                                onClick={handleCancelConfirmation}
+                                disabled={loading}
+                                style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', border: '1px solid #2B3139', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleConfirmWithdraw}
+                                disabled={loading || !irreversibleAccepted}
+                                style={{ flex: 1, padding: '13px', backgroundColor: irreversibleAccepted && !loading ? '#F6465D' : '#2B3139', color: irreversibleAccepted && !loading ? '#fff' : '#474D57', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: irreversibleAccepted && !loading ? 'pointer' : 'not-allowed', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                            >
+                                {loading ? 'Procesando...' : 'Confirmar retiro'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

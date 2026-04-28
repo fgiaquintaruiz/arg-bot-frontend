@@ -9,7 +9,6 @@ const mockData = {
   rate: '1.0850',
   usdcArsRate: '1150.50',
   fees: {
-    withdrawalUSDC_BEP20: 0.8,
     tradingRate: 0.001
   }
 };

@@ -80,7 +80,7 @@ export default function Dashboard({ user }: { user: any }) {
                     balances: { eur: "0.00", usdc: "0.00" },
                     rate: "1.08",
                     usdcArsRate: "1150.50",
-                    fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 }
+                    fees: { tradingRate: 0.001 }
                 });
             });
     };

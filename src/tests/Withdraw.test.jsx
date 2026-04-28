@@ -17,7 +17,7 @@ vi.mock('../components/AddressBook', () => ({
 
 const mockData = {
   balances: { eur: '100.00', usdc: '500.00' },
-  fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 },
+  fees: { tradingRate: 0.001 },
 };
 
 const mockAddress = '0x1234567890123456789012345678901234567890';
@@ -76,7 +76,7 @@ describe('Withdraw Component', () => {
 
   it('should disable confirm button when no address book', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    expect(screen.getByText('Confirmar retiro')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Retirar$/ })).toBeDisabled();
   });
 
   it('should enable MAX button and set amount to balance', () => {
@@ -114,12 +114,12 @@ describe('Withdraw Component', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
     const amountInput = screen.getByPlaceholderText('Monto a retirar');
     fireEvent.change(amountInput, { target: { value: '100' } });
-    expect(() => fireEvent.click(screen.getByText('Confirmar retiro'))).not.toThrow();
+    expect(() => fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }))).not.toThrow();
   });
 
   it('should not allow withdrawal without amount', () => {
     render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    expect(() => fireEvent.click(screen.getByText('Confirmar retiro'))).not.toThrow();
+    expect(() => fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }))).not.toThrow();
   });
 
   it('address_book corrupto en localStorage: muestra empty state sin tirar', () => {
@@ -146,9 +146,9 @@ describe('Withdraw Component', () => {
       expect(screen.queryByText(/No tenés direcciones guardadas/)).not.toBeInTheDocument();
     });
 
-    it('habilita el botón "Confirmar retiro" cuando hay libreta', () => {
+    it('habilita el botón "Retirar" cuando hay libreta', () => {
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-      expect(screen.getByText('Confirmar retiro')).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /^Retirar$/ })).not.toBeDisabled();
     });
 
     it('oculta el warning BSC cuando hay una dirección seleccionada', () => {
@@ -190,14 +190,10 @@ describe('Withdraw Component', () => {
   // ─── handleWithdraw — validaciones ───────────────────────────────────────────
 
   describe('handleWithdraw — validaciones', () => {
-    it('sin libreta: click confirmar muestra error y abre libreta', () => {
+    it('sin libreta: el botón Retirar está disabled — no abre modal ni fetch', () => {
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-      // el botón está disabled sin libreta, lo habilitamos forzando el click igualmente
-      // en la práctica está disabled pero probamos el guard interno
-      const btn = screen.getByText('Confirmar retiro');
-      // disabled=true previene el evento en el DOM, simulamos igualmente
+      const btn = screen.getByRole('button', { name: /^Retirar$/ });
       fireEvent.click(btn);
-      // Sin libreta el botón está disabled así que onClick no dispara
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -206,7 +202,7 @@ describe('Withdraw Component', () => {
       localStorage.setItem('usdc_wallet', '0xDIRECCIONNOREGISTRADA000000000000000000');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(screen.getByText(/dirección debe ser seleccionada de la libreta/)).toBeInTheDocument();
       expect(global.fetch).not.toHaveBeenCalled();
     });
@@ -216,18 +212,21 @@ describe('Withdraw Component', () => {
       localStorage.setItem('usdc_wallet', mockAddress);
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '9999' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(screen.getByText(/Saldo insuficiente/)).toBeInTheDocument();
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('amount exactamente igual a balance: permite retirar (boundary)', async () => {
+    it('amount exactamente igual a balance: permite retirar (boundary, vía modal)', async () => {
       localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
       localStorage.setItem('usdc_wallet', mockAddress);
       global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '500' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+      // Modal abierto → checkbox + confirmar
+      fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+      fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
       await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
     });
 
@@ -235,7 +234,7 @@ describe('Withdraw Component', () => {
       localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
       localStorage.setItem('usdc_wallet', mockAddress);
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -244,7 +243,7 @@ describe('Withdraw Component', () => {
       localStorage.setItem('usdc_wallet', mockAddress);
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '0' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -254,7 +253,7 @@ describe('Withdraw Component', () => {
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       // Trigger error
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '9999' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(screen.getByText(/Saldo insuficiente/)).toBeInTheDocument();
       // Tipear limpia el error
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
@@ -270,11 +269,17 @@ describe('Withdraw Component', () => {
       localStorage.setItem('usdc_wallet', mockAddress);
     });
 
+    const openModalAndConfirm = () => {
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+      fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+      fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
+    };
+
     it('llama al endpoint correcto con los datos del formulario', async () => {
       global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
       await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
       const [url, options] = global.fetch.mock.calls[0];
@@ -289,19 +294,23 @@ describe('Withdraw Component', () => {
       global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
       await waitFor(() => expect(screen.getByText(/Solicitud de retiro enviada/)).toBeInTheDocument());
     });
 
     it('API éxito: llama a onSuccess después de 2 segundos', async () => {
-      vi.useFakeTimers();
       const mockOnSuccess = vi.fn();
       global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={mockOnSuccess} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
 
-      await act(async () => { fireEvent.click(screen.getByText('Confirmar retiro')); });
+      // Open modal & confirm with real timers (so the modal renders with React 19)
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+      fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+
+      vi.useFakeTimers();
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i })); });
       await act(async () => { vi.advanceTimersByTime(2000); });
 
       expect(mockOnSuccess).toHaveBeenCalledTimes(1);
@@ -314,7 +323,7 @@ describe('Withdraw Component', () => {
       });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
       await waitFor(() =>
         expect(screen.getByText('Fondos insuficientes en Binance')).toBeInTheDocument()
@@ -328,7 +337,7 @@ describe('Withdraw Component', () => {
       });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
       await waitFor(() =>
         expect(screen.getByText('Fallo en el retiro')).toBeInTheDocument()
@@ -339,22 +348,24 @@ describe('Withdraw Component', () => {
       global.fetch.mockRejectedValueOnce(new Error('Network timeout'));
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
       await waitFor(() =>
         expect(screen.getByText('Network timeout')).toBeInTheDocument()
       );
     });
 
-    it('durante el fetch: botón muestra "Procesando..." y está deshabilitado', async () => {
+    it('durante el fetch: el botón principal queda en "Procesando..." y deshabilitado', async () => {
       let resolveFetch;
       global.fetch.mockReturnValueOnce(new Promise((r) => { resolveFetch = r; }));
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
-      expect(screen.getByText('Procesando...')).toBeInTheDocument();
-      expect(screen.getByText('Procesando...').closest('button')).toBeDisabled();
+      // Mientras dura el fetch, los botones muestran "Procesando..."
+      const processingNodes = screen.getAllByText('Procesando...');
+      expect(processingNodes.length).toBeGreaterThan(0);
+      processingNodes.forEach(n => expect(n.closest('button')).toBeDisabled());
 
       // Cleanup
       resolveFetch({ ok: true, json: async () => ({ success: true }) });
@@ -366,7 +377,7 @@ describe('Withdraw Component', () => {
       const mockOnClose = vi.fn();
       render(<Withdraw data={mockData} onClose={mockOnClose} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
-      fireEvent.click(screen.getByText('Confirmar retiro'));
+      openModalAndConfirm();
 
       expect(screen.getByText(/Cerrar/).closest('button')).toBeDisabled();
 

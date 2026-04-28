@@ -12,7 +12,7 @@ export const MOCK_API_DATA = {
   usdcArsRate: '1150.00',
   ripioUsdcArsRate: '1200.00',
   nexoUsdcArsRate: '1100.00',
-  fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 },
+  fees: { tradingRate: 0.001 },
 };
 
 export const MOCK_SERVER_IP = '203.0.113.42';

@@ -68,7 +68,7 @@ const mockApiResponse = {
   usdcArsRate: '1150.50',
   ripioUsdcArsRate: '1200.00',
   nexoUsdcArsRate: '1100.00',
-  fees: { withdrawalUSDC_BEP20: 0.8, tradingRate: 0.001 },
+  fees: { tradingRate: 0.001 },
 };
 
 global.fetch = vi.fn();

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeftRight, X } from 'lucide-react';
 import { API_URL } from '../config';
 
-export interface CoreData { balances: { eur: string; usdc: string }; rate: string; usdcArsRate?: string; fees: { tradingRate: number; withdrawalUSDC_BEP20: number }; }
+export interface CoreData { balances: { eur: string; usdc: string }; rate: string; usdcArsRate?: string; fees: { tradingRate: number }; }
 interface TradeProps { data: CoreData; onClose?: () => void; onSuccess: () => void; }
 
 export default function Trade({ data, onClose, onSuccess }: TradeProps) {
@@ -47,8 +47,8 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const eurUsdc = parseFloat(data.rate || '0');
       const eurArsRate = usdcArs > 0 && eurUsdc > 0 ? (eurUsdc * usdcArs).toFixed(2) : undefined;
       const arsAmount = usdcArs > 0 ? (netUsdc * usdcArs).toFixed(0) : undefined;
-      const withdrawalFee = data.fees?.withdrawalUSDC_BEP20 ?? 0.8;
-      const binanceFeeEur = eurUsdc > 0 ? (withdrawalFee / eurUsdc).toFixed(4) : undefined;
+      // Binance no cobra fee de retiro para USDC BEP20 — siempre 0
+      const binanceFeeEur = '0';
       const usdcDestAddress = localStorage.getItem('usdc_wallet') || undefined;
       history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate, eurUsdcRate: eurUsdc > 0 ? eurUsdc.toFixed(4) : undefined, binanceFeeEur, usdcDestAddress });
       localStorage.setItem("trade_history", JSON.stringify(history));
@@ -79,7 +79,6 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
 
         {/* Rate + MAX row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#848E9C', marginBottom: '10px', alignItems: 'center', gap: '12px' }}>
-          <span style={{ color: '#848E9C', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Disponible: <span style={{ color: '#EAECEF' }}>{parseFloat(data.balances?.eur || '0').toFixed(2)} €</span></span>
           <span style={{ color: '#474D57', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Tasa: {data.rate}</span>
           <button
             onClick={() => { setEurInput(data.balances?.eur || ''); setIsConfirming(false); setErrorMsg(''); }}

@@ -221,7 +221,7 @@ Navigation is performed by calling `setCurrentView('viewName')` from button `onC
 
 ```
 usdcForBroker    = arsAmount / usdcArsRate
-usdcAtBinance    = usdcForBroker + withdrawalFee
+usdcAtBinance    = usdcForBroker
 eurBeforeTradeFee = usdcAtBinance / eurUsdcRate
 tradingFeeEur    = eurBeforeTradeFee * tradingFeeRate (0.001)
 eurToDeposit     = eurBeforeTradeFee + tradingFeeEur
@@ -239,7 +239,6 @@ interface MarketData {
   rate: string;              // EUR/USDT rate
   usdcArsRate?: string;      // USDT/ARS P2P rate
   fees: {
-    withdrawalUSDC_BEP20: number;  // BSC withdrawal fee
     tradingRate: number;           // Spot trading fee (0.001)
   };
 }
@@ -249,7 +248,6 @@ interface MarketData {
 - If `data` is `null`, renders a "Cargando mercado..." message.
 - If `usdcArsRate` is missing, defaults to `1121.00`.
 - If `rate` is missing, defaults to `1.08`.
-- If `fees.withdrawalUSDC_BEP20` is missing, defaults to `0.8`.
 
 ---
 
@@ -274,7 +272,6 @@ interface CoreData {
   usdcArsRate?: string;
   fees: {
     tradingRate: number;
-    withdrawalUSDC_BEP20: number;
   };
 }
 ```
