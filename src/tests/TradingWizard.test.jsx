@@ -239,4 +239,35 @@ describe('TradingWizard', () => {
     // El botón "Continuar" sigue visible (sigue en step 0)
     expect(screen.getByText('Continuar con la transferencia →')).toBeInTheDocument();
   });
+
+  // ─── Balance strip visible en todos los pasos ─────────────────────────────
+
+  it('muestra el balance EUR en el step 0 (strip visible en todos los pasos)', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    // Step 0 activo — el balance strip debe ser visible
+    expect(screen.getByText(/Disponible:/)).toBeInTheDocument();
+    expect(screen.getByText(/100\.00/)).toBeInTheDocument();
+  });
+
+  it('muestra el balance EUR en el step 1 (strip persiste al avanzar)', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    // Step 1 activo — el balance strip sigue visible
+    expect(screen.getByText(/Disponible:/)).toBeInTheDocument();
+    expect(screen.getByText(/100\.00/)).toBeInTheDocument();
+  });
+
+  it('muestra el balance USDC en el strip visible desde step 0', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+    // El strip muestra "50.00 USDC" en un span dedicado
+    expect(screen.getByText('50.00 USDC')).toBeInTheDocument();
+  });
+
+  it('muestra "—" en el strip cuando balances no tienen datos', () => {
+    const dataWithoutBalance = { ...mockData, balances: {} };
+    render(<TradingWizard data={dataWithoutBalance} onRefreshData={onRefreshData} />);
+    // Sin eur/usdc en balances → el strip debe mostrar "— €" y "— USDC"
+    expect(screen.getByText('— €')).toBeInTheDocument();
+    expect(screen.getByText('— USDC')).toBeInTheDocument();
+  });
 });
