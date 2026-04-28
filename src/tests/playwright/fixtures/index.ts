@@ -16,8 +16,11 @@ async function mockApis(page: Page): Promise<void> {
   await page.route('**/api/changelog', route =>
     route.fulfill({ body: '# Changelog\n- Tests running' })
   );
-  // Neutralize update banner: no version field → condition `data.version && ...` is false
-  await page.route(/\/version\.json/, route =>
+  // Neutralize update banner: only match the runtime fetch (`/version.json?t=...`), not Vite's
+  // dev-time module import of `public/version.json` (which uses `?import` and expects a JS module).
+  // Returning JSON for the import would break React's bootstrap and leave the page stuck at
+  // index.html's "Cargando motor..." placeholder.
+  await page.route(/\/version\.json\?t=/, route =>
     route.fulfill({ json: {} })
   );
 }
@@ -42,7 +45,7 @@ export const test = base.extend<Fixtures>({
     await page.route('**/api/data', route => route.abort());
     await page.route('**/api/ip', route => route.abort());
     await page.route('**/api/changelog', route => route.abort());
-    await page.route(/\/version\.json/, route => route.fulfill({ json: {} }));
+    await page.route(/\/version\.json\?t=/, route => route.fulfill({ json: {} }));
     await page.goto('/');
     // Dashboard renders with fallback data even when API fails
     await expect(page.getByText('ARGBOT')).toBeVisible({ timeout: 10_000 });
