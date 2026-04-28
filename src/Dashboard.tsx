@@ -63,10 +63,11 @@ export default function Dashboard({ user }: { user: any }) {
     }, []);
 
     const fetchMarketData = () => {
+        const testnet = localStorage.getItem('argbot_testnet') !== 'false';
         fetch(`${getApiUrl()}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret, testnet: isTestnet })
+            body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret, testnet })
         })
             .then(async res => {
                 if (!res.ok) throw new Error("Server Error");

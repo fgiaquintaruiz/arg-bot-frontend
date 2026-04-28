@@ -233,6 +233,31 @@ describe('Dashboard', () => {
     expect(logout).toHaveBeenCalledTimes(1);
   });
 
+  // ─── Stale closure fix: fetchMarketData lee testnet de localStorage ──────────
+
+  it('fetchMarketData envía testnet:true leyendo localStorage (no stale closure) al pasar REAL→TESTNET', async () => {
+    // Empezamos en REAL (argbot_testnet = 'false')
+    localStorage.setItem('argbot_testnet', 'false');
+    render(<Dashboard user={mockUser} />);
+
+    // Limpiamos el fetch del mount
+    global.fetch.mockClear();
+    global.fetch.mockResolvedValue({ ok: true, json: async () => mockApiResponse });
+
+    // El usuario clickea el botón para cambiar a TESTNET:
+    // setIsTestnet(true) + localStorage.setItem('argbot_testnet','true') + fetchMarketData()
+    // Si fetchMarketData lee del closure, leerá isTestnet=false (valor viejo)
+    // Si lee de localStorage, leerá 'true' → testnet:true (correcto)
+    fireEvent.click(screen.getByLabelText('Modo real activo'));
+
+    await waitFor(() => {
+      const apiCalls = global.fetch.mock.calls.filter(([url]) => url.includes('/api/data'));
+      expect(apiCalls.length).toBeGreaterThan(0);
+      const body = JSON.parse(apiCalls[0][1].body);
+      expect(body.testnet).toBe(true);
+    });
+  });
+
   // ─── open-settings custom event ──────────────────────────────────────────────
 
   it('evento "open-settings" con tab → abre Settings', () => {

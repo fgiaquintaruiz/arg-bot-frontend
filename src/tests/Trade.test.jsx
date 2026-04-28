@@ -34,14 +34,14 @@ describe('Trade Component', () => {
     expect(screen.getByText('Cargando mercado...')).toBeInTheDocument();
   });
 
-  it('should display available balance', () => {
-    render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-    expect(screen.getByText(/Disponible: 100.00 €/)).toBeInTheDocument();
-  });
-
   it('should display exchange rate', () => {
     render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
     expect(screen.getByText(/Tasa: 1.0850/)).toBeInTheDocument();
+  });
+
+  it('should NOT display "Disponible" balance row (moved to TradingWizard strip)', () => {
+    render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+    expect(screen.queryByText(/Disponible:/)).not.toBeInTheDocument();
   });
 
   it('should update EUR input when user types', () => {
@@ -179,6 +179,48 @@ describe('Trade Component', () => {
       const history = JSON.parse(localStorage.getItem('trade_history') || '[]');
       expect(history.length).toBeGreaterThan(0);
       expect(history[0]).toHaveProperty('eur', '50');
+    });
+  });
+
+  it('should include testnet flag in POST body when testnet mode is active', async () => {
+    localStorage.setItem('argbot_testnet', 'true');
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true, data: { orderId: 99 } })
+    });
+    render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+    const input = screen.getByPlaceholderText('Monto en EUR');
+    fireEvent.change(input, { target: { value: '50' } });
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/trade'),
+        expect.objectContaining({
+          body: expect.stringContaining('"testnet":true'),
+        })
+      );
+    });
+  });
+
+  it('should include testnet:false in POST body when testnet mode is inactive', async () => {
+    localStorage.setItem('argbot_testnet', 'false');
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true, data: { orderId: 99 } })
+    });
+    render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+    const input = screen.getByPlaceholderText('Monto en EUR');
+    fireEvent.change(input, { target: { value: '50' } });
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/trade'),
+        expect.objectContaining({
+          body: expect.stringContaining('"testnet":false'),
+        })
+      );
     });
   });
 

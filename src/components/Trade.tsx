@@ -37,7 +37,8 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const handleConfirmTrade = async () => {
     setLoading(true); setErrorMsg(''); setSuccessMsg('');
     try {
-      const res = await fetch(`${API_URL}/api/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: localStorage.getItem('binance_key'), apiSecret: localStorage.getItem('binance_secret'), amountEur: eurInput }) });
+      const testnet = localStorage.getItem('argbot_testnet') !== 'false';
+      const res = await fetch(`${API_URL}/api/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: localStorage.getItem('binance_key'), apiSecret: localStorage.getItem('binance_secret'), amountEur: eurInput, testnet }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
       setSuccessMsg('¡Cambio ejecutado con éxito!');
@@ -76,18 +77,16 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
 
       <div style={{ padding: '20px' }}>
 
-        {/* Balance row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#848E9C', marginBottom: '10px', alignItems: 'center' }}>
-          <span>Disponible: {data.balances?.eur || '0.00'} €</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ color: '#474D57', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Tasa: {data.rate}</span>
-            <button
-              onClick={() => { setEurInput(data.balances?.eur || ''); setIsConfirming(false); setErrorMsg(''); }}
-              style={{ padding: '4px 10px', backgroundColor: 'rgba(240,185,11,0.1)', color: '#F0B90B', border: '1px solid rgba(240,185,11,0.2)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}
-            >
-              MAX
-            </button>
-          </div>
+        {/* Rate + MAX row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#848E9C', marginBottom: '10px', alignItems: 'center', gap: '12px' }}>
+          <span style={{ color: '#848E9C', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Disponible: <span style={{ color: '#EAECEF' }}>{parseFloat(data.balances?.eur || '0').toFixed(2)} €</span></span>
+          <span style={{ color: '#474D57', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Tasa: {data.rate}</span>
+          <button
+            onClick={() => { setEurInput(data.balances?.eur || ''); setIsConfirming(false); setErrorMsg(''); }}
+            style={{ padding: '4px 10px', backgroundColor: 'rgba(240,185,11,0.1)', color: '#F0B90B', border: '1px solid rgba(240,185,11,0.2)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}
+          >
+            MAX
+          </button>
         </div>
 
         <input
