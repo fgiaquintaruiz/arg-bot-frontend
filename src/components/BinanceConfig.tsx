@@ -4,8 +4,13 @@ import {API_URL} from '../config';
 const CRYPTOJS_AES_PREFIX = 'U2FsdGVkX1+';
 
 export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () => void, onCancel: () => void }>) {
-    const [key, setKey] = useState('');
-    const [secret, setSecret] = useState('');
+    const [activeTab, setActiveTab] = useState<'prod' | 'testnet'>(() =>
+        localStorage.getItem('argbot_testnet') === 'true' ? 'testnet' : 'prod'
+    );
+    const [prodKey, setProdKey] = useState('');
+    const [prodSecret, setProdSecret] = useState('');
+    const [testnetKey, setTestnetKey] = useState('');
+    const [testnetSecret, setTestnetSecret] = useState('');
     const [serverIp, setServerIp] = useState('Obteniendo IP...');
     const [copied, setCopied] = useState(false);
     const [migrated, setMigrated] = useState(false);
@@ -19,9 +24,12 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
             localStorage.removeItem('binance_secret');
             setMigrated(true);
         } else {
-            setKey(storedKey);
-            setSecret(storedSecret);
+            setProdKey(storedKey);
+            setProdSecret(storedSecret);
         }
+
+        setTestnetKey(localStorage.getItem('binance_key_testnet') || '');
+        setTestnetSecret(localStorage.getItem('binance_secret_testnet') || '');
     }, []);
 
     useEffect(() => {
@@ -32,8 +40,13 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
     }, []);
 
     const handleSave = () => {
-        localStorage.setItem('binance_key', key.trim());
-        localStorage.setItem('binance_secret', secret.trim());
+        if (activeTab === 'testnet') {
+            localStorage.setItem('binance_key_testnet', testnetKey.trim());
+            localStorage.setItem('binance_secret_testnet', testnetSecret.trim());
+        } else {
+            localStorage.setItem('binance_key', prodKey.trim());
+            localStorage.setItem('binance_secret', prodSecret.trim());
+        }
         onSave();
     };
 
@@ -54,6 +67,21 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
         display: 'block', fontSize: '11px', color: '#474D57',
         marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px',
     };
+
+    const tabBtnStyle = (tab: 'prod' | 'testnet'): React.CSSProperties => ({
+        flex: 1, padding: '7px 10px',
+        backgroundColor: activeTab === tab ? '#F0B90B' : 'transparent',
+        color: activeTab === tab ? '#181A20' : '#848E9C',
+        border: activeTab === tab ? 'none' : '1px solid #2B3139',
+        borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '12px',
+        fontFamily: "'IBM Plex Sans', sans-serif",
+    });
+
+    const isTestnet = activeTab === 'testnet';
+    const key = isTestnet ? testnetKey : prodKey;
+    const secret = isTestnet ? testnetSecret : prodSecret;
+    const setKey = isTestnet ? setTestnetKey : setProdKey;
+    const setSecret = isTestnet ? setTestnetSecret : setProdSecret;
 
     return (
         <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139' }}>
@@ -81,7 +109,7 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
                 )}
 
                 {/* IP Whitelist */}
-                <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '12px 14px', borderRadius: '8px', marginBottom: '20px' }}>
+                <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '12px 14px', borderRadius: '8px', marginBottom: '16px' }}>
                     <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#F0B90B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>IP para Whitelist de Binance</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '14px', color: '#EAECEF', flex: 1 }}>{serverIp}</span>
@@ -93,6 +121,24 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
                         </button>
                     </div>
                 </div>
+
+                {/* Producción / Testnet tabs */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+                    <button style={tabBtnStyle('prod')} onClick={() => setActiveTab('prod')}>
+                        Producción
+                    </button>
+                    <button style={tabBtnStyle('testnet')} onClick={() => setActiveTab('testnet')}>
+                        Testnet
+                    </button>
+                </div>
+
+                {isTestnet && (
+                    <div style={{ backgroundColor: 'rgba(14,203,129,0.06)', border: '1px solid rgba(14,203,129,0.2)', padding: '9px 12px', borderRadius: '6px', marginBottom: '14px' }}>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#0ECB81', lineHeight: '1.5' }}>
+                            Estas claves son exclusivas del portal <strong>testnet.binance.vision</strong>
+                        </p>
+                    </div>
+                )}
 
                 <label style={labelStyle}>API Key</label>
                 <input type="text" value={key} onChange={e => setKey(e.target.value)} style={inputStyle} placeholder="Ingresá tu API Key" />

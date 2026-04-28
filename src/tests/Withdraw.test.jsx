@@ -31,6 +31,8 @@ describe('Withdraw Component', () => {
     localStorage.clear();
     localStorage.setItem('binance_key', 'test-key');
     localStorage.setItem('binance_secret', 'test-secret');
+    localStorage.setItem('binance_key_testnet', 'test-key');
+    localStorage.setItem('binance_secret_testnet', 'test-secret');
   });
 
   afterEach(() => {

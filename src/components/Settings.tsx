@@ -62,6 +62,8 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           timestamp: new Date().toISOString(),
           apiKey: localStorage.getItem('binance_key') || '',
           apiSecret: localStorage.getItem('binance_secret') || '',
+          apiKeyTestnet: localStorage.getItem('binance_key_testnet') || '',
+          apiSecretTestnet: localStorage.getItem('binance_secret_testnet') || '',
           addressBook: localStorage.getItem('address_book') || '[]',
           tradeHistory: localStorage.getItem('trade_history') || '[]',
           usdcWallet: localStorage.getItem('usdc_wallet') || '',
@@ -93,6 +95,8 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           // Restore data
           if (data.apiKey) localStorage.setItem('binance_key', data.apiKey);
           if (data.apiSecret) localStorage.setItem('binance_secret', data.apiSecret);
+          if (data.apiKeyTestnet) localStorage.setItem('binance_key_testnet', data.apiKeyTestnet);
+          if (data.apiSecretTestnet) localStorage.setItem('binance_secret_testnet', data.apiSecretTestnet);
           if (data.addressBook) localStorage.setItem('address_book', data.addressBook);
           if (data.tradeHistory) localStorage.setItem('trade_history', data.tradeHistory);
           if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);

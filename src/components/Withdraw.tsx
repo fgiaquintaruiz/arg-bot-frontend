@@ -75,7 +75,10 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
     const handleConfirmWithdraw = async () => {
         setLoading(true); setErrorMsg(''); setSuccessMsg('');
         try {
-            const res = await fetch(`${API_URL}/api/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: localStorage.getItem('binance_key'), apiSecret: localStorage.getItem('binance_secret'), address, amountUsdc: amount }) });
+            const isTestnet = localStorage.getItem('argbot_testnet') !== 'false';
+            const apiKey = localStorage.getItem(isTestnet ? 'binance_key_testnet' : 'binance_key') || '';
+            const apiSecret = localStorage.getItem(isTestnet ? 'binance_secret_testnet' : 'binance_secret') || '';
+            const res = await fetch(`${API_URL}/api/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, apiSecret, address, amountUsdc: amount }) });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
             setSuccessMsg('¡Solicitud de retiro enviada!');

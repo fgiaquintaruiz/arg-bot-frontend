@@ -397,6 +397,39 @@ describe('Settings Component', () => {
     expect(screen.getByText(/Configuración/)).toBeInTheDocument();
   });
 
+  // ─── Drive Sync — dual key storage (testnet keys) ───────────────────────────
+
+  it('Drive upload includes apiKeyTestnet and apiSecretTestnet', async () => {
+    const { uploadToDrive } = await import('../googleDrive');
+    localStorage.setItem('binance_key_testnet', 'tn-key-123');
+    localStorage.setItem('binance_secret_testnet', 'tn-secret-456');
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('↑ Subir a Drive'));
+    await new Promise(r => setTimeout(r, 50));
+    expect(uploadToDrive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiKeyTestnet: 'tn-key-123',
+        apiSecretTestnet: 'tn-secret-456',
+      })
+    );
+  });
+
+  it('Drive download restores binance_key_testnet and binance_secret_testnet', async () => {
+    const { downloadFromDrive } = await import('../googleDrive');
+    downloadFromDrive.mockResolvedValueOnce({
+      apiKey: 'prod-key',
+      apiSecret: 'prod-secret',
+      apiKeyTestnet: 'tn-key-restored',
+      apiSecretTestnet: 'tn-secret-restored',
+      timestamp: '2026-04-28T00:00:00.000Z',
+    });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('↓ Descargar de Drive'));
+    await waitFor(() => expect(screen.getByText(/Datos restaurados/)).toBeInTheDocument());
+    expect(localStorage.getItem('binance_key_testnet')).toBe('tn-key-restored');
+    expect(localStorage.getItem('binance_secret_testnet')).toBe('tn-secret-restored');
+  });
+
   it('handleSaveBinance: ✓ Guardado desaparece después de 3 segundos (setTimeout callback)', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: false });
     render(<Settings onClose={() => {}} user={mockUser} />);

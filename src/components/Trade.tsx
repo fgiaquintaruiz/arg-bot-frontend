@@ -38,7 +38,9 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
     setLoading(true); setErrorMsg(''); setSuccessMsg('');
     try {
       const testnet = localStorage.getItem('argbot_testnet') !== 'false';
-      const res = await fetch(`${API_URL}/api/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: localStorage.getItem('binance_key'), apiSecret: localStorage.getItem('binance_secret'), amountEur: eurInput, testnet }) });
+      const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
+      const apiSecret = localStorage.getItem(testnet ? 'binance_secret_testnet' : 'binance_secret') || '';
+      const res = await fetch(`${API_URL}/api/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, apiSecret, amountEur: eurInput, testnet }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
       setSuccessMsg('¡Cambio ejecutado con éxito!');

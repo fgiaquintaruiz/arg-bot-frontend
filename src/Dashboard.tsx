@@ -18,9 +18,8 @@ export default function Dashboard({ user }: { user: any }) {
     const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem('argbot_testnet') !== 'false');
     const [currentView, setCurrentView] = useState('calculator');
 
-    const apiKey = localStorage.getItem('binance_key');
-    const apiSecret = localStorage.getItem('binance_secret');
-    const hasKeys = !!apiKey && !!apiSecret;
+    const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
+                    !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));
     const [showUpdates, setShowUpdates] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showTestnetModal, setShowTestnetModal] = useState(false);
@@ -64,6 +63,8 @@ export default function Dashboard({ user }: { user: any }) {
 
     const fetchMarketData = () => {
         const testnet = localStorage.getItem('argbot_testnet') !== 'false';
+        const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
+        const apiSecret = localStorage.getItem(testnet ? 'binance_secret_testnet' : 'binance_secret') || '';
         fetch(`${getApiUrl()}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
