@@ -21,6 +21,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [binanceBankAddress, setBinanceBankAddress] = useState<string>(() => localStorage.getItem('binance_bank_address') || '');
   const [binanceApiKey, setBinanceApiKey] = useState<string>(() => localStorage.getItem('binance_key') || '');
   const [binanceApiSecret, setBinanceApiSecret] = useState<string>(() => localStorage.getItem('binance_secret') || '');
+  const [binanceApiTabActive, setBinanceApiTabActive] = useState<'prod' | 'testnet'>(() =>
+    localStorage.getItem('argbot_testnet') === 'true' ? 'testnet' : 'prod'
+  );
+  const [binanceApiKeyTestnet, setBinanceApiKeyTestnet] = useState<string>(() => localStorage.getItem('binance_key_testnet') || '');
+  const [binanceApiSecretTestnet, setBinanceApiSecretTestnet] = useState<string>(() => localStorage.getItem('binance_secret_testnet') || '');
   const [serverIp, setServerIp] = useState<string>('Cargando...');
   const [binanceSaved, setBinanceSaved] = useState(false);
   const [binanceCleared, setBinanceCleared] = useState(false);
@@ -144,8 +149,13 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     localStorage.setItem('binance_eur_bic', binanceEurBic.trim());
     localStorage.setItem('binance_bank_name', binanceBankName.trim());
     localStorage.setItem('binance_bank_address', binanceBankAddress.trim());
-    if (binanceApiKey.trim()) localStorage.setItem('binance_key', binanceApiKey.trim());
-    if (binanceApiSecret.trim()) localStorage.setItem('binance_secret', binanceApiSecret.trim());
+    if (binanceApiTabActive === 'testnet') {
+      if (binanceApiKeyTestnet.trim()) localStorage.setItem('binance_key_testnet', binanceApiKeyTestnet.trim());
+      if (binanceApiSecretTestnet.trim()) localStorage.setItem('binance_secret_testnet', binanceApiSecretTestnet.trim());
+    } else {
+      if (binanceApiKey.trim()) localStorage.setItem('binance_key', binanceApiKey.trim());
+      if (binanceApiSecret.trim()) localStorage.setItem('binance_secret', binanceApiSecret.trim());
+    }
     setBinanceSaved(true);
     setBinanceCleared(false);
     setTimeout(() => setBinanceSaved(false), 3000);
@@ -161,6 +171,8 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     localStorage.removeItem('binance_bank_address');
     localStorage.removeItem('binance_key');
     localStorage.removeItem('binance_secret');
+    localStorage.removeItem('binance_key_testnet');
+    localStorage.removeItem('binance_secret_testnet');
     setBinanceEurIban('');
     setBinanceEurName('');
     setBinanceEurBic('');
@@ -168,6 +180,8 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     setBinanceBankAddress('');
     setBinanceApiKey('');
     setBinanceApiSecret('');
+    setBinanceApiKeyTestnet('');
+    setBinanceApiSecretTestnet('');
     setBinanceCleared(true);
     setBinanceSaved(false);
     setTimeout(() => setBinanceCleared(false), 3000);
@@ -311,17 +325,65 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               </p>
 
               <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { label: 'API Key', val: binanceApiKey, set: setBinanceApiKey, ac: 'off' },
-                  { label: 'API Secret', val: binanceApiSecret, set: setBinanceApiSecret, ac: 'new-password' },
-                ].map(({ label, val, set, ac }) => (
-                  <div key={label}>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</label>
-                    <input type="password" value={val} onChange={e => set(e.target.value)} autoComplete={ac} data-form-type="other" placeholder={`Tu ${label}`}
-                      style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
-                    />
+                {/* Producción / Testnet tab bar */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {(['prod', 'testnet'] as const).map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setBinanceApiTabActive(tab)}
+                      style={{
+                        flex: 1, padding: '7px 10px',
+                        backgroundColor: binanceApiTabActive === tab ? '#F0B90B' : 'transparent',
+                        color: binanceApiTabActive === tab ? '#181A20' : '#848E9C',
+                        border: binanceApiTabActive === tab ? 'none' : '1px solid #2B3139',
+                        borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '12px',
+                        fontFamily: "'IBM Plex Sans', sans-serif",
+                      }}
+                    >
+                      {tab === 'prod' ? 'Producción' : 'Testnet'}
+                    </button>
+                  ))}
+                </div>
+
+                {binanceApiTabActive === 'testnet' && (
+                  <div style={{ backgroundColor: 'rgba(14,203,129,0.06)', border: '1px solid rgba(14,203,129,0.2)', padding: '9px 12px', borderRadius: '6px' }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#0ECB81', lineHeight: '1.5' }}>
+                      Claves exclusivas de testnet.binance.vision
+                    </p>
                   </div>
-                ))}
+                )}
+
+                {binanceApiTabActive === 'prod' ? (
+                  <>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Key</label>
+                      <input type="password" value={binanceApiKey} onChange={e => setBinanceApiKey(e.target.value)} autoComplete="off" data-form-type="other" placeholder="Tu API Key"
+                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Secret</label>
+                      <input type="password" value={binanceApiSecret} onChange={e => setBinanceApiSecret(e.target.value)} autoComplete="new-password" data-form-type="other" placeholder="Tu API Secret"
+                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Key</label>
+                      <input type="password" value={binanceApiKeyTestnet} onChange={e => setBinanceApiKeyTestnet(e.target.value)} autoComplete="off" data-form-type="other" placeholder="Tu API Key (testnet)"
+                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Secret</label>
+                      <input type="password" value={binanceApiSecretTestnet} onChange={e => setBinanceApiSecretTestnet(e.target.value)} autoComplete="new-password" data-form-type="other" placeholder="Tu API Secret (testnet)"
+                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Save / Clear buttons */}
