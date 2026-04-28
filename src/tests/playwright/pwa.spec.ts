@@ -12,7 +12,9 @@ test.describe('PWA and Mobile behavior', () => {
 
   test('backend offline: Dashboard shows fallback rate data', async ({ offlinePage: page }) => {
     // When API fails, Dashboard catch block provides fallback: rate=1.08, usdcArsRate=1150.50
-    await expect(page.getByText('1.0800')).toBeVisible();
+    // Use exact match to scope to the rate strip <span>1.0800</span> only
+    // and avoid matching wizard breakdown label "EUR→USDC (1.0800)"
+    await expect(page.getByText('1.0800', { exact: true })).toBeVisible();
   });
 
   test('Settings modal is scrollable on mobile', async ({ authenticatedPage: page }) => {
@@ -25,7 +27,8 @@ test.describe('PWA and Mobile behavior', () => {
   });
 
   test('History view is accessible from Dashboard', async ({ authenticatedPage: page }) => {
-    await page.getByRole('button', { name: /Historial de operaciones/ }).click();
+    // History button in header uses aria-label="Ver historial" (icon-only button)
+    await page.getByRole('button', { name: 'Ver historial' }).click();
     await expect(page.getByText(/Historial|Operaciones/i).first()).toBeVisible();
   });
 });

@@ -1,6 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/index';
 import type { Page, TestInfo } from '@playwright/test';
-import { TEST_USER, MOCK_API_DATA, MOCK_SERVER_IP } from './fixtures/mock-data';
 
 interface CSPViolation {
   directive: string;
@@ -172,41 +171,25 @@ test.describe('CSP report-only violations', () => {
     expect(true).toBe(true);
   });
 
-  test('authenticated dashboard', async ({ page }, testInfo) => {
+  test('authenticated dashboard', async ({ authenticatedPage }, testInfo) => {
     const violations: CSPViolation[] = [];
     let currentRoute = '/ (dashboard)';
-    attachConsoleListener(page, violations, () => currentRoute);
-    await setupCapture(page);
-
-    // Inline fixture replication — fixtures/index.ts authenticatedPage is currently failing
-    // because the dashboard's "ARGBOT" text wait times out. We inject the same E2E user and
-    // API mocks but skip the brittle visibility assertion.
-    await page.addInitScript((user) => {
-      (window as unknown as { __E2E_USER__: unknown }).__E2E_USER__ = user;
-    }, TEST_USER);
-    await page.route('**/api/data', (route) => route.fulfill({ json: MOCK_API_DATA }));
-    await page.route('**/api/ip', (route) => route.fulfill({ json: { ip: MOCK_SERVER_IP } }));
-    await page.route('**/api/changelog', (route) =>
-      route.fulfill({ body: '# Changelog\n- Tests running' }),
-    );
-    await page.route(/\/version\.json/, (route) => route.fulfill({ json: {} }));
-
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    violations.push(...(await collectEventViolations(page, currentRoute)));
+    attachConsoleListener(authenticatedPage, violations, () => currentRoute);
+    await setupCapture(authenticatedPage);
+    violations.push(...(await collectEventViolations(authenticatedPage, currentRoute)));
 
     currentRoute = '/ + Settings modal';
-    if (await safeClick(page, 'Abrir configuración')) {
-      await page.waitForLoadState('networkidle');
-      violations.push(...(await collectEventViolations(page, currentRoute)));
-      (await safeClick(page, /Cerrar configuración/)) || (await safeClick(page, /Cerrar/));
+    if (await safeClick(authenticatedPage, 'Abrir configuración')) {
+      await authenticatedPage.waitForLoadState('networkidle');
+      violations.push(...(await collectEventViolations(authenticatedPage, currentRoute)));
+      (await safeClick(authenticatedPage, /Cerrar configuración/)) || (await safeClick(authenticatedPage, /Cerrar/));
     }
 
     currentRoute = '/ + Novedades modal';
-    if (await safeClick(page, /Novedades y Roadmap/)) {
-      await page.waitForLoadState('networkidle');
-      violations.push(...(await collectEventViolations(page, currentRoute)));
-      await safeClick(page, 'Cerrar novedades');
+    if (await safeClick(authenticatedPage, /Novedades y Roadmap/)) {
+      await authenticatedPage.waitForLoadState('networkidle');
+      violations.push(...(await collectEventViolations(authenticatedPage, currentRoute)));
+      await safeClick(authenticatedPage, 'Cerrar novedades');
     }
 
     await reportViolations(testInfo, violations, 'authenticated');

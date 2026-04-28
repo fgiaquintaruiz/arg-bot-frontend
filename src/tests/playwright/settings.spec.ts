@@ -3,7 +3,8 @@ import { test, expect } from './fixtures';
 test.describe('Settings Modal', () => {
   test.beforeEach(async ({ authenticatedPage: page }) => {
     await page.getByRole('button', { name: 'Abrir configuración' }).click();
-    await expect(page.getByText('Configuración')).toBeVisible();
+    // Use heading role to avoid strict-mode conflict with breadcrumb "Configuración → Binance"
+    await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible();
   });
 
   test('opens with Sync tab active by default', async ({ authenticatedPage: page }) => {
@@ -44,7 +45,8 @@ test.describe('Settings Modal', () => {
 
   test('close button dismisses the modal', async ({ authenticatedPage: page }) => {
     await page.getByRole('button', { name: 'Cerrar configuración' }).click();
-    await expect(page.getByText('Configuración')).not.toBeVisible();
+    // Check that the Settings heading (h2) is no longer visible
+    await expect(page.getByRole('heading', { name: 'Configuración' })).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'Salir' })).toBeVisible();
   });
 
