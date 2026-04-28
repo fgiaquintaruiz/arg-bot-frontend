@@ -81,7 +81,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#848E9C', marginBottom: '10px', alignItems: 'center', gap: '12px' }}>
           <span style={{ color: '#474D57', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Tasa: {data.rate}</span>
           <button
-            onClick={() => { setEurInput(data.balances?.eur || ''); setIsConfirming(false); setErrorMsg(''); }}
+            onClick={() => { setEurInput(Math.max(0, parseFloat(data.balances?.eur || '0')).toFixed(2)); setIsConfirming(false); setErrorMsg(''); }}
             style={{ padding: '4px 10px', backgroundColor: 'rgba(240,185,11,0.1)', color: '#F0B90B', border: '1px solid rgba(240,185,11,0.2)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}
           >
             MAX

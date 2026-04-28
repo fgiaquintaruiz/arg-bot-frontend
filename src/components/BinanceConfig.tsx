@@ -1,13 +1,28 @@
 import React, {useState, useEffect} from 'react';
 import {API_URL} from '../config';
-import CryptoJS from 'crypto-js';
-const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+
+const CRYPTOJS_AES_PREFIX = 'U2FsdGVkX1+';
 
 export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () => void, onCancel: () => void }>) {
-    const [key, setKey] = useState(localStorage.getItem('binance_key') || '');
-    const [secret, setSecret] = useState(localStorage.getItem('binance_secret') || '');
+    const [key, setKey] = useState('');
+    const [secret, setSecret] = useState('');
     const [serverIp, setServerIp] = useState('Obteniendo IP...');
     const [copied, setCopied] = useState(false);
+    const [migrated, setMigrated] = useState(false);
+
+    useEffect(() => {
+        const storedKey = localStorage.getItem('binance_key') || '';
+        const storedSecret = localStorage.getItem('binance_secret') || '';
+
+        if (storedKey.startsWith(CRYPTOJS_AES_PREFIX) || storedSecret.startsWith(CRYPTOJS_AES_PREFIX)) {
+            localStorage.removeItem('binance_key');
+            localStorage.removeItem('binance_secret');
+            setMigrated(true);
+        } else {
+            setKey(storedKey);
+            setSecret(storedSecret);
+        }
+    }, []);
 
     useEffect(() => {
         fetch(`${API_URL}/api/ip`)
@@ -17,11 +32,8 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
     }, []);
 
     const handleSave = () => {
-        if (!ENCRYPTION_KEY) return alert("Error: Encryption key missing");
-        const encryptedKey = CryptoJS.AES.encrypt(key, ENCRYPTION_KEY).toString();
-        const encryptedSecret = CryptoJS.AES.encrypt(secret, ENCRYPTION_KEY).toString();
-        localStorage.setItem('binance_key', encryptedKey);
-        localStorage.setItem('binance_secret', encryptedSecret);
+        localStorage.setItem('binance_key', key.trim());
+        localStorage.setItem('binance_secret', secret.trim());
         onSave();
     };
 
@@ -58,6 +70,15 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
                 <p style={{ fontSize: '13px', color: '#848E9C', marginBottom: '16px', lineHeight: '1.6', margin: '0 0 16px' }}>
                     Credenciales Spot/Withdrawal. Se guardan <strong style={{ color: '#EAECEF' }}>localmente en tu dispositivo</strong>.
                 </p>
+
+                {/* Migration notice */}
+                {migrated && (
+                    <div style={{ backgroundColor: 'rgba(246,70,93,0.08)', border: '1px solid rgba(246,70,93,0.3)', padding: '10px 14px', borderRadius: '8px', marginBottom: '16px' }}>
+                        <p style={{ margin: 0, fontSize: '13px', color: '#F6465D', lineHeight: '1.5' }}>
+                            Tus claves fueron migradas. Por favor, volvé a ingresarlas.
+                        </p>
+                    </div>
+                )}
 
                 {/* IP Whitelist */}
                 <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '12px 14px', borderRadius: '8px', marginBottom: '20px' }}>
