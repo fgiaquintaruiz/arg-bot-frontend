@@ -318,6 +318,7 @@ export default function Dashboard({ user }: { user: any }) {
                 </span>
                 {data?.balances?.eur != null && (
                     <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>
+                        <span style={{ color: '#848E9C', fontSize: '12px' }}>Disponible: </span>
                         <span style={{ color: '#EAECEF' }}>
                             {parseFloat(data.balances.eur).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             <span style={{ color: '#848E9C' }}> €</span>

@@ -208,30 +208,6 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   return (
     <div>
 
-      {/* ── Balance strip — visible en todos los pasos ── */}
-      <div style={{
-        backgroundColor: '#1E2329',
-        borderBottom: '1px solid #2B3139',
-        padding: '8px 0',
-        textAlign: 'right',
-        marginBottom: '12px',
-        borderRadius: '8px',
-        paddingLeft: '16px',
-        paddingRight: '16px',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '16px',
-      }}>
-        <span style={{ fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>
-          <span style={{ color: '#848E9C' }}>Disponible: </span>
-          <span style={{ color: '#EAECEF' }}>{data?.balances?.eur ? parseFloat(data.balances.eur).toFixed(2) : '—'} €</span>
-        </span>
-        <span style={{ fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>
-          <span style={{ color: '#848E9C' }}></span>
-          <span style={{ color: '#EAECEF' }}>{data?.balances?.usdc ? parseFloat(data.balances.usdc).toFixed(2) : '—'} USDC</span>
-        </span>
-      </div>
-
       {/* ── Paso 0: Simulación ── */}
       <div style={CARD}>
         <StepBadge step={0} icon={CalcIcon} label="Simulación" />
