@@ -41,3 +41,67 @@ test.describe('Dashboard — authenticated', () => {
     await expect(page.getByText('Novedades y Hoja de Ruta')).not.toBeVisible();
   });
 });
+
+test.describe('Dashboard rate strip — responsive', () => {
+  test('USDC/ARS item is fully visible on mobile (no horizontal overflow)', async ({ authenticatedPage: page }) => {
+    // Fix regression: on mobile the strip overflowed to the left, clipping the
+    // first chars of "USDC/ARS" (rendered as "SDC/ARS" or off-screen).
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error('viewport size unavailable');
+
+    const item = page.getByText(/USDC\/ARS/).first();
+    await expect(item).toBeVisible();
+    const box = await item.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+  });
+
+  test('balance label and amount stay on the same line on mobile', async ({ authenticatedPage: page }) => {
+    // Fix regression: "Disponible:" wrapped to its own line, splitting from
+    // the EUR amount. The whole balance group must stay on one visual line.
+    const balance = page.getByTestId('rate-strip-balance');
+    await expect(balance).toBeVisible();
+
+    const labelBox = await balance.getByText('Disponible:').boundingBox();
+    const eurBox = await balance.getByText(/€/).boundingBox();
+    expect(labelBox).not.toBeNull();
+    expect(eurBox).not.toBeNull();
+
+    // Same line ⇒ vertical centers within ~4px of each other.
+    const labelCenter = labelBox!.y + labelBox!.height / 2;
+    const eurCenter = eurBox!.y + eurBox!.height / 2;
+    expect(Math.abs(labelCenter - eurCenter)).toBeLessThanOrEqual(4);
+  });
+
+  test('both EUR and USDC balances are visible inside the viewport on mobile', async ({ authenticatedPage: page }) => {
+    // Fix regression: USDC balance was off-screen because the right-aligned
+    // balance group was pushed beyond the viewport edge.
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error('viewport size unavailable');
+
+    const balance = page.getByTestId('rate-strip-balance');
+    await expect(balance).toBeVisible();
+
+    const box = await balance.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+
+    // Both currency markers are present and visible.
+    await expect(balance.getByText(/€/)).toBeVisible();
+    await expect(balance.getByText(/USDC/)).toBeVisible();
+  });
+
+  test('rate items do not split internally on mobile (whitespace-nowrap)', async ({ authenticatedPage: page }) => {
+    // Fix regression: "1 EUR = 1.745 ARS" wrapped internally between tokens.
+    // Each rate item should render on a single line.
+    const item = page.getByText(/1 EUR =/).first();
+    await expect(item).toBeVisible();
+    const box = await item.boundingBox();
+    expect(box).not.toBeNull();
+    // Single-line height for 12px font with default line-height stays under ~22px.
+    // If the item wrapped into 2+ lines, height would be ~28px or more.
+    expect(box!.height).toBeLessThanOrEqual(22);
+  });
+});
