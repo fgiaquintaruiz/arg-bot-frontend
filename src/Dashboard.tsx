@@ -16,6 +16,7 @@ export default function Dashboard({ user }: { user: any }) {
     const [data, setData] = useState<any>(null);
     const testnetRef = useRef<boolean>(false);
     const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem('argbot_testnet') !== 'false');
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
     const [currentView, setCurrentView] = useState('calculator');
 
     const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
@@ -37,6 +38,13 @@ export default function Dashboard({ user }: { user: any }) {
       };
       window.addEventListener('open-settings', handler as any);
       return () => window.removeEventListener('open-settings', handler as any);
+    }, []);
+
+    // Responsive breakpoint tracking
+    useEffect(() => {
+      const handler = () => setIsMobile(window.innerWidth < 640);
+      window.addEventListener('resize', handler);
+      return () => window.removeEventListener('resize', handler);
     }, []);
 
     // Auto-update detection — poll version.json every 60 seconds
@@ -162,16 +170,19 @@ export default function Dashboard({ user }: { user: any }) {
             <div style={{
                 width: '100%',
                 display: 'flex',
-                justifyContent: 'space-between',
+                flexDirection: isMobile ? 'column' : 'row',
+                justifyContent: isMobile ? 'center' : 'space-between',
                 alignItems: 'center',
-                padding: '0 20px',
-                height: '56px',
+                padding: isMobile ? '10px 16px' : '0 20px',
+                height: isMobile ? 'auto' : '56px',
+                gap: isMobile ? '8px' : undefined,
                 backgroundColor: '#181A20',
                 borderBottom: '1px solid #2B3139',
                 flexShrink: 0,
                 boxSizing: 'border-box',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Row 1 (mobile) / Left group (desktop): logo + version + Kotlin badge + TESTNET button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: isMobile ? 'center' : undefined }}>
                     <Bot size={16} color="#F0B90B" />
                     <span style={{ fontWeight: 700, fontSize: '1rem', color: '#EAECEF', letterSpacing: '-0.3px' }}>
                         ARG<span style={{ color: '#F0B90B' }}>BOT</span>
@@ -192,11 +203,7 @@ export default function Dashboard({ user }: { user: any }) {
                         <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
                         v{pkg.version}
                     </span>
-                </div>
-
-                <BackendToggle />
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <BackendToggle />
                     <button
                         onClick={() => {
                             if (isTestnet) {
@@ -219,11 +226,15 @@ export default function Dashboard({ user }: { user: any }) {
                             fontSize: '11px',
                             fontWeight: 700,
                             letterSpacing: '0.5px',
-                            marginRight: '24px',
+                            marginRight: isMobile ? undefined : '24px',
                         }}
                     >
                         {isTestnet ? 'TESTNET' : 'REAL'}
                     </button>
+                </div>
+
+                {/* Row 2 (mobile) / Right group (desktop): historial + ajustes + salir */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: isMobile ? 'center' : undefined }}>
                     <button
                         onClick={() => setCurrentView('history')}
                         title="Historial"
