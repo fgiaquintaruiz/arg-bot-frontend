@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings2, AlertTriangle, Bot, History as HistoryIcon } from 'lucide-react';
+import { Settings2, AlertTriangle, Bot, History as HistoryIcon, LogOut } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
 import bundledVersion from '../public/version.json';
@@ -273,20 +273,20 @@ export default function Dashboard({ user }: { user: any }) {
                     </button>
                     <button
                         onClick={logout}
+                        title="Salir"
+                        aria-label="Salir"
                         style={{
                             background: 'transparent',
-                            border: '1px solid #2B3139',
+                            border: 'none',
                             color: '#848E9C',
-                            fontWeight: 500,
                             cursor: 'pointer',
-                            fontSize: '12px',
-                            padding: '6px 12px',
+                            padding: '8px',
                             borderRadius: '6px',
-                            fontFamily: "'IBM Plex Sans', sans-serif",
-                            letterSpacing: '0.2px',
+                            display: 'flex',
+                            alignItems: 'center',
                         }}
                     >
-                        Salir
+                        <LogOut size={17} />
                     </button>
                 </div>
             </div>
@@ -330,7 +330,7 @@ export default function Dashboard({ user }: { user: any }) {
                     </span>
                 </span>
                 {data?.balances?.eur != null && (
-                    <span data-testid="rate-strip-balance" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
+                    <span data-testid="rate-strip-balance" style={isMobile ? { width: '100%', textAlign: 'center', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' } : { marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
                         <span style={{ color: '#848E9C', fontSize: '12px' }}>Disponible:</span>
                         <span style={{ color: '#EAECEF' }}>
                             {parseFloat(data.balances.eur).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
