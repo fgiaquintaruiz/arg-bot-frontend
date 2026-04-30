@@ -9,6 +9,8 @@ import History from './components/History';
 import Updates from './components/Updates';
 import Settings from './components/Settings';
 import BackendToggle from './components/BackendToggle';
+import { useIpChangeDetection } from './hooks/useIpChangeDetection';
+import IpChangeAlert from './components/IpChangeAlert';
 
 const AUTOMATIC_UPDATE = true;
 
@@ -18,6 +20,8 @@ export default function Dashboard({ user }: { user: any }) {
     const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem('argbot_testnet') !== 'false');
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
     const [currentView, setCurrentView] = useState('calculator');
+
+    const { ipChanged, newIp, dismiss, persist } = useIpChangeDetection();
 
     const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
                     !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));
@@ -149,6 +153,18 @@ export default function Dashboard({ user }: { user: any }) {
                 }}>
                     BINANCE TESTNET — datos y saldos de prueba, no reales
                 </div>
+            )}
+
+            {/* IP Change Alert banner */}
+            {ipChanged && newIp && (
+                <IpChangeAlert
+                    newIp={newIp}
+                    onConfirm={() => {
+                        persist();
+                        window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
+                    }}
+                    onDismiss={dismiss}
+                />
             )}
 
             {/* Access restricted banner */}

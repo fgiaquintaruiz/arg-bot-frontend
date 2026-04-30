@@ -5,8 +5,32 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { logout } from '../authService';
 import Dashboard from '../Dashboard';
 import bundledVersion from '../../public/version.json';
+import * as useIpChangeDetectionModule from '../hooks/useIpChangeDetection';
 
 vi.mock('../authService', () => ({ logout: vi.fn() }));
+
+vi.mock('../hooks/useIpChangeDetection', () => ({
+  useIpChangeDetection: vi.fn(() => ({
+    ipChanged: false,
+    newIp: null,
+    dismiss: vi.fn(),
+    persist: vi.fn(),
+  })),
+}));
+
+vi.mock('../components/IpChangeAlert', () => ({
+  default: ({ newIp, onConfirm, onDismiss }) => (
+    <div
+      role="alert"
+      aria-label="Alerta: la IP del servidor cambió"
+      data-testid="ip-change-alert-mock"
+    >
+      <span>{newIp}</span>
+      <button onClick={onConfirm}>Actualizar en Binance</button>
+      <button onClick={onDismiss}>Ignorar</button>
+    </div>
+  ),
+}));
 
 vi.mock('../components/TradingWizard', () => ({
   default: () => <div data-testid="wizard-mock" />,
@@ -409,6 +433,76 @@ describe('Dashboard', () => {
     await waitFor(() => {});
 
     expect(reloadMock).not.toHaveBeenCalled();
+  });
+
+  // ─── IP change alert integration ─────────────────────────────────────────────
+
+  it('IP unchanged → IpChangeAlert is NOT rendered', () => {
+    useIpChangeDetectionModule.useIpChangeDetection.mockReturnValue({
+      ipChanged: false,
+      newIp: null,
+      dismiss: vi.fn(),
+      persist: vi.fn(),
+    });
+    render(<Dashboard user={mockUser} />);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('no stored IP (bootstrap) → IpChangeAlert is NOT rendered', () => {
+    useIpChangeDetectionModule.useIpChangeDetection.mockReturnValue({
+      ipChanged: false,
+      newIp: null,
+      dismiss: vi.fn(),
+      persist: vi.fn(),
+    });
+    render(<Dashboard user={mockUser} />);
+    expect(screen.queryByTestId('ip-change-alert-mock')).not.toBeInTheDocument();
+  });
+
+  it('IP changed → IpChangeAlert IS rendered with the new IP', () => {
+    useIpChangeDetectionModule.useIpChangeDetection.mockReturnValue({
+      ipChanged: true,
+      newIp: '198.51.100.7',
+      dismiss: vi.fn(),
+      persist: vi.fn(),
+    });
+    render(<Dashboard user={mockUser} />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('198.51.100.7')).toBeInTheDocument();
+  });
+
+  it('click "Actualizar en Binance" → dispatches open-settings event with tab=binance', () => {
+    const persistMock = vi.fn();
+    useIpChangeDetectionModule.useIpChangeDetection.mockReturnValue({
+      ipChanged: true,
+      newIp: '198.51.100.7',
+      dismiss: vi.fn(),
+      persist: persistMock,
+    });
+
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByText('Actualizar en Binance'));
+
+    const customEventCall = dispatchSpy.mock.calls.find(
+      ([event]) => event.type === 'open-settings'
+    );
+    expect(customEventCall).toBeDefined();
+    expect(customEventCall[0].detail.tab).toBe('binance');
+    dispatchSpy.mockRestore();
+  });
+
+  it('click "Ignorar" → calls dismiss() from hook', () => {
+    const dismissMock = vi.fn();
+    useIpChangeDetectionModule.useIpChangeDetection.mockReturnValue({
+      ipChanged: true,
+      newIp: '198.51.100.7',
+      dismiss: dismissMock,
+      persist: vi.fn(),
+    });
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByText('Ignorar'));
+    expect(dismissMock).toHaveBeenCalledTimes(1);
   });
 
   it('version.json !ok → no activa animación', async () => {

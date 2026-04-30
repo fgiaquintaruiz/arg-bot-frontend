@@ -1,0 +1,71 @@
+import { useState, useEffect } from 'react';
+import { getApiUrl } from '../config';
+
+const LS_KEY = 'last_known_server_ip';
+
+export interface UseIpChangeDetectionResult {
+  ipChanged: boolean;
+  newIp: string | null;
+  dismiss: () => void;
+  persist: () => void;
+}
+
+export function useIpChangeDetection(): UseIpChangeDetectionResult {
+  const [ipChanged, setIpChanged] = useState(false);
+  const [newIp, setNewIp] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const detect = async () => {
+      try {
+        const res = await fetch(`${getApiUrl()}/api/ip`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const fetchedIp: unknown = data?.ip;
+
+        // Validate shape — must be a non-empty string
+        if (typeof fetchedIp !== 'string' || fetchedIp.trim() === '') return;
+
+        if (cancelled) return;
+
+        const storedIp = localStorage.getItem(LS_KEY);
+
+        if (storedIp === null) {
+          // Bootstrap: first time — save silently, no banner
+          localStorage.setItem(LS_KEY, fetchedIp);
+          return;
+        }
+
+        if (storedIp !== fetchedIp) {
+          // IP changed — show banner
+          setNewIp(fetchedIp);
+          setIpChanged(true);
+        }
+        // If same — do nothing (STABLE)
+      } catch (err) {
+        console.warn('[useIpChangeDetection] Failed to detect IP change:', err);
+      }
+    };
+
+    detect();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const acknowledge = () => {
+    if (newIp) {
+      localStorage.setItem(LS_KEY, newIp);
+    }
+    setIpChanged(false);
+  };
+
+  return {
+    ipChanged,
+    newIp,
+    dismiss: acknowledge,
+    persist: acknowledge,
+  };
+}
