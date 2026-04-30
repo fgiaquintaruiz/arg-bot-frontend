@@ -2,7 +2,20 @@
 
 React + Vite frontend application for ARGBOT -- automated international money transfers from Europe to Argentina.
 
-**Version:** 1.8.175
+**Version:** 1.8.179
+
+---
+
+> **PROYECTO EDUCATIVO — NO APTO PARA PRODUCCION**
+>
+> Este proyecto es **puramente educativo y formativo**. Fue creado como ejercicio de aprendizaje de arquitectura frontend, TDD, y desarrollo full-stack moderno con React + TypeScript + Vite.
+>
+> - No esta disenado ni auditado para uso en produccion con fondos reales.
+> - No hay garantias de seguridad, disponibilidad, ni correctitud financiera.
+> - Si decidis usarlo, sos responsable de entender completamente cada linea de codigo antes de ejecutar cualquier operacion con dinero real.
+> - El objetivo del proyecto es aprender — no reemplazar servicios financieros regulados.
+
+---
 
 ## Quick Start
 
@@ -34,7 +47,28 @@ The app is fully **non-custodial** — it never holds user funds or credentials 
 | Styling | Inline CSS (no CSS framework) |
 | Authentication | Firebase Auth (Google Sign-In) |
 | Encryption | CryptoJS (AES) |
-| Testing | Vitest, Playwright |
+| Icons | Lucide React |
+| Unit Testing | Vitest |
+| E2E Testing | Playwright |
+
+## Tests
+
+The project follows a strict TDD approach as part of its educational focus.
+
+| Layer | Tool | Coverage |
+|-------|------|----------|
+| Unit / Component | Vitest | 306 passing tests |
+| End-to-End | Playwright | Login, onboarding, CSP, critical flows |
+
+```bash
+# Unit tests
+npm run test:unit
+
+# E2E tests (requires dev server running)
+npm run test:e2e
+```
+
+Tests live under `src/__tests__/` (unit) and `e2e/` (Playwright). All new features are expected to ship with tests.
 
 ## Environment Variables
 
@@ -56,7 +90,8 @@ VITE_WHITELIST_EMAILS=alias1@gmail.com,alias2@gmail.com
 |---------|-------------|
 | `npm run dev` | Start dev server (port 10000) |
 | `npm run build` | Build for production |
-| `npm run test:unit` | Run unit tests |
+| `npm run test:unit` | Run Vitest unit tests |
+| `npm run test:e2e` | Run Playwright E2E tests |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview production build |
 
@@ -102,12 +137,13 @@ App.tsx
 
 ## Deployment
 
-### Frontend (Render Static Site)
+### Frontend (Vercel)
 
 1. Push to `main` branch
-2. Render auto-deploys from GitHub
-3. Set `VITE_API_URL` to your backend URL in Render settings
+2. Vercel auto-deploys from GitHub
+3. Set `VITE_API_URL` to your backend URL in Vercel environment settings
 4. Set `VITE_ENCRYPTION_KEY` to match backend
+5. Set `VITE_WHITELIST_EMAILS` with authorized Gmail aliases
 
 ### Backend (Render Web Service)
 
@@ -115,7 +151,18 @@ See `arg-bot-backend` repository.
 
 ## Keep-Alive
 
-The backend self-pings its public URL every 9 minutes to prevent Render's 15-minute free tier sleep. No external service needed.
+The backend runs on Render's free tier, which sleeps after 15 minutes of inactivity. A GitHub Actions workflow in the **backend repository** pings the public URL every 9 minutes to keep it awake. No external scheduler or frontend polling needed.
+
+## Contributing / Proyecto
+
+Este proyecto es un laboratorio de aprendizaje abierto. Las contribuciones son bienvenidas siempre que mantengan el espiritu educativo:
+
+- Cada cambio debe venir acompanado de tests (TDD primero cuando sea posible).
+- Priorizar la claridad del codigo sobre la optimizacion prematura.
+- Los pull requests deben incluir contexto de QUE se cambio y POR QUE, no solo COMO.
+- Este no es un SaaS — no hay roadmap de producto ni SLAs. Es un proyecto para aprender haciendo.
+
+Si encontras un bug o tenes una idea de mejora, abre un issue explicando el problema desde la perspectiva del usuario final.
 
 ## License
 
