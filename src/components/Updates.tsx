@@ -28,7 +28,6 @@ export default function Updates({ onClose }: { onClose: () => void }) {
 - **Transferencia SEPA asistida:** Botón para abrir tu app bancaria con los datos de Binance pre-rellenados. Fallback con copia manual si el banco no soporta \`payto:\`.
 
 ### 🔥 Prioridad alta (próximos lanzamientos)
-- **Fee de servicio:** Cobro opcional por transferencia — pendiente autorización escrita de redacted (cláusula 3.1). El feature está completo, se activa con un flip de flag.
 - **Seguridad backend JWT:** Verificación de tokens Google con \`firebase-admin\` para proteger la API y blindar futuras rutas de estadísticas.
 - **Métricas en vivo:** Panel público con total de operaciones, usuarios activos y estadísticas de uso — prueba social de la plataforma.
 

@@ -2,18 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { uploadToDrive, downloadFromDrive, setUserHint } from '../googleDrive';
 import { API_URL } from '../config';
 
-// Service fee is disabled pending written authorization from redacted (contractual requirement). Flip to `true` once authorization is obtained — rest of the fee logic is preserved intentionally.
-const FEE_ENABLED = false;
-
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'fee'>(() => {
-    const tab = (initialTab as any) || 'sync';
-    return (!FEE_ENABLED && tab === 'fee') ? 'sync' : tab;
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance'>(() => {
+    return ((initialTab as any) || 'sync') as 'sync' | 'binance';
   });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
-  const [serviceFee, setServiceFee] = useState<string>(() => localStorage.getItem('service_fee') || '0');
-  const [feeWhitelist, setFeeWhitelist] = useState<string>(() => localStorage.getItem('fee_whitelist') || '');
   const [binanceEurIban, setBinanceEurIban] = useState<string>(() => localStorage.getItem('binance_eur_iban') || '');
   const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem('binance_eur_name') || '');
   const [binanceEurBic, setBinanceEurBic] = useState<string>(() => localStorage.getItem('binance_eur_bic') || '');
@@ -29,7 +23,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [serverIp, setServerIp] = useState<string>('Cargando...');
   const [binanceSaved, setBinanceSaved] = useState(false);
   const [binanceCleared, setBinanceCleared] = useState(false);
-  const [feeSaved, setFeeSaved] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Registrar el email del usuario para evitar el account picker de Google
@@ -72,8 +65,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           addressBook: localStorage.getItem('address_book') || '[]',
           tradeHistory: localStorage.getItem('trade_history') || '[]',
           usdcWallet: localStorage.getItem('usdc_wallet') || '',
-          serviceFee: localStorage.getItem('service_fee') || '0.50',
-          feeWhitelist: localStorage.getItem('fee_whitelist') || '',
           binanceEurIban: localStorage.getItem('binance_eur_iban') || '',
           binanceEurName: localStorage.getItem('binance_eur_name') || '',
           binanceEurBic: localStorage.getItem('binance_eur_bic') || '',
@@ -105,8 +96,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           if (data.addressBook) localStorage.setItem('address_book', data.addressBook);
           if (data.tradeHistory) localStorage.setItem('trade_history', data.tradeHistory);
           if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);
-          if (data.serviceFee) localStorage.setItem('service_fee', data.serviceFee);
-          if (data.feeWhitelist) localStorage.setItem('fee_whitelist', data.feeWhitelist);
           if (data.binanceEurIban) localStorage.setItem('binance_eur_iban', data.binanceEurIban);
           if (data.binanceEurName) localStorage.setItem('binance_eur_name', data.binanceEurName);
           if (data.binanceEurBic) localStorage.setItem('binance_eur_bic', data.binanceEurBic);
@@ -127,20 +116,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
       setSyncMessage(`❌ Error: ${err.message || 'Error desconocido'}`);
     }
   };
-
-  /* v8 ignore start */
-  const handleSaveFee = () => {
-    const fee = parseFloat(serviceFee);
-    if (isNaN(fee) || fee < 0 || fee > 1) {
-      alert('El fee debe ser entre 0.00 y 1.00 EUR');
-      return;
-    }
-    localStorage.setItem('service_fee', fee.toFixed(2));
-    localStorage.setItem('fee_whitelist', feeWhitelist);
-    setFeeSaved(true);
-    setTimeout(() => setFeeSaved(false), 3000);
-  };
-  /* v8 ignore end */
 
   // Save Binance config
   const handleSaveBinance = () => {
@@ -210,11 +185,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         <div style={{ padding: '10px 20px', display: 'flex', gap: '6px', borderBottom: '1px solid #2B3139' }}>
           <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>Sync</button>
           <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>Binance</button>
-          { /* v8 ignore start */ }
-          {FEE_ENABLED && (
-            <button style={tabStyle('fee')} onClick={() => setActiveTab('fee')}>Fee</button>
-          )}
-          { /* v8 ignore end */ }
         </div>
 
         {/* Content */}
@@ -406,84 +376,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
             </div>
           )}
 
-          {/* FEE TAB */}
-          { /* v8 ignore start */ }
-          {FEE_ENABLED && activeTab === 'fee' && (
-            <div>
-              <h4 style={{ color: '#f8fafc', margin: '0 0 12px 0', fontSize: '15px' }}>Fee de Servicio</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>
-                Configurá cuánto cobrás por operación completa (cambio + retiro). Los usuarios en la lista de exentos no pagan fee.
-              </p>
-
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Fee por operación (EUR)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#f8fafc', fontSize: '18px', fontWeight: 'bold' }}>€</span>
-                  <input
-                    type="number"
-                    value={serviceFee}
-                    onChange={e => setServiceFee(e.target.value)}
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    style={{
-                      flex: 1, padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                      color: '#f8fafc', borderRadius: '10px', fontSize: '18px', fontWeight: 'bold',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', gap: '4px' }}>
-                  {['0.10', '0.25', '0.50', '0.75', '1.00'].map(v => (
-                    <button
-                      key={v}
-                      onTouchEnd={(e) => { e.preventDefault(); setServiceFee(v); }}
-                      onClick={() => setServiceFee(v)}
-                      style={{
-                        flex: 1, padding: '10px 4px', backgroundColor: serviceFee === v ? '#3b82f6' : '#0e1621',
-                        color: serviceFee === v ? '#fff' : '#94a3b8', border: '1px solid #334155',
-                        borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold',
-                        WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
-                        minHeight: '44px'
-                      }}
-                    >
-                      €{v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '16px', border: '1px solid #334155' }}>
-                <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Lista de exentos (emails, uno por línea)</label>
-                <textarea
-                  value={feeWhitelist}
-                  onChange={e => setFeeWhitelist(e.target.value)}
-                  rows={4}
-                  style={{
-                    width: '100%', padding: '14px', backgroundColor: '#0e1621', border: '1px solid #334155',
-                    color: '#f8fafc', borderRadius: '10px', fontSize: '13px', fontFamily: 'monospace',
-                    boxSizing: 'border-box', resize: 'vertical'
-                  }}
-                  placeholder="usuario1@gmail.com&#10;usuario2@hotmail.com"
-                />
-              </div>
-
-              <button
-                onTouchEnd={(e) => { e.preventDefault(); handleSaveFee(); }}
-                onClick={handleSaveFee}
-                style={{
-                  width: '100%', padding: '16px', backgroundColor: feeSaved ? '#10b981' : '#3b82f6',
-                  color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 'bold',
-                  cursor: 'pointer', transition: 'background-color 0.3s',
-                  WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation',
-                  minHeight: '52px'
-                }}
-              >
-                {feeSaved ? '✅ Guardado' : '💾 Guardar Configuración'}
-              </button>
-            </div>
-          )}
-          { /* v8 ignore end */ }
 
         </div>
       </div>

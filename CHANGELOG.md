@@ -1,6 +1,6 @@
 ## [1.8.175] - 2026-04-19
 ### Cambiado
-- **Fee de servicio gateado detrás de `FEE_ENABLED=false`:** La pestaña 💰 Fee ya no se renderiza y el valor por defecto de `service_fee` pasa a `"0"` mientras esté pendiente la autorización escrita de redacted (requerimiento contractual). Toda la lógica del fee se preserva; re-habilitar es un one-liner.
+- **Refactor Settings:** Limpieza de código y simplificación del componente de configuración.
 
 ## [1.8.174] - 2026-04-19
 ### Corregido
@@ -56,7 +56,7 @@
 ### Agregado
 - **Calculadora bidireccional:** Ahora podés escribir en ARS y ver el EUR necesario, o escribir en EUR y ver el ARS resultante.
 - **Botón de transferencia SEPA:** Datos completos del IBAN de Binance con copiado rápido y botón para abrir la app del banco (Santander, BBVA, etc.).
-- **Panel de Configuración (⚙️):** Sincronización con Google Drive, fee de servicio configurable (€0.10–€1.00), lista de exentos y soporte.
+- **Panel de Configuración (⚙️):** Sincronización con Google Drive, configuración de Binance y soporte.
 - **Badges de confianza:** Nueva sección "¿Por qué confiar en ARGBOT?" con encriptación, código abierto, soporte y permisos.
 - **Banner de actualización automática:** Detecta nuevas versiones y muestra un banner para recargar.
 - **Historial con ahorro real:** Ahora calcula y muestra el ahorro vs Remitly por operación y el total acumulado.
