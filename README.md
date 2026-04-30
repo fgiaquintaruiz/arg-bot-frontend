@@ -46,7 +46,7 @@ The app is fully **non-custodial** — it never holds user funds or credentials 
 | Language | TypeScript |
 | Styling | Inline CSS (no CSS framework) |
 | Authentication | Firebase Auth (Google Sign-In) |
-| Encryption | CryptoJS (AES) |
+| Encryption | CryptoJS (SHA3) |
 | Icons | Lucide React |
 | Unit Testing | Vitest |
 | E2E Testing | Playwright |
@@ -75,12 +75,10 @@ Tests live under `src/__tests__/` (unit) and `e2e/` (Playwright). All new featur
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_API_URL` | No | Backend API URL. Defaults to `http://localhost:10007` |
-| `VITE_ENCRYPTION_KEY` | **Yes** | AES key for encrypting API keys. Must match backend's `ENCRYPTION_KEY` |
 | `VITE_WHITELIST_EMAILS` | **Yes** | Comma-separated Gmail aliases allowed to sign in. Empty/missing → **all access rejected** (fail-closed) |
 
 ```env
 VITE_API_URL=http://localhost:10007
-VITE_ENCRYPTION_KEY=your-secret-key
 VITE_WHITELIST_EMAILS=alias1@gmail.com,alias2@gmail.com
 ```
 
@@ -142,8 +140,7 @@ App.tsx
 1. Push to `main` branch
 2. Vercel auto-deploys from GitHub
 3. Set `VITE_API_URL` to your backend URL in Vercel environment settings
-4. Set `VITE_ENCRYPTION_KEY` to match backend
-5. Set `VITE_WHITELIST_EMAILS` with authorized Gmail aliases
+4. Set `VITE_WHITELIST_EMAILS` with authorized Gmail aliases
 
 ### Backend (Render Web Service)
 
