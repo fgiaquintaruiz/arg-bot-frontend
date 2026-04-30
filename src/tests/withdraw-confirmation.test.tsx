@@ -26,6 +26,7 @@ const mockAddressBook = [{ name: 'Nexo Wallet', address: mockAddress }];
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  localStorage.setItem('argbot_testnet', 'false');
   localStorage.setItem('binance_key', 'test-key');
   localStorage.setItem('binance_secret', 'test-secret');
   localStorage.setItem('address_book', JSON.stringify(mockAddressBook));

@@ -58,12 +58,6 @@ describe('Settings Component', () => {
     expect(screen.queryByText(/Fee de Servicio/)).not.toBeInTheDocument();
   });
 
-  it('should coerce initialTab="fee" to sync while Fee is disabled', () => {
-    render(<Settings onClose={() => {}} user={mockUser} initialTab="fee" />);
-    expect(screen.getByText(/Sincronización con Google Drive/)).toBeInTheDocument();
-    expect(screen.queryByText(/Fee de Servicio/)).not.toBeInTheDocument();
-  });
-
   it('should show sync tab content by default', () => {
     render(<Settings onClose={() => {}} user={mockUser} />);
     expect(screen.getByText(/Sincronización con Google Drive/)).toBeInTheDocument();

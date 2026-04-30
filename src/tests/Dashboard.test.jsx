@@ -229,7 +229,7 @@ describe('Dashboard', () => {
 
   it('click Salir → llama a logout()', () => {
     render(<Dashboard user={mockUser} />);
-    fireEvent.click(screen.getByText('Salir'));
+    fireEvent.click(screen.getByLabelText('Salir'));
     expect(logout).toHaveBeenCalledTimes(1);
   });
 
