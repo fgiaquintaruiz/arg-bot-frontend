@@ -6,7 +6,6 @@ import bundledVersion from '../public/version.json';
 import { getApiUrl } from './config';
 import TradingWizard from './components/TradingWizard';
 import History from './components/History';
-import Updates from './components/Updates';
 import Settings from './components/Settings';
 import BackendToggle from './components/BackendToggle';
 import { useIpChangeDetection } from './hooks/useIpChangeDetection';
@@ -25,7 +24,6 @@ export default function Dashboard({ user }: { user: any }) {
 
     const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
                     !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));
-    const [showUpdates, setShowUpdates] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showTestnetModal, setShowTestnetModal] = useState(false);
     const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee'>('sync');
@@ -376,8 +374,6 @@ export default function Dashboard({ user }: { user: any }) {
                 </div>
             </div>
 
-            {/* showUpdates no tiene entrada de UI — dead code */}
-            {showUpdates && <Updates onClose={/* v8 ignore next */ () => setShowUpdates(false)} />}
             {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
 
             {showTestnetModal && (
