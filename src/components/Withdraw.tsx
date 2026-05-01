@@ -2,12 +2,26 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Building2, User, Pencil, AlertTriangle, X } from 'lucide-react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
+import {
+    getSelectedWithdrawEntry,
+    setSelectedWithdrawAddressId,
+    clearSelectedWithdrawAddress,
+    migrateLegacyUsdcWallet,
+} from '../lib/withdrawAddress';
 
 export interface CoreData { balances: { eur: string; usdc: string }; fees: { tradingRate: number }; }
 interface WithdrawProps { data: CoreData; onClose?: () => void; onSuccess?: () => void; variant?: 'standalone' | 'embedded'; }
 
 export default function Withdraw({ data, onClose, onSuccess, variant = 'standalone' }: WithdrawProps) {
-    const [address, setAddress] = useState<string>(localStorage.getItem('usdc_wallet') || '');
+    const [selectedId, setSelectedId] = useState<string | null>(
+        () => localStorage.getItem('usdc_wallet_id')
+    );
+    const [addressBook, setAddressBook] = useState<AddressEntry[]>(() => {
+        try {
+            const stored = localStorage.getItem('address_book');
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+    });
     const [amount, setAmount] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [errorMsg, setErrorMsg] = useState<string>('');
@@ -16,31 +30,64 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
     const [isConfirming, setIsConfirming] = useState<boolean>(false);
     const [irreversibleAccepted, setIrreversibleAccepted] = useState<boolean>(false);
 
-    useEffect(() => { localStorage.setItem('usdc_wallet', address); }, [address]);
-
-    if (!data || !data.balances) return <div style={{ color: '#848E9C', padding: '40px 20px', textAlign: 'center', fontSize: '14px' }}>Cargando saldos...</div>;
-
-    const addressBook = useMemo(() => {
-        try {
-            const stored = localStorage.getItem('address_book');
-            return stored ? JSON.parse(stored) : [];
-        } catch { return []; }
+    // Run once on mount: migrate legacy usdc_wallet string to usdc_wallet_id
+    useEffect(() => {
+        migrateLegacyUsdcWallet();
+        const migratedId = localStorage.getItem('usdc_wallet_id');
+        if (migratedId) setSelectedId(migratedId);
     }, []);
-    const hasAddressBookEntry = addressBook.length > 0;
+
+    // Cross-tab storage event listener
+    useEffect(() => {
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'address_book') {
+                try {
+                    const updated: AddressEntry[] = e.newValue ? JSON.parse(e.newValue) : [];
+                    setAddressBook(updated);
+                    if (selectedId && !updated.find(entry => entry.id === selectedId)) {
+                        clearSelectedWithdrawAddress();
+                        setSelectedId(null);
+                        setErrorMsg('La dirección seleccionada fue eliminada. Elegí otra.');
+                        setShowAddressBook(true);
+                    }
+                } catch { /* graceful degradation */ }
+            }
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, [selectedId]);
 
     const selectedEntry = useMemo(
-        () => addressBook.find((entry: AddressEntry) => entry.address.toLowerCase() === address.toLowerCase()),
-        [address, addressBook]
+        () => selectedId ? addressBook.find(e => e.id === selectedId) ?? null : null,
+        [selectedId, addressBook]
     );
+
+    const address = selectedEntry?.address ?? '';
+    const isOrphan = selectedId !== null && selectedEntry === null;
+    const hasAddressBookEntry = addressBook.length > 0;
+
+    // Orphan detection on render/mount
+    useEffect(() => {
+        if (isOrphan) {
+            clearSelectedWithdrawAddress();
+            setSelectedId(null);
+            setErrorMsg('La dirección seleccionada fue eliminada. Elegí otra.');
+            setShowAddressBook(true);
+        }
+    }, [isOrphan]);
+
     const truncateAddress = (addr: string) => {
         if (addr.length <= 12) return addr;
         return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     };
 
-    const handleAddressSelect = (selectedAddress: string) => {
-        setAddress(selectedAddress);
+    const handleAddressSelect = (entry: AddressEntry) => {
+        setSelectedWithdrawAddressId(entry);
+        setSelectedId(entry.id);
         setShowAddressBook(false);
     };
+
+    if (!data || !data.balances) return <div style={{ color: '#848E9C', padding: '40px 20px', textAlign: 'center', fontSize: '14px' }}>Cargando saldos...</div>;
 
     const handleInitiateWithdraw = () => {
         /* v8 ignore start */
@@ -50,14 +97,11 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
             return;
         }
         /* v8 ignore end */
-        if (address && hasAddressBookEntry) {
-            const isInBook = addressBook.some((entry: AddressEntry) => entry.address.toLowerCase() === address.toLowerCase());
-            if (!isInBook) {
-                setErrorMsg('La dirección debe ser seleccionada de la libreta de direcciones.');
-                return;
-            }
+        if (!selectedEntry) {
+            setErrorMsg('Seleccioná una dirección de tu libreta.');
+            return;
         }
-        if (!address || !amount || parseFloat(amount) <= 0) return;
+        if (!amount || parseFloat(amount) <= 0) return;
         if (parseFloat(amount) > parseFloat(data.balances.usdc)) {
             setErrorMsg('Saldo insuficiente. Solo tenés ' + data.balances.usdc + ' USDC.');
             return;
@@ -110,6 +154,13 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
                         {hasAddressBookEntry ? 'Libreta disponible' : 'Libreta vacía'}
                     </span>
                 </div>
+
+                {/* Orphan error message */}
+                {isOrphan && (
+                    <div style={{ color: '#F6465D', fontSize: '13px', marginBottom: '14px' }}>
+                        La dirección seleccionada fue eliminada. Elegí otra de tu libreta.
+                    </div>
+                )}
 
                 {/* Address selector */}
                 {hasAddressBookEntry ? (

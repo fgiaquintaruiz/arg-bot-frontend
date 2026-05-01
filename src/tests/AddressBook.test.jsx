@@ -260,13 +260,13 @@ describe('AddressBook Component', () => {
     expect(screen.getByText(/Tocar para seleccionar/)).toBeInTheDocument();
   });
 
-  it('handleSelect: llama a onSelect con la dirección y a onClose', () => {
+  it('handleSelect: llama a onSelect con la AddressEntry completa y a onClose', () => {
     const onSelect = vi.fn();
     const onClose = vi.fn();
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
     render(<AddressBook onSelect={onSelect} onClose={onClose} />);
     fireEvent.click(screen.getByText(/Tocar para seleccionar/));
-    expect(onSelect).toHaveBeenCalledWith(mockAddress.address);
+    expect(onSelect).toHaveBeenCalledWith(mockAddress);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -275,7 +275,7 @@ describe('AddressBook Component', () => {
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
     render(<AddressBook onSelect={onSelect} />);
     fireEvent.click(screen.getByText(/Tocar para seleccionar/));
-    expect(onSelect).toHaveBeenCalledWith(mockAddress.address);
+    expect(onSelect).toHaveBeenCalledWith(mockAddress);
   });
 
   // ─── Filtro de búsqueda ──────────────────────────────────────────────────────
@@ -344,13 +344,13 @@ describe('AddressBook Component', () => {
 
   // ─── onTouchEnd handlers ─────────────────────────────────────────────────────
 
-  it('onTouchEnd en card de selección llama a handleSelect', () => {
+  it('onTouchEnd en card de selección llama a handleSelect con AddressEntry completa', () => {
     const onSelect = vi.fn();
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
     render(<AddressBook onSelect={onSelect} />);
     const cardBtn = screen.getByText(/Tocar para seleccionar/).closest('button');
     fireEvent.touchEnd(cardBtn);
-    expect(onSelect).toHaveBeenCalledWith(mockAddress.address);
+    expect(onSelect).toHaveBeenCalledWith(mockAddress);
   });
 
   it('onTouchEnd en botón Editar abre el formulario de edición', () => {

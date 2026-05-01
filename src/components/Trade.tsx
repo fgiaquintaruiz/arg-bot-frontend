@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeftRight, X } from 'lucide-react';
 import { API_URL } from '../config';
+import { getSelectedWithdrawEntry } from '../lib/withdrawAddress';
 
 export interface CoreData { balances: { eur: string; usdc: string }; rate: string; usdcArsRate?: string; fees: { tradingRate: number }; }
 interface TradeProps { data: CoreData; onClose?: () => void; onSuccess: () => void; }
@@ -51,7 +52,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const arsAmount = usdcArs > 0 ? (netUsdc * usdcArs).toFixed(0) : undefined;
       // Binance no cobra fee de retiro para USDC BEP20 — siempre 0
       const binanceFeeEur = '0';
-      const usdcDestAddress = localStorage.getItem('usdc_wallet') || undefined;
+      const usdcDestAddress = getSelectedWithdrawEntry()?.address || undefined;
       history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate, eurUsdcRate: eurUsdc > 0 ? eurUsdc.toFixed(4) : undefined, binanceFeeEur, usdcDestAddress });
       localStorage.setItem("trade_history", JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);

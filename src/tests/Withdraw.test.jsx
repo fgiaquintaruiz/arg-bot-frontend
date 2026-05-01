@@ -4,10 +4,17 @@ import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Withdraw from '../components/Withdraw';
 
+// Updated mock: onSelect receives full AddressEntry (not just address string)
 vi.mock('../components/AddressBook', () => ({
   default: ({ onSelect, onClose }) => (
     <div data-testid="address-book-mock">
-      <button onClick={() => onSelect('0x1234567890123456789012345678901234567890')}>
+      <button onClick={() => onSelect({
+        id: 'mock-id',
+        name: 'Nexo',
+        address: mockAddress,
+        network: 'BSC',
+        addedAt: new Date().toISOString(),
+      })}>
         Seleccionar dirección
       </button>
       <button onClick={onClose}>Cerrar libreta</button>
@@ -21,7 +28,20 @@ const mockData = {
 };
 
 const mockAddress = '0x1234567890123456789012345678901234567890';
-const mockAddressBook = [{ name: 'Nexo', address: mockAddress }];
+const mockEntry = {
+  id: 'mock-id',
+  name: 'Nexo',
+  address: mockAddress,
+  network: 'BSC',
+  addedAt: '2026-05-01T00:00:00.000Z',
+};
+const mockAddressBook = [mockEntry];
+
+// Helper: set up localStorage with address_book and optional selectedId
+const setupWithdrawLocalStorage = (entries, selectedId = null) => {
+  localStorage.setItem('address_book', JSON.stringify(entries));
+  if (selectedId) localStorage.setItem('usdc_wallet_id', selectedId);
+};
 
 global.fetch = vi.fn();
 
@@ -154,13 +174,13 @@ describe('Withdraw Component', () => {
     });
 
     it('oculta el warning BSC cuando hay una dirección seleccionada', () => {
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       expect(screen.queryByText(/Red BSC \(BEP20\)/)).not.toBeInTheDocument();
     });
 
     it('muestra nombre y dirección truncada cuando hay entrada seleccionada', () => {
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       expect(screen.getByText('Nexo')).toBeInTheDocument();
       expect(screen.getByText('0x1234...7890')).toBeInTheDocument();
@@ -186,7 +206,6 @@ describe('Withdraw Component', () => {
       expect(screen.queryByTestId('address-book-mock')).not.toBeInTheDocument();
       expect(screen.getByText('Nexo')).toBeInTheDocument();
     });
-
   });
 
   // ─── handleWithdraw — validaciones ───────────────────────────────────────────
@@ -199,19 +218,17 @@ describe('Withdraw Component', () => {
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('con dirección no registrada en libreta: muestra error', () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', '0xDIRECCIONNOREGISTRADA000000000000000000');
+    it('sin dirección seleccionada (selectedEntry null): muestra error al intentar retirar', () => {
+      setupWithdrawLocalStorage(mockAddressBook);
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
-      expect(screen.getByText(/dirección debe ser seleccionada de la libreta/)).toBeInTheDocument();
+      expect(screen.getByText(/Seleccioná una dirección de tu libreta/)).toBeInTheDocument();
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('amount > balance: muestra error de saldo insuficiente', () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '9999' } });
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
@@ -220,29 +237,25 @@ describe('Withdraw Component', () => {
     });
 
     it('amount exactamente igual a balance: permite retirar (boundary, vía modal)', async () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '500' } });
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
-      // Modal abierto → checkbox + confirmar
       fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
       fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
       await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
     });
 
     it('sin amount (vacío): no llama a fetch', () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('amount = 0: no llama a fetch', () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '0' } });
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
@@ -250,14 +263,11 @@ describe('Withdraw Component', () => {
     });
 
     it('tipear en el input limpia el errorMsg previo', () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
-      // Trigger error
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '9999' } });
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       expect(screen.getByText(/Saldo insuficiente/)).toBeInTheDocument();
-      // Tipear limpia el error
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
       expect(screen.queryByText(/Saldo insuficiente/)).not.toBeInTheDocument();
     });
@@ -267,8 +277,7 @@ describe('Withdraw Component', () => {
 
   describe('handleWithdraw — API', () => {
     beforeEach(() => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
     });
 
     const openModalAndConfirm = () => {
@@ -307,7 +316,6 @@ describe('Withdraw Component', () => {
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={mockOnSuccess} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
 
-      // Open modal & confirm with real timers (so the modal renders with React 19)
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
 
@@ -364,12 +372,10 @@ describe('Withdraw Component', () => {
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
       openModalAndConfirm();
 
-      // Mientras dura el fetch, los botones muestran "Procesando..."
       const processingNodes = screen.getAllByText('Procesando...');
       expect(processingNodes.length).toBeGreaterThan(0);
       processingNodes.forEach(n => expect(n.closest('button')).toBeDisabled());
 
-      // Cleanup
       resolveFetch({ ok: true, json: async () => ({ success: true }) });
     });
 
@@ -392,37 +398,111 @@ describe('Withdraw Component', () => {
   describe('truncateAddress', () => {
     it('dirección larga se muestra truncada (6...4 chars)', () => {
       const longAddress = '0x1234567890123456789012345678901234567890';
-      localStorage.setItem('address_book', JSON.stringify([{ name: 'Test', address: longAddress }]));
-      localStorage.setItem('usdc_wallet', longAddress);
+      const longEntry = { id: 'long-id', name: 'Test', address: longAddress, network: 'BSC', addedAt: '2026-05-01T00:00:00.000Z' };
+      setupWithdrawLocalStorage([longEntry], 'long-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       expect(screen.getByText('0x1234...7890')).toBeInTheDocument();
     });
 
     it('dirección corta (≤12 chars) se muestra completa', () => {
       const shortAddress = '0x12345678';
-      localStorage.setItem('address_book', JSON.stringify([{ name: 'Test', address: shortAddress }]));
-      localStorage.setItem('usdc_wallet', shortAddress);
+      const shortEntry = { id: 'short-id', name: 'Test', address: shortAddress, network: 'BSC', addedAt: '2026-05-01T00:00:00.000Z' };
+      setupWithdrawLocalStorage([shortEntry], 'short-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       expect(screen.getByText('0x12345678')).toBeInTheDocument();
     });
   });
 
-  // ─── localStorage ────────────────────────────────────────────────────────────
+  // ─── localStorage / persistencia ─────────────────────────────────────────────
 
   describe('Persistencia en localStorage', () => {
-    it('la dirección seleccionada se guarda en usdc_wallet', async () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
+    it('la dirección seleccionada se guarda en usdc_wallet_id', async () => {
+      setupWithdrawLocalStorage(mockAddressBook);
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      fireEvent.click(screen.getByText(/Seleccioná una dirección/));
+      fireEvent.click(screen.getByText('Seleccionar dirección'));
+      expect(localStorage.getItem('usdc_wallet_id')).toBe('mock-id');
+    });
+
+    it('la selección también dual-escribe usdc_wallet (legacy) para rollback', async () => {
+      setupWithdrawLocalStorage(mockAddressBook);
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.click(screen.getByText(/Seleccioná una dirección/));
       fireEvent.click(screen.getByText('Seleccionar dirección'));
       expect(localStorage.getItem('usdc_wallet')).toBe(mockAddress);
     });
 
-    it('la dirección previa de localStorage se usa como valor inicial', () => {
-      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-      localStorage.setItem('usdc_wallet', mockAddress);
+    it('usdc_wallet_id previo de localStorage se usa como valor inicial', () => {
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       expect(screen.getByText('Nexo')).toBeInTheDocument();
+    });
+  });
+
+  // ─── multi-wallet behavior ────────────────────────────────────────────────────
+
+  describe('multi-wallet behavior', () => {
+    it('mount: llama migrateLegacyUsdcWallet() al montar (migración)', async () => {
+      const { migrateLegacyUsdcWallet } = await import('../lib/withdrawAddress');
+      const spy = vi.spyOn({ migrateLegacyUsdcWallet }, 'migrateLegacyUsdcWallet');
+      // With a legacy usdc_wallet key and matching address_book entry,
+      // the migration should set usdc_wallet_id after mount
+      localStorage.setItem('usdc_wallet', mockAddress);
+      localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      // After migration, the component should show the address via the new id path
+      await waitFor(() => {
+        expect(localStorage.getItem('usdc_wallet_id')).toBe('mock-id');
+      });
+    });
+
+    it('render: deriva dirección desde usdc_wallet_id — no lee usdc_wallet legacy', () => {
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
+      localStorage.setItem('usdc_wallet', '0xSTALE_ADDRESS_SHOULD_NOT_BE_USED_00000000');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      expect(screen.getByText('Nexo')).toBeInTheDocument();
+      expect(screen.getByText('0x1234...7890')).toBeInTheDocument();
+    });
+
+    it('id huérfano en mount: muestra mensaje de error', () => {
+      const otherEntry = { id: 'other-id', name: 'Other', address: '0xother', network: 'BSC', addedAt: '2026-05-01T00:00:00.000Z' };
+      setupWithdrawLocalStorage([otherEntry], 'deleted-id');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      expect(screen.getByText(/La dirección seleccionada fue eliminada/)).toBeInTheDocument();
+    });
+
+    it('id huérfano en mount: limpia usdc_wallet_id de localStorage', async () => {
+      const otherEntry = { id: 'other-id', name: 'Other', address: '0xother', network: 'BSC', addedAt: '2026-05-01T00:00:00.000Z' };
+      setupWithdrawLocalStorage([otherEntry], 'deleted-id');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      await waitFor(() => {
+        expect(localStorage.getItem('usdc_wallet_id')).toBeNull();
+      });
+    });
+
+    it('storage event: detecta entry borrada en otro tab y limpia selección', async () => {
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      expect(screen.getByText('Nexo')).toBeInTheDocument();
+
+      // Simulate another tab deleting the entry
+      await act(async () => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'address_book',
+          newValue: JSON.stringify([]),
+        }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/La dirección seleccionada fue eliminada/)).toBeInTheDocument();
+      });
+    });
+
+    it('address_book vacío con usdc_wallet_id: trata el id como huérfano', () => {
+      localStorage.setItem('address_book', JSON.stringify([]));
+      localStorage.setItem('usdc_wallet_id', 'some-id');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      expect(screen.getByText(/La dirección seleccionada fue eliminada/)).toBeInTheDocument();
     });
   });
 });

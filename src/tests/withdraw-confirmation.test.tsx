@@ -7,7 +7,13 @@ import Withdraw from '../components/Withdraw';
 vi.mock('../components/AddressBook', () => ({
   default: ({ onSelect, onClose }: any) => (
     <div data-testid="address-book-mock">
-      <button onClick={() => onSelect('0x1234567890123456789012345678901234567890')}>
+      <button onClick={() => onSelect({
+        id: 'mock-id',
+        name: 'Nexo Wallet',
+        address: '0x1234567890123456789012345678901234567890',
+        network: 'BSC',
+        addedAt: new Date().toISOString(),
+      })}>
         Seleccionar dirección
       </button>
       <button onClick={onClose}>Cerrar libreta</button>
@@ -21,7 +27,7 @@ const mockData: any = {
 };
 
 const mockAddress = '0x1234567890123456789012345678901234567890';
-const mockAddressBook = [{ name: 'Nexo Wallet', address: mockAddress }];
+const mockAddressBook = [{ id: 'mock-id', name: 'Nexo Wallet', address: mockAddress, network: 'BSC', addedAt: '2026-05-01T00:00:00.000Z' }];
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -30,7 +36,7 @@ beforeEach(() => {
   localStorage.setItem('binance_key', 'test-key');
   localStorage.setItem('binance_secret', 'test-secret');
   localStorage.setItem('address_book', JSON.stringify(mockAddressBook));
-  localStorage.setItem('usdc_wallet', mockAddress);
+  localStorage.setItem('usdc_wallet_id', 'mock-id');
   global.fetch = vi.fn();
 });
 

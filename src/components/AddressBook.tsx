@@ -10,7 +10,7 @@ export interface AddressEntry {
 }
 
 interface AddressBookProps {
-  onSelect?: (address: string) => void;
+  onSelect?: (entry: AddressEntry) => void;
   onClose?: () => void;
 }
 
@@ -194,11 +194,11 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
     setShowAddForm(false);
   };
 
-  // Select address
-  const handleSelect = (address: string) => {
-    console.log('[AddressBook] Select called for:', address);
+  // Select address — passes full AddressEntry to caller
+  const handleSelect = (entry: AddressEntry) => {
+    console.log('[AddressBook] Select called for:', entry.address);
     if (onSelect) {
-      onSelect(address);
+      onSelect(entry);
     }
     if (onClose) {
       onClose();
@@ -292,12 +292,12 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
                   onClick={(e) => {
                     console.log('[AddressBook] Card clicked via onClick');
                     e.preventDefault();
-                    handleSelect(entry.address);
+                    handleSelect(entry);
                   }}
                   onTouchEnd={(e) => {
                     console.log('[AddressBook] Card touched via onTouchEnd');
                     e.preventDefault();
-                    handleSelect(entry.address);
+                    handleSelect(entry);
                   }}
                   style={{
                     background: 'none',
