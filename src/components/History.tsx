@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, Check, X, ClipboardList } from 'lucide-react';
+import { Pencil, Check, X, ClipboardList, Download } from 'lucide-react';
+import { tradeHistoryToCsv, downloadCsv } from '../utils/csvExport';
 
 function truncateAddress(addr: string): string {
   if (!addr) return '—';
@@ -38,6 +39,18 @@ export default function History({ onClose }: { onClose: () => void }) {
     setEditValue('');
   };
 
+  const handleExportCsv = () => {
+    try {
+      const raw = localStorage.getItem('trade_history') || '[]';
+      const records = JSON.parse(raw);
+      const csv = tradeHistoryToCsv(Array.isArray(records) ? records : []);
+      const today = new Date().toISOString().slice(0, 10);
+      downloadCsv(`argbot-history-${today}.csv`, csv);
+    } catch {
+      // silent — download fails gracefully
+    }
+  };
+
   return (
     <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139', width: '100%', boxSizing: 'border-box', position: 'relative' }}>
 
@@ -52,6 +65,28 @@ export default function History({ onClose }: { onClose: () => void }) {
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <ClipboardList size={18} />
         <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>Historial de operaciones</h3>
+        <button
+          aria-label="Exportar historial como CSV"
+          onClick={handleExportCsv}
+          disabled={history.length === 0}
+          style={{
+            marginLeft: 'auto',
+            background: 'transparent',
+            border: '1px solid #2B3139',
+            borderRadius: '6px',
+            cursor: history.length === 0 ? 'not-allowed' : 'pointer',
+            color: history.length === 0 ? '#474D57' : '#848E9C',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 10px',
+            fontSize: '12px',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+          }}
+        >
+          <Download size={14} />
+          Exportar CSV
+        </button>
       </div>
 
       <div style={{ padding: '20px' }}>

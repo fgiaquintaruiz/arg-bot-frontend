@@ -33,3 +33,6 @@ SESSION_LOG.md
 
 # Windows crash dumps
 bash.exe.stackdump
+
+# Auto-generated version file (bumped by CI/scripts)
+public/version.json

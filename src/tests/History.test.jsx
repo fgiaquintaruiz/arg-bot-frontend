@@ -4,6 +4,16 @@ import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import History from '../components/History';
 
+// Module-level mock — hoisted by Vitest so it intercepts csvExport before History.tsx imports it
+vi.mock('../utils/csvExport', () => ({
+  tradeHistoryToCsv: vi.fn().mockReturnValue('mocked-csv'),
+  downloadCsv: vi.fn(),
+  CSV_COLUMNS: [
+    'date', 'eur', 'usdcReceived', 'arsAmount', 'eurArsRate',
+    'eurUsdcRate', 'binanceFeeEur', 'ripioFeeArs', 'serviceFee', 'usdcDestAddress',
+  ],
+}));
+
 describe('History Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -271,5 +281,79 @@ describe('History Component', () => {
     // y se persiste en localStorage
     const saved = JSON.parse(localStorage.getItem('trade_history') || '[]');
     expect(saved[0].ripioFeeArs).toBe('2500');
+  });
+});
+
+// ─── Export CSV button ────────────────────────────────────────────────────────
+
+import { tradeHistoryToCsv, downloadCsv } from '../utils/csvExport';
+
+describe('Export CSV button', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('renders "Exportar CSV" button when history has entries', () => {
+    const trades = [{ date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' }];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/Exportar CSV/i)).toBeInTheDocument();
+  });
+
+  it('button has aria-label "Exportar historial como CSV"', () => {
+    const trades = [{ date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' }];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Exportar historial como CSV' })).toBeInTheDocument();
+  });
+
+  it('button is disabled when history is empty', () => {
+    render(<History onClose={() => {}} />);
+    const btn = screen.getByRole('button', { name: 'Exportar historial como CSV' });
+    expect(btn).toBeDisabled();
+  });
+
+  it('button is enabled when history has at least one entry', () => {
+    const trades = [{ date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' }];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    const btn = screen.getByRole('button', { name: 'Exportar historial como CSV' });
+    expect(btn).not.toBeDisabled();
+  });
+
+  it('clicking button calls downloadCsv with filename matching argbot-history-YYYY-MM-DD.csv pattern', () => {
+    const trades = [{ date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' }];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar historial como CSV' }));
+    expect(downloadCsv).toHaveBeenCalledOnce();
+    const [filename] = downloadCsv.mock.calls[0];
+    expect(filename).toMatch(/^argbot-history-\d{4}-\d{2}-\d{2}\.csv$/);
+  });
+
+  it('clicking button calls tradeHistoryToCsv with the full history array', () => {
+    const trades = [
+      { date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' },
+      { date: '2024-01-02T10:00:00.000Z', eur: '200', usdcReceived: '215.00' },
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar historial como CSV' }));
+    expect(tradeHistoryToCsv).toHaveBeenCalledOnce();
+    const [passedHistory] = tradeHistoryToCsv.mock.calls[0];
+    expect(passedHistory).toHaveLength(2);
+    expect(passedHistory[0].eur).toBe('100');
+    expect(passedHistory[1].eur).toBe('200');
+  });
+
+  it('clicking button does NOT modify localStorage trade_history', () => {
+    const trades = [{ date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' }];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    const beforeClick = localStorage.getItem('trade_history');
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar historial como CSV' }));
+    const afterClick = localStorage.getItem('trade_history');
+    expect(afterClick).toBe(beforeClick);
   });
 });
