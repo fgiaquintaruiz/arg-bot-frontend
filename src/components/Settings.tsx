@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { uploadToDrive, downloadFromDrive, setUserHint } from '../googleDrive';
 import { API_URL } from '../config';
+import { getRateAlertConfig, setRateAlertConfig } from '../utils/rateAlertStorage';
 
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance'>(() => {
-    return ((initialTab as any) || 'sync') as 'sync' | 'binance';
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts'>(() => {
+    return ((initialTab as any) || 'sync') as 'sync' | 'binance' | 'alerts';
   });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
@@ -24,6 +25,14 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [binanceSaved, setBinanceSaved] = useState(false);
   const [binanceCleared, setBinanceCleared] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Alerts tab state
+  const [eurArsUpper, setEurArsUpper] = useState<string>(() => String(getRateAlertConfig().eurArs.upper ?? ''));
+  const [eurArsLower, setEurArsLower] = useState<string>(() => String(getRateAlertConfig().eurArs.lower ?? ''));
+  const [eurUsdcUpper, setEurUsdcUpper] = useState<string>(() => String(getRateAlertConfig().eurUsdc.upper ?? ''));
+  const [eurUsdcLower, setEurUsdcLower] = useState<string>(() => String(getRateAlertConfig().eurUsdc.lower ?? ''));
+  const [alertsSaved, setAlertsSaved] = useState(false);
+  const [alertsValidationError, setAlertsValidationError] = useState<string | null>(null);
 
   // Registrar el email del usuario para evitar el account picker de Google
   useEffect(() => {
@@ -162,6 +171,36 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     setTimeout(() => setBinanceCleared(false), 3000);
   };
 
+  // Save alerts config
+  const handleSaveAlerts = () => {
+    // Validation: if both upper and lower defined for a pair, upper must be > lower
+    if (eurArsUpper && eurArsLower) {
+      if (parseFloat(eurArsUpper) <= parseFloat(eurArsLower)) {
+        setAlertsValidationError('EUR/ARS: el umbral superior debe ser mayor que el inferior');
+        return;
+      }
+    }
+    if (eurUsdcUpper && eurUsdcLower) {
+      if (parseFloat(eurUsdcUpper) <= parseFloat(eurUsdcLower)) {
+        setAlertsValidationError('EUR/USDC: el umbral superior debe ser mayor que el inferior');
+        return;
+      }
+    }
+    setAlertsValidationError(null);
+    setRateAlertConfig({
+      eurArs: {
+        upper: eurArsUpper ? parseFloat(eurArsUpper) : undefined,
+        lower: eurArsLower ? parseFloat(eurArsLower) : undefined,
+      },
+      eurUsdc: {
+        upper: eurUsdcUpper ? parseFloat(eurUsdcUpper) : undefined,
+        lower: eurUsdcLower ? parseFloat(eurUsdcLower) : undefined,
+      },
+    });
+    setAlertsSaved(true);
+    setTimeout(() => setAlertsSaved(false), 3000);
+  };
+
   const tabStyle = (tab: string): React.CSSProperties => ({
     flex: 1, padding: '8px 6px',
     backgroundColor: activeTab === tab ? '#F0B90B' : 'transparent',
@@ -185,6 +224,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         <div style={{ padding: '10px 20px', display: 'flex', gap: '6px', borderBottom: '1px solid #2B3139' }}>
           <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>Sync</button>
           <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>Binance</button>
+          <button style={tabStyle('alerts')} onClick={() => setActiveTab('alerts')}>Alertas</button>
         </div>
 
         {/* Content */}
@@ -239,6 +279,89 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                   {syncMessage}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ALERTS TAB */}
+          {activeTab === 'alerts' && (
+            <div>
+              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Alertas de tasa</h4>
+              <p style={{ color: '#848E9C', fontSize: '13px', lineHeight: '1.6', marginBottom: '16px' }}>
+                Configurá umbrales de precio para EUR/ARS y EUR/USDC. El dashboard mostrará un banner cuando la tasa cruce el umbral configurado.
+              </p>
+
+              {alertsValidationError && (
+                <div style={{ padding: '10px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '12px', backgroundColor: 'rgba(246,70,93,0.08)', color: '#F6465D', border: '1px solid rgba(246,70,93,0.2)' }}>
+                  {alertsValidationError}
+                </div>
+              )}
+
+              {/* EUR/ARS section */}
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 4px' }}>EUR/ARS</p>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral superior (≥)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={eurArsUpper}
+                    onChange={e => setEurArsUpper(e.target.value)}
+                    placeholder="Umbral superior EUR/ARS"
+                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral inferior (≤)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={eurArsLower}
+                    onChange={e => setEurArsLower(e.target.value)}
+                    placeholder="Umbral inferior EUR/ARS"
+                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              {/* EUR/USDC section */}
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 4px' }}>EUR/USDC</p>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral superior (≥)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={eurUsdcUpper}
+                    onChange={e => setEurUsdcUpper(e.target.value)}
+                    placeholder="Umbral superior EUR/USDC"
+                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral inferior (≤)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={eurUsdcLower}
+                    onChange={e => setEurUsdcLower(e.target.value)}
+                    placeholder="Umbral inferior EUR/USDC"
+                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              {/* Save button */}
+              <button
+                onClick={handleSaveAlerts}
+                disabled={!!alertsValidationError}
+                style={{ width: '100%', padding: '13px', backgroundColor: alertsSaved ? 'rgba(14,203,129,0.1)' : '#0ECB81', color: alertsSaved ? '#0ECB81' : '#181A20', border: alertsSaved ? '1px solid rgba(14,203,129,0.3)' : 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+              >
+                {alertsSaved ? '✓ Guardado' : 'Guardar alertas'}
+              </button>
             </div>
           )}
 

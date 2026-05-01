@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Settings2, AlertTriangle, Bot, History as HistoryIcon, LogOut } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
@@ -10,6 +10,9 @@ import Settings from './components/Settings';
 import BackendToggle from './components/BackendToggle';
 import { useIpChangeDetection } from './hooks/useIpChangeDetection';
 import IpChangeAlert from './components/IpChangeAlert';
+import { useRateAlert } from './hooks/useRateAlert';
+import RateAlertBanner from './components/RateAlertBanner';
+import { getRateAlertConfig } from './utils/rateAlertStorage';
 
 const AUTOMATIC_UPDATE = true;
 
@@ -22,11 +25,21 @@ export default function Dashboard({ user }: { user: any }) {
 
     const { ipChanged, newIp, dismiss, persist } = useIpChangeDetection();
 
+    const rateAlertConfig = useMemo(() => getRateAlertConfig(), []);
+
+    const eurArsRate = useMemo(() => {
+        if (!data?.rate || !data?.ripioUsdcArsRate) return null;
+        return parseFloat(data.rate) * parseFloat(data.ripioUsdcArsRate);
+    }, [data?.rate, data?.ripioUsdcArsRate]);
+
+    const eurArsAlert = useRateAlert(eurArsRate, 'EUR/ARS', rateAlertConfig.eurArs);
+    const eurUsdcAlert = useRateAlert(data?.rate, 'EUR/USDC', rateAlertConfig.eurUsdc);
+
     const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
                     !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));
     const [showSettings, setShowSettings] = useState(false);
     const [showTestnetModal, setShowTestnetModal] = useState(false);
-    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'fee'>('sync');
+    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'alerts'>('sync');
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
     const [versionUpdating, setVersionUpdating] = useState(false);
 
@@ -162,6 +175,26 @@ export default function Dashboard({ user }: { user: any }) {
                         window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'binance' } }));
                     }}
                     onDismiss={dismiss}
+                />
+            )}
+
+            {/* Rate Alert banners */}
+            {eurArsAlert.alertActive && eurArsAlert.direction && eurArsAlert.currentRate !== null && eurArsAlert.threshold !== null && (
+                <RateAlertBanner
+                    pair="EUR/ARS"
+                    direction={eurArsAlert.direction}
+                    currentRate={eurArsAlert.currentRate}
+                    threshold={eurArsAlert.threshold}
+                    onDismiss={eurArsAlert.dismiss}
+                />
+            )}
+            {eurUsdcAlert.alertActive && eurUsdcAlert.direction && eurUsdcAlert.currentRate !== null && eurUsdcAlert.threshold !== null && (
+                <RateAlertBanner
+                    pair="EUR/USDC"
+                    direction={eurUsdcAlert.direction}
+                    currentRate={eurUsdcAlert.currentRate}
+                    threshold={eurUsdcAlert.threshold}
+                    onDismiss={eurUsdcAlert.dismiss}
                 />
             )}
 

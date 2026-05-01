@@ -6,6 +6,35 @@ import { logout } from '../authService';
 import Dashboard from '../Dashboard';
 import bundledVersion from '../../public/version.json';
 import * as useIpChangeDetectionModule from '../hooks/useIpChangeDetection';
+import * as useRateAlertModule from '../hooks/useRateAlert';
+
+vi.mock('../utils/rateAlertStorage', () => ({
+  getRateAlertConfig: vi.fn(() => ({ eurArs: {}, eurUsdc: {} })),
+  setRateAlertConfig: vi.fn(),
+}));
+
+vi.mock('../hooks/useRateAlert', () => ({
+  useRateAlert: vi.fn(() => ({
+    alertActive: false,
+    direction: null,
+    currentRate: null,
+    threshold: null,
+    dismiss: vi.fn(),
+  })),
+}));
+
+vi.mock('../components/RateAlertBanner', () => ({
+  default: ({ pair, onDismiss }) => (
+    <div
+      role="alert"
+      data-testid="rate-alert-banner-mock"
+      data-pair={pair}
+    >
+      <span>{pair}</span>
+      <button onClick={onDismiss}>Descartar</button>
+    </div>
+  ),
+}));
 
 vi.mock('../authService', () => ({ logout: vi.fn() }));
 
@@ -521,5 +550,111 @@ describe('Dashboard', () => {
     await waitFor(() => {});
 
     expect(reloadMock).not.toHaveBeenCalled();
+  });
+
+  // ─── Rate Alert integration ───────────────────────────────────────────────────
+
+  it('useRateAlert not active → RateAlertBanner not rendered', () => {
+    useRateAlertModule.useRateAlert.mockReturnValue({
+      alertActive: false,
+      direction: null,
+      currentRate: null,
+      threshold: null,
+      dismiss: vi.fn(),
+    });
+    render(<Dashboard user={mockUser} />);
+    expect(screen.queryByTestId('rate-alert-banner-mock')).not.toBeInTheDocument();
+  });
+
+  it('useRateAlert EUR/ARS active → RateAlertBanner EUR/ARS rendered with role="alert"', () => {
+    useRateAlertModule.useRateAlert
+      .mockImplementationOnce(() => ({
+        alertActive: true,
+        direction: 'upper',
+        currentRate: 1350,
+        threshold: 1300,
+        dismiss: vi.fn(),
+      }))
+      .mockImplementationOnce(() => ({
+        alertActive: false,
+        direction: null,
+        currentRate: null,
+        threshold: null,
+        dismiss: vi.fn(),
+      }));
+
+    render(<Dashboard user={mockUser} />);
+    const banners = screen.getAllByTestId('rate-alert-banner-mock');
+    expect(banners.length).toBe(1);
+    expect(banners[0]).toHaveAttribute('data-pair', 'EUR/ARS');
+    expect(banners[0]).toHaveAttribute('role', 'alert');
+  });
+
+  it('useRateAlert EUR/USDC active → RateAlertBanner EUR/USDC rendered', () => {
+    useRateAlertModule.useRateAlert
+      .mockImplementationOnce(() => ({
+        alertActive: false,
+        direction: null,
+        currentRate: null,
+        threshold: null,
+        dismiss: vi.fn(),
+      }))
+      .mockImplementationOnce(() => ({
+        alertActive: true,
+        direction: 'lower',
+        currentRate: 0.90,
+        threshold: 0.95,
+        dismiss: vi.fn(),
+      }));
+
+    render(<Dashboard user={mockUser} />);
+    const banners = screen.getAllByTestId('rate-alert-banner-mock');
+    expect(banners.length).toBe(1);
+    expect(banners[0]).toHaveAttribute('data-pair', 'EUR/USDC');
+  });
+
+  it('click Descartar on EUR/ARS banner → calls dismiss from eurArsAlert hook', () => {
+    const dismissMock = vi.fn();
+    useRateAlertModule.useRateAlert
+      .mockImplementationOnce(() => ({
+        alertActive: true,
+        direction: 'upper',
+        currentRate: 1350,
+        threshold: 1300,
+        dismiss: dismissMock,
+      }))
+      .mockImplementationOnce(() => ({
+        alertActive: false,
+        direction: null,
+        currentRate: null,
+        threshold: null,
+        dismiss: vi.fn(),
+      }));
+
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByText('Descartar'));
+    expect(dismissMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('both alerts active → two banners rendered', () => {
+    useRateAlertModule.useRateAlert
+      .mockImplementationOnce(() => ({
+        alertActive: true,
+        direction: 'upper',
+        currentRate: 1350,
+        threshold: 1300,
+        dismiss: vi.fn(),
+      }))
+      .mockImplementationOnce(() => ({
+        alertActive: true,
+        direction: 'lower',
+        currentRate: 0.90,
+        threshold: 0.95,
+        dismiss: vi.fn(),
+      }));
+
+    render(<Dashboard user={mockUser} />);
+    const banners = screen.getAllByTestId('rate-alert-banner-mock');
+    expect(banners.length).toBe(2);
   });
 });

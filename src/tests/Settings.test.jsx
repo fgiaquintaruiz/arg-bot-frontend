@@ -4,6 +4,11 @@ import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Settings from '../components/Settings';
 
+vi.mock('../utils/rateAlertStorage', () => ({
+  getRateAlertConfig: vi.fn(() => ({ eurArs: {}, eurUsdc: {} })),
+  setRateAlertConfig: vi.fn(),
+}));
+
 const mockUser = { email: 'test@gmail.com', displayName: 'Test User' };
 
 vi.mock('../googleDrive', () => ({
@@ -445,6 +450,88 @@ describe('Settings Component', () => {
     await act(async () => { vi.advanceTimersByTime(3000); });
     expect(screen.queryByText('✓ Borrado')).not.toBeInTheDocument();
     vi.useRealTimers();
+  });
+
+  // ─── Alertas tab ─────────────────────────────────────────────────────────────
+
+  it('should show Alertas tab button', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    expect(screen.getByText('Alertas')).toBeInTheDocument();
+  });
+
+  it('Alertas tab: clicking shows Alertas content section', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    expect(screen.getByText(/Alertas de tasa/i)).toBeInTheDocument();
+  });
+
+  it('Alertas tab: renders EUR/ARS upper input', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    expect(screen.getByPlaceholderText('Umbral superior EUR/ARS')).toBeInTheDocument();
+  });
+
+  it('Alertas tab: renders EUR/ARS lower input', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    expect(screen.getByPlaceholderText('Umbral inferior EUR/ARS')).toBeInTheDocument();
+  });
+
+  it('Alertas tab: renders EUR/USDC upper input', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    expect(screen.getByPlaceholderText('Umbral superior EUR/USDC')).toBeInTheDocument();
+  });
+
+  it('Alertas tab: renders EUR/USDC lower input', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    expect(screen.getByPlaceholderText('Umbral inferior EUR/USDC')).toBeInTheDocument();
+  });
+
+  it('Alertas tab: save valid thresholds → localStorage setItem called with "rate_alert_config"', async () => {
+    const { setRateAlertConfig } = await import('../utils/rateAlertStorage');
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    fireEvent.change(screen.getByPlaceholderText('Umbral superior EUR/ARS'), { target: { value: '1.20' } });
+    fireEvent.change(screen.getByPlaceholderText('Umbral inferior EUR/ARS'), { target: { value: '0.80' } });
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(setRateAlertConfig).toHaveBeenCalledWith(
+      expect.objectContaining({ eurArs: expect.objectContaining({ upper: 1.20, lower: 0.80 }) })
+    );
+  });
+
+  it('Alertas tab: upper < lower same pair → inline validation error shown', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    fireEvent.change(screen.getByPlaceholderText('Umbral superior EUR/ARS'), { target: { value: '0.80' } });
+    fireEvent.change(screen.getByPlaceholderText('Umbral inferior EUR/ARS'), { target: { value: '1.20' } });
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(screen.getByText(/superior debe ser mayor/i)).toBeInTheDocument();
+  });
+
+  it('Alertas tab: empty fields saved → config has undefined thresholds', async () => {
+    const { setRateAlertConfig } = await import('../utils/rateAlertStorage');
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    // Leave all fields empty
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(setRateAlertConfig).toHaveBeenCalledWith({
+      eurArs: { upper: undefined, lower: undefined },
+      eurUsdc: { upper: undefined, lower: undefined },
+    });
+  });
+
+  it('Alertas tab: shows ✓ Guardado after save', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(screen.getByText('✓ Guardado')).toBeInTheDocument();
+  });
+
+  it('should open to alerts tab when initialTab="alerts"', () => {
+    render(<Settings onClose={() => {}} user={mockUser} initialTab="alerts" />);
+    expect(screen.getByPlaceholderText('Umbral superior EUR/ARS')).toBeInTheDocument();
   });
 
 });
