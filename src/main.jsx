@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
+import { registerSW } from './utils/swRegistration'
 
 // Capturador de errores crítico para debug en producción
 window.onerror = function(msg, url, line) {
@@ -18,3 +19,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   </React.StrictMode>,
 )
+
+// Register the IP-check Service Worker after render (fire-and-forget, graceful fallback on all platforms)
+registerSW();

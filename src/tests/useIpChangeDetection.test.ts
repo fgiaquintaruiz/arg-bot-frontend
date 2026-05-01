@@ -2,6 +2,15 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useIpChangeDetection } from '../hooks/useIpChangeDetection';
 
+// Guard: prevent swRegistration side-effects in jsdom (no navigator.serviceWorker, no BroadcastChannel)
+vi.mock('../utils/swRegistration', () => ({
+  updateStoredIp: vi.fn().mockResolvedValue(undefined),
+  registerSW: vi.fn().mockResolvedValue(undefined),
+  requestNotificationPermission: vi.fn().mockResolvedValue('default'),
+  isIOS: vi.fn().mockReturnValue(false),
+  isPeriodicSyncSupported: vi.fn().mockReturnValue(false),
+}));
+
 const LS_KEY = 'last_known_server_ip';
 
 // Helper: create a fetch mock that returns a specific IP

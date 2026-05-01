@@ -6,6 +6,7 @@ import { loginWithGoogle } from './authService';
 import Login from './components/Login';
 import Dashboard from './Dashboard';
 import ErrorBoundary from './components/ErrorBoundary';
+import NotificationOptIn from './components/NotificationOptIn';
 
 // E2E test seam — Playwright sets window.__E2E_USER__ via addInitScript before app code runs.
 // In production this is always undefined → null → Firebase auth runs normally.
@@ -48,7 +49,7 @@ function App() {
   return (
     <ErrorBoundary>
       {(user && !rejected)
-        ? <Dashboard user={user} />
+        ? <><Dashboard user={user} /><NotificationOptIn /></>
         : <Login onLogin={handleLogin} rejected={rejected} />}
     </ErrorBoundary>
   );

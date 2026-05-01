@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getApiUrl } from '../config';
+import { updateStoredIp } from '../utils/swRegistration';
 
 const LS_KEY = 'last_known_server_ip';
 
@@ -58,6 +59,7 @@ export function useIpChangeDetection(): UseIpChangeDetectionResult {
   const acknowledge = () => {
     if (newIp) {
       localStorage.setItem(LS_KEY, newIp);
+      updateStoredIp(newIp); // sync new IP to SW's IndexedDB via BroadcastChannel (fire-and-forget)
     }
     setIpChanged(false);
   };
