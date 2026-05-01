@@ -11,7 +11,6 @@ export interface UseRateAlertResult {
 
 export function useRateAlert(
   rate: string | number | null | undefined,
-  pairLabel: string,
   thresholds: RateAlertThresholds
 ): UseRateAlertResult {
   const [alertActive, setAlertActive] = useState(false);

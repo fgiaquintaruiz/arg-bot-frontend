@@ -9,13 +9,13 @@ afterEach(() => {
 
 describe('useRateAlert', () => {
   it('no thresholds configured → alertActive is false', () => {
-    const { result } = renderHook(() => useRateAlert(1.12, 'EUR/ARS', {}));
+    const { result } = renderHook(() => useRateAlert(1.12, {}));
     expect(result.current.alertActive).toBe(false);
     expect(result.current.direction).toBeNull();
   });
 
   it('rate above upper threshold → alertActive true, direction upper, threshold matches', () => {
-    const { result } = renderHook(() => useRateAlert(1.15, 'EUR/ARS', { upper: 1.10 }));
+    const { result } = renderHook(() => useRateAlert(1.15, { upper: 1.10 }));
     expect(result.current.alertActive).toBe(true);
     expect(result.current.direction).toBe('upper');
     expect(result.current.threshold).toBe(1.10);
@@ -23,7 +23,7 @@ describe('useRateAlert', () => {
   });
 
   it('rate below lower threshold → alertActive true, direction lower', () => {
-    const { result } = renderHook(() => useRateAlert(0.90, 'EUR/USDC', { lower: 0.95 }));
+    const { result } = renderHook(() => useRateAlert(0.90, { lower: 0.95 }));
     expect(result.current.alertActive).toBe(true);
     expect(result.current.direction).toBe('lower');
     expect(result.current.threshold).toBe(0.95);
@@ -32,7 +32,7 @@ describe('useRateAlert', () => {
 
   it('rate oscillates above upper threshold (anti-spam) → alertActive stays true, no duplicate state change', () => {
     const { result, rerender } = renderHook(
-      ({ rate }) => useRateAlert(rate, 'EUR/ARS', { upper: 1.10 }),
+      ({ rate }) => useRateAlert(rate, { upper: 1.10 }),
       { initialProps: { rate: 1.12 } }
     );
     expect(result.current.alertActive).toBe(true);
@@ -49,7 +49,7 @@ describe('useRateAlert', () => {
 
   it('rate returns below upper threshold → alertActive becomes false, direction null', () => {
     const { result, rerender } = renderHook(
-      ({ rate }) => useRateAlert(rate, 'EUR/ARS', { upper: 1.10 }),
+      ({ rate }) => useRateAlert(rate, { upper: 1.10 }),
       { initialProps: { rate: 1.12 } }
     );
     expect(result.current.alertActive).toBe(true);
@@ -61,7 +61,7 @@ describe('useRateAlert', () => {
 
   it('rate re-crosses upper threshold after reset → new alert fires (alertActive true again)', () => {
     const { result, rerender } = renderHook(
-      ({ rate }) => useRateAlert(rate, 'EUR/ARS', { upper: 1.10 }),
+      ({ rate }) => useRateAlert(rate, { upper: 1.10 }),
       { initialProps: { rate: 1.12 } }
     );
     expect(result.current.alertActive).toBe(true);
@@ -77,7 +77,7 @@ describe('useRateAlert', () => {
   });
 
   it('dismiss() → alertActive false', () => {
-    const { result } = renderHook(() => useRateAlert(1.15, 'EUR/ARS', { upper: 1.10 }));
+    const { result } = renderHook(() => useRateAlert(1.15, { upper: 1.10 }));
     expect(result.current.alertActive).toBe(true);
 
     act(() => {
@@ -88,7 +88,7 @@ describe('useRateAlert', () => {
 
   it('after dismiss + rate drops below threshold then re-crosses → new alert fires', () => {
     const { result, rerender } = renderHook(
-      ({ rate }) => useRateAlert(rate, 'EUR/ARS', { upper: 1.10 }),
+      ({ rate }) => useRateAlert(rate, { upper: 1.10 }),
       { initialProps: { rate: 1.12 } }
     );
     expect(result.current.alertActive).toBe(true);
@@ -108,44 +108,44 @@ describe('useRateAlert', () => {
   });
 
   it('only upper threshold defined + rate below threshold → no alert', () => {
-    const { result } = renderHook(() => useRateAlert(0.90, 'EUR/ARS', { upper: 1.10 }));
+    const { result } = renderHook(() => useRateAlert(0.90, { upper: 1.10 }));
     expect(result.current.alertActive).toBe(false);
   });
 
   it('only lower threshold defined + rate above threshold → no alert', () => {
-    const { result } = renderHook(() => useRateAlert(1.20, 'EUR/USDC', { lower: 0.95 }));
+    const { result } = renderHook(() => useRateAlert(1.20, { lower: 0.95 }));
     expect(result.current.alertActive).toBe(false);
   });
 
   it('rate as string "1.12" → parsed and evaluated correctly', () => {
-    const { result } = renderHook(() => useRateAlert('1.12', 'EUR/ARS', { upper: 1.10 }));
+    const { result } = renderHook(() => useRateAlert('1.12', { upper: 1.10 }));
     expect(result.current.alertActive).toBe(true);
     expect(result.current.currentRate).toBe(1.12);
   });
 
   it('rate null → alertActive false', () => {
-    const { result } = renderHook(() => useRateAlert(null, 'EUR/ARS', { upper: 1.10 }));
+    const { result } = renderHook(() => useRateAlert(null, { upper: 1.10 }));
     expect(result.current.alertActive).toBe(false);
   });
 
   it('rate NaN string "abc" → alertActive false', () => {
-    const { result } = renderHook(() => useRateAlert('abc', 'EUR/ARS', { upper: 1.10 }));
+    const { result } = renderHook(() => useRateAlert('abc', { upper: 1.10 }));
     expect(result.current.alertActive).toBe(false);
   });
 
   it('both thresholds defined: rate between them → no alert', () => {
-    const { result } = renderHook(() => useRateAlert(1.05, 'EUR/ARS', { upper: 1.20, lower: 0.90 }));
+    const { result } = renderHook(() => useRateAlert(1.05, { upper: 1.20, lower: 0.90 }));
     expect(result.current.alertActive).toBe(false);
   });
 
   it('both thresholds: rate at exact upper value → upper direction fires', () => {
-    const { result } = renderHook(() => useRateAlert(1.20, 'EUR/ARS', { upper: 1.20, lower: 0.90 }));
+    const { result } = renderHook(() => useRateAlert(1.20, { upper: 1.20, lower: 0.90 }));
     expect(result.current.alertActive).toBe(true);
     expect(result.current.direction).toBe('upper');
   });
 
   it('both thresholds: rate at exact lower value → lower direction fires', () => {
-    const { result } = renderHook(() => useRateAlert(0.90, 'EUR/ARS', { upper: 1.20, lower: 0.90 }));
+    const { result } = renderHook(() => useRateAlert(0.90, { upper: 1.20, lower: 0.90 }));
     expect(result.current.alertActive).toBe(true);
     expect(result.current.direction).toBe('lower');
   });

@@ -32,8 +32,8 @@ export default function Dashboard({ user }: { user: any }) {
         return parseFloat(data.rate) * parseFloat(data.ripioUsdcArsRate);
     }, [data?.rate, data?.ripioUsdcArsRate]);
 
-    const eurArsAlert = useRateAlert(eurArsRate, 'EUR/ARS', rateAlertConfig.eurArs);
-    const eurUsdcAlert = useRateAlert(data?.rate, 'EUR/USDC', rateAlertConfig.eurUsdc);
+    const eurArsAlert = useRateAlert(eurArsRate, rateAlertConfig.eurArs);
+    const eurUsdcAlert = useRateAlert(data?.rate, rateAlertConfig.eurUsdc);
 
     const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
                     !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));

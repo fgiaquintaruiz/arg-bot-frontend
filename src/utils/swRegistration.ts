@@ -1,4 +1,3 @@
-const CHANNEL_NAME = 'argbot-sw';
 const SW_PATH = '/sw-ip-check.js';
 const PERIODIC_SYNC_TAG = 'ip-check';
 const MIN_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
