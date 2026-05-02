@@ -56,7 +56,7 @@ describe('NotificationOptIn', () => {
     render(<NotificationOptIn />);
     fireEvent.click(screen.getByRole('button', { name: /enable notifications/i }));
     await waitFor(() => {
-      expect(screen.getByText(/notifications enabled/i)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /enable notifications/i })).not.toBeInTheDocument();
     });
   });
 
@@ -65,7 +65,7 @@ describe('NotificationOptIn', () => {
     render(<NotificationOptIn />);
     fireEvent.click(screen.getByRole('button', { name: /enable notifications/i }));
     await waitFor(() => {
-      expect(screen.getByText(/notifications blocked/i)).toBeInTheDocument();
+      expect(screen.getByText(/notificaciones bloqueadas/i)).toBeInTheDocument();
     });
   });
 

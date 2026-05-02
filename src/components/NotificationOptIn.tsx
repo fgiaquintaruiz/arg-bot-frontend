@@ -31,22 +31,116 @@ export default function NotificationOptIn() {
   };
 
   if (status === 'granted') {
-    return <div role="status">Notifications enabled</div>;
+    return null;
   }
+
   if (status === 'denied') {
-    return <div role="status">Notifications blocked — enable in browser settings</div>;
+    return (
+      <div
+        role="status"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          backgroundColor: 'rgba(24,26,32,0.97)',
+          borderTop: '1px solid #2B3139',
+          padding: '12px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '12px',
+        }}
+      >
+        <span style={{ color: '#848E9C', fontSize: '12px' }}>
+          Notificaciones bloqueadas — habilitá en configuración del navegador
+        </span>
+        <button
+          aria-label="Dismiss"
+          onClick={handleDismiss}
+          style={{
+            backgroundColor: 'transparent',
+            color: '#848E9C',
+            border: '1px solid #2B3139',
+            borderRadius: '6px',
+            padding: '6px 12px',
+            fontSize: '11px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            minHeight: '30px',
+            flexShrink: 0,
+          }}
+        >
+          Cerrar
+        </button>
+      </div>
+    );
   }
+
   if (!visible) return null;
 
   return (
-    <div role="banner" aria-label="Enable IP change notifications">
-      <p>Get notified when the server IP changes (up to 24h delay)</p>
-      <button aria-label="Enable Notifications" onClick={handleEnable}>
-        Enable Notifications
-      </button>
-      <button aria-label="Dismiss" onClick={handleDismiss}>
-        Dismiss
-      </button>
+    <div
+      role="banner"
+      aria-label="Enable IP change notifications"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        backgroundColor: 'rgba(24,26,32,0.97)',
+        borderTop: '1px solid #2B3139',
+        padding: '12px 16px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '12px',
+      }}
+    >
+      <p style={{ color: '#848E9C', fontSize: '13px', margin: 0, flex: 1 }}>
+        Recibí notificaciones cuando cambie la IP del servidor (hasta 24h de demora)
+      </p>
+      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+        <button
+          aria-label="Enable Notifications"
+          onClick={handleEnable}
+          style={{
+            backgroundColor: '#F0B90B',
+            color: '#181A20',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '8px 14px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            minHeight: '36px',
+          }}
+        >
+          Activar notificaciones
+        </button>
+        <button
+          aria-label="Dismiss"
+          onClick={handleDismiss}
+          style={{
+            backgroundColor: 'transparent',
+            color: '#848E9C',
+            border: '1px solid #2B3139',
+            borderRadius: '6px',
+            padding: '8px 14px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            minHeight: '36px',
+          }}
+        >
+          Cerrar
+        </button>
+      </div>
     </div>
   );
 }

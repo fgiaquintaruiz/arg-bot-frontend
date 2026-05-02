@@ -79,6 +79,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           binanceEurBic: localStorage.getItem('binance_eur_bic') || '',
           binanceBankName: localStorage.getItem('binance_bank_name') || '',
           binanceBankAddress: localStorage.getItem('binance_bank_address') || '',
+          rateAlertConfig: localStorage.getItem('rate_alert_config') || '',
         };
 
         console.log('[Settings] Uploading to Google Drive...');
@@ -110,9 +111,29 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           if (data.binanceEurBic) localStorage.setItem('binance_eur_bic', data.binanceEurBic);
           if (data.binanceBankName) localStorage.setItem('binance_bank_name', data.binanceBankName);
           if (data.binanceBankAddress) localStorage.setItem('binance_bank_address', data.binanceBankAddress);
+          if (data.rateAlertConfig) {
+            localStorage.setItem('rate_alert_config', data.rateAlertConfig);
+            try {
+              const alertCfg = JSON.parse(data.rateAlertConfig);
+              setEurArsUpper(String(alertCfg.eurArs?.upper ?? ''));
+              setEurArsLower(String(alertCfg.eurArs?.lower ?? ''));
+              setEurUsdcUpper(String(alertCfg.eurUsdc?.upper ?? ''));
+              setEurUsdcLower(String(alertCfg.eurUsdc?.lower ?? ''));
+            } catch { /* ignore */ }
+          }
+
+          setBinanceEurIban(data.binanceEurIban || '');
+          setBinanceEurName(data.binanceEurName || '');
+          setBinanceEurBic(data.binanceEurBic || '');
+          setBinanceBankName(data.binanceBankName || '');
+          setBinanceBankAddress(data.binanceBankAddress || '');
+          if (data.apiKey) setBinanceApiKey(data.apiKey);
+          if (data.apiSecret) setBinanceApiSecret(data.apiSecret);
+          if (data.apiKeyTestnet) setBinanceApiKeyTestnet(data.apiKeyTestnet);
+          if (data.apiSecretTestnet) setBinanceApiSecretTestnet(data.apiSecretTestnet);
 
           setSyncStatus('success');
-          setSyncMessage(`✅ Datos restaurados desde Google Drive (${data.timestamp || 'fecha desconocida'}). Recargá la página para aplicar los cambios.`);
+          setSyncMessage(`✅ Datos restaurados desde Google Drive (${data.timestamp || 'fecha desconocida'}). Cambios aplicados — recargá para actualizar balances.`);
           console.log('[Settings] Download successful');
         } else {
           setSyncStatus('error');
@@ -384,14 +405,14 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                   </button>
                 </div>
                 <div style={{ fontSize: '11px', color: '#474D57', marginTop: '6px' }}>
-                  Binance → Gestión de API → Restricciones de IP
+                  Binance › Gestión de API › Restricciones de IP
                 </div>
               </div>
 
               {/* EUR Deposit Details */}
               <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 8px' }}>Datos de Depósito EUR</p>
               <p style={{ color: '#474D57', fontSize: '12px', lineHeight: '1.5', marginBottom: '12px' }}>
-                Binance → Billetera → Depósito → EUR → Datos SEPA
+                Binance › Billetera › Depósito › EUR › Datos SEPA
               </p>
 
               <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -414,7 +435,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               {/* API Keys */}
               <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 8px' }}>Claves API de Binance</p>
               <p style={{ color: '#474D57', fontSize: '12px', lineHeight: '1.5', marginBottom: '12px' }}>
-                Binance → Gestión de API → Nueva clave. Permisos: lectura, trade, retiro.
+                Binance › Gestión de API › Nueva clave. Permisos: lectura, trade, retiro.
               </p>
 
               <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
