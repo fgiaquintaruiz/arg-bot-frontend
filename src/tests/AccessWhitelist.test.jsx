@@ -249,6 +249,7 @@ describe('App.tsx rejection state', () => {
 
     vi.doMock('../authService', () => ({
       loginWithGoogle: vi.fn().mockResolvedValue(mockUser),
+      handleRedirectResult: vi.fn().mockResolvedValue(null),
       logout: vi.fn(),
     }));
 
@@ -272,6 +273,7 @@ describe('App.tsx rejection state', () => {
 
     vi.doMock('../authService', () => ({
       loginWithGoogle: vi.fn().mockRejectedValue(new Error('ACCESS_DENIED')),
+      handleRedirectResult: vi.fn().mockResolvedValue(null),
       logout: vi.fn(),
     }));
 
@@ -301,6 +303,7 @@ describe('App.tsx rejection state', () => {
 
     vi.doMock('../authService', () => ({
       loginWithGoogle: vi.fn().mockRejectedValue(new Error('ACCESS_DENIED')),
+      handleRedirectResult: vi.fn().mockResolvedValue(null),
       logout: vi.fn(),
     }));
 
@@ -334,6 +337,7 @@ describe('App.tsx rejection state', () => {
 
     vi.doMock('../authService', () => ({
       loginWithGoogle: loginMock,
+      handleRedirectResult: vi.fn().mockResolvedValue(null),
       logout: vi.fn(),
     }));
 
@@ -365,6 +369,7 @@ describe('App.tsx rejection state', () => {
 
     vi.doMock('../authService', () => ({
       loginWithGoogle: vi.fn().mockRejectedValue(new Error('ACCESS_DENIED')),
+      handleRedirectResult: vi.fn().mockResolvedValue(null),
       logout: vi.fn(),
     }));
 

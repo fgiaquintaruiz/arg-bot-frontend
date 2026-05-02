@@ -17,6 +17,7 @@ vi.mock('../firebaseConfig', () => ({ auth: {} }));
 
 vi.mock('../authService', () => ({
   loginWithGoogle: vi.fn(),
+  handleRedirectResult: vi.fn().mockResolvedValue(null),
   checkWhitelist: vi.fn(() => true),
   WHITELIST: new Set(),
 }));

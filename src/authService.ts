@@ -1,7 +1,14 @@
-import { GoogleAuthProvider, signInWithPopup, signOut, User } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, getRedirectResult, User } from "firebase/auth";
 import { auth } from './firebaseConfig';
 
 const provider = new GoogleAuthProvider();
+
+export function isStandaloneMode(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true
+  );
+}
 
 // Module-level constant — parsed once at load time (Vite: import.meta.env, NOT process.env)
 export const WHITELIST = new Set(
@@ -17,14 +24,28 @@ export function checkWhitelist(email: string | null | undefined): boolean {
   return WHITELIST.has(email.trim().toLowerCase());
 }
 
-export const loginWithGoogle = async (): Promise<User> => {
+export async function enforceWhitelist(user: User): Promise<User> {
+  if (!checkWhitelist(user.email)) {
+    await signOut(auth);
+    throw new Error('ACCESS_DENIED');
+  }
+  return user;
+}
+
+export async function handleRedirectResult(): Promise<User | null> {
+  const result = await getRedirectResult(auth);
+  if (!result) return null;
+  return await enforceWhitelist(result.user);
+}
+
+export const loginWithGoogle = async (): Promise<User | void> => {
+  if (isStandaloneMode()) {
+    await signInWithRedirect(auth, provider);
+    return; // browser navigates away — code after this never runs in standalone
+  }
   try {
     const result = await signInWithPopup(auth, provider);
-    if (!checkWhitelist(result.user.email)) {
-      await signOut(auth);
-      throw new Error('ACCESS_DENIED');
-    }
-    return result.user;
+    return await enforceWhitelist(result.user);
   } catch (error) {
     if (error instanceof Error && error.message === 'ACCESS_DENIED') {
       throw error;

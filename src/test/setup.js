@@ -1,6 +1,24 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock global window.matchMedia — jsdom no implementa matchMedia nativamente.
+// Sin este mock, cualquier test que importe authService.ts lanza:
+// TypeError: window.matchMedia is not a function
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  configurable: true,
+  value: vi.fn().mockImplementation((query) => ({
+    matches: false, // default: no standalone
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
 // Mock de localStorage
 const localStorageMock = (() => {
   let store = {};
