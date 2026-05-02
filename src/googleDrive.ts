@@ -46,6 +46,10 @@ const cacheToken = (token: string) => {
   sessionStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + TOKEN_TTL_MS));
 };
 
+export const storeTokenFromFirebase = (token: string): void => {
+  cacheToken(token);
+};
+
 const getAccessToken = async (forceConsent = false): Promise<string | null> => {
   // Token válido en sessionStorage → evita el popup completamente
   if (!forceConsent) {

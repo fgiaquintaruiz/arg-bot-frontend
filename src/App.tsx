@@ -1,8 +1,8 @@
 import pkg from "../package.json";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebaseConfig';
-import { loginWithGoogle, handleRedirectResult } from './authService';
+import { loginWithGoogle } from './authService';
 import Login from './components/Login';
 import Dashboard from './Dashboard';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -16,31 +16,6 @@ function App() {
   const [user, setUser] = useState<any>(e2eUser);
   const [loading, setLoading] = useState(e2eUser === null);
   const [rejected, setRejected] = useState(false);
-
-  const redirectProcessed = useRef(false);
-
-  useEffect(() => {
-    /* v8 ignore start */
-    if (e2eUser) return;
-    /* v8 ignore end */
-    if (redirectProcessed.current) return;
-    redirectProcessed.current = true;
-
-    handleRedirectResult()
-      .then(() => {
-        // user será recogido por onAuthStateChanged que sigue
-        // null = no redirect pendiente, flujo normal
-      })
-      .catch((error: any) => {
-        if (error?.message === 'ACCESS_DENIED') {
-          setRejected(true);
-          setLoading(false);
-        } else {
-          console.error('Redirect result error', error);
-          setLoading(false);
-        }
-      });
-  }, []);
 
   useEffect(() => {
     /* v8 ignore start */

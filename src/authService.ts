@@ -1,14 +1,9 @@
-import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, getRedirectResult, User } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut, User } from "firebase/auth";
 import { auth } from './firebaseConfig';
+import { storeTokenFromFirebase } from './googleDrive';
 
 const provider = new GoogleAuthProvider();
-
-export function isStandaloneMode(): boolean {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as any).standalone === true
-  );
-}
+provider.addScope('https://www.googleapis.com/auth/drive.file');
 
 // Module-level constant — parsed once at load time (Vite: import.meta.env, NOT process.env)
 export const WHITELIST = new Set(
@@ -32,20 +27,15 @@ export async function enforceWhitelist(user: User): Promise<User> {
   return user;
 }
 
-export async function handleRedirectResult(): Promise<User | null> {
-  const result = await getRedirectResult(auth);
-  if (!result) return null;
-  return await enforceWhitelist(result.user);
-}
-
 export const loginWithGoogle = async (): Promise<User | void> => {
-  if (isStandaloneMode()) {
-    await signInWithRedirect(auth, provider);
-    return; // browser navigates away — code after this never runs in standalone
-  }
   try {
     const result = await signInWithPopup(auth, provider);
-    return await enforceWhitelist(result.user);
+    const user = await enforceWhitelist(result.user);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    if (credential?.accessToken) {
+      storeTokenFromFirebase(credential.accessToken);
+    }
+    return user;
   } catch (error) {
     if (error instanceof Error && error.message === 'ACCESS_DENIED') {
       throw error;
