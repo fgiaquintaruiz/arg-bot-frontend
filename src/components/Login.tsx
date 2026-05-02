@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import LandingDocs from './LandingDocs';
 import Updates from './Updates';
 import LegalModal from './LegalModal';
+import pkg from '../../package.json';
 
 interface LoginProps {
     onLogin: () => void;
@@ -118,6 +119,18 @@ export default function Login({ onLogin, rejected = false }: LoginProps) {
                 >
                     Novedades y Roadmap →
                 </button>
+                <span style={{
+                    fontSize: '11px',
+                    color: '#848E9C',
+                    backgroundColor: '#2B3139',
+                    padding: '2px 7px',
+                    borderRadius: '4px',
+                    fontWeight: 600,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    letterSpacing: '0.2px',
+                }}>
+                    v{pkg.version}
+                </span>
             </div>
 
             {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
