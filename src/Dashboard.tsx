@@ -28,9 +28,9 @@ export default function Dashboard({ user }: { user: any }) {
     const rateAlertConfig = useMemo(() => getRateAlertConfig(), []);
 
     const eurArsRate = useMemo(() => {
-        if (!data?.rate || !data?.ripioUsdcArsRate) return null;
-        return parseFloat(data.rate) * parseFloat(data.ripioUsdcArsRate);
-    }, [data?.rate, data?.ripioUsdcArsRate]);
+        if (!data?.rate || !data?.nexoUsdcArsRate) return null;
+        return parseFloat(data.rate) * parseFloat(data.nexoUsdcArsRate);
+    }, [data?.rate, data?.nexoUsdcArsRate]);
 
     const eurArsAlert = useRateAlert(eurArsRate, rateAlertConfig.eurArs);
     const eurUsdcAlert = useRateAlert(data?.rate, rateAlertConfig.eurUsdc);
@@ -364,19 +364,19 @@ export default function Dashboard({ user }: { user: any }) {
                 <span style={{ color: '#2B3139' }}>·</span>
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
                     USDC/ARS <span style={{ color: '#0ECB81', fontWeight: 600 }}>
-                        {data?.ripioUsdcArsRate ? parseFloat(data.ripioUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                        {data?.nexoUsdcArsRate ? parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
                     </span>
                 </span>
                 <span style={{ color: '#2B3139' }}>·</span>
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
                     1 EUR = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
-                        {data?.ripioUsdcArsRate ? (parseFloat(data.rate) * parseFloat(data.ripioUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                        {data?.nexoUsdcArsRate ? (parseFloat(data.rate) * parseFloat(data.nexoUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
                 <span style={{ color: '#2B3139' }}>·</span>
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
                     1 USDC = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
-                        {data?.ripioUsdcArsRate ? parseFloat(data.ripioUsdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                        {data?.nexoUsdcArsRate ? parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
                 {data?.balances?.eur != null && (

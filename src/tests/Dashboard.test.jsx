@@ -184,7 +184,7 @@ describe('Dashboard', () => {
     global.fetch.mockReturnValueOnce(new Promise(r => { resolveFetch = r; }));
     render(<Dashboard user={mockUser} />);
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBe(4); // EUR/USDC y los tres slots que dependen de ripioUsdcArsRate
+    expect(dashes.length).toBe(4); // EUR/USDC y los tres slots que dependen de nexoUsdcArsRate
     // cleanup
     resolveFetch({ ok: true, json: async () => mockApiResponse });
   });

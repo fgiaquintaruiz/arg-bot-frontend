@@ -560,22 +560,22 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               >
                 ← Paso anterior
               </button>
-              {data.ripioUsdcArsRate ? (
+              {data.nexoUsdcArsRate ? (
                 <>
                   <div style={{
                     backgroundColor: '#181A20', borderRadius: '8px',
                     border: '1px solid #2B3139', padding: '14px', marginBottom: '14px',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ color: '#848E9C', fontSize: '12px' }}>Rate USDC/ARS (Ripio bid)</span>
+                      <span style={{ color: '#848E9C', fontSize: '12px' }}>USDC/ARS Nexo</span>
                       <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace", fontSize: '13px', fontWeight: 600 }}>
-                        {parseFloat(data.ripioUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        {parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #2B3139', paddingTop: '10px', marginTop: '4px' }}>
                       <span style={{ color: '#EAECEF', fontSize: '13px', fontWeight: 600 }}>Estimado a recibir</span>
                       <span style={{ color: '#0ECB81', fontSize: '18px', fontWeight: 700, fontFamily: "'IBM Plex Mono', monospace" }}>
-                        {(usdcForBroker * parseFloat(data.ripioUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
+                        {(usdcForBroker * parseFloat(data.nexoUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
                       </span>
                     </div>
                   </div>
@@ -585,7 +585,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                     borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
                     fontSize: '12px', color: '#848E9C', lineHeight: '1.5',
                   }}>
-                    El monto estimado se calcula usando el bid de Ripio en tiempo real. Las comisiones de Ripio no están incluidas — el ARS final recibido será menor. El retiro de ARS a CVU/CBU se hace manualmente desde la app de Ripio.
+                    El monto estimado se calcula usando la tasa de Nexo en tiempo real. Las comisiones de Nexo no están incluidas — el ARS final recibido será menor.
                   </div>
                 </>
               ) : (
@@ -594,7 +594,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                   borderRadius: '8px', padding: '14px', marginBottom: '16px',
                   fontSize: '13px', color: '#848E9C', textAlign: 'center',
                 }}>
-                  Rate de Ripio no disponible. Verificá en la app de Ripio.
+                  Rate de Nexo no disponible. Verificá en la app de Nexo.
                 </div>
               )}
 

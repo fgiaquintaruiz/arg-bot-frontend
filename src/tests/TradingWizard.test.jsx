@@ -73,7 +73,7 @@ describe('TradingWizard', () => {
     // Step 3 → 4 (Withdraw mock fires onSuccess)
     fireEvent.click(screen.getByText('Withdraw Success'));
 
-    expect(screen.getByText(/comisiones de Ripio no están incluidas/)).toBeInTheDocument();
+    expect(screen.getByText(/comisiones de Nexo no están incluidas/)).toBeInTheDocument();
   });
 
   it('muestra estado de carga cuando data es null', () => {
@@ -185,16 +185,16 @@ describe('TradingWizard', () => {
     expect(screen.getByText('test@example.com Binance Deposit')).toBeInTheDocument();
   });
 
-  it('step 4 muestra mensaje fallback cuando ripioUsdcArsRate es nulo', () => {
-    const dataWithoutRipio = { ...mockData, ripioUsdcArsRate: null };
-    render(<TradingWizard data={dataWithoutRipio} onRefreshData={onRefreshData} />);
+  it('step 4 muestra mensaje fallback cuando nexoUsdcArsRate es nulo', () => {
+    const dataWithoutNexo = { ...mockData, nexoUsdcArsRate: null };
+    render(<TradingWizard data={dataWithoutNexo} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText(/Continuar con la transferencia/));
     fireEvent.click(screen.getByText(/Ya realicé la transferencia/));
     fireEvent.click(screen.getByText('Trade Success'));
     fireEvent.click(screen.getByText('Withdraw Success'));
 
-    expect(screen.getByText('Rate de Ripio no disponible. Verificá en la app de Ripio.')).toBeInTheDocument();
+    expect(screen.getByText('Rate de Nexo no disponible. Verificá en la app de Nexo.')).toBeInTheDocument();
   });
 
   it('step 1: cuando IBAN está configurado, muestra el IBAN con botón copiar (sin QR)', () => {
