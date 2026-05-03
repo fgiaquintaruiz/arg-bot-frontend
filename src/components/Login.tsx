@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import LandingDocs from './LandingDocs';
 import Updates from './Updates';
 import LegalModal from './LegalModal';
@@ -117,7 +118,7 @@ export default function Login({ onLogin, rejected = false }: LoginProps) {
                     onClick={() => setShowUpdates(true)}
                     style={{ background: 'transparent', border: 'none', color: '#848E9C', cursor: 'pointer', fontSize: '13px', fontFamily: "'IBM Plex Sans', sans-serif" }}
                 >
-                    Novedades y Roadmap →
+                    Novedades y Roadmap <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '2px' }} />
                 </button>
                 <span style={{
                     fontSize: '11px',

@@ -222,6 +222,37 @@ describe('History Component', () => {
     expect(screen.getByText(/→ 0xABCD\.\.\.abcd/)).toBeInTheDocument();
   });
 
+  it('truncateAddress: dirección corta (≤12 chars) se muestra completa sin truncar', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        usdcDestAddress: '0xABCDEF',  // 8 chars — ≤ 12
+      }
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/→ 0xABCDEF/)).toBeInTheDocument();
+    expect(screen.queryByText(/\.\.\./)).not.toBeInTheDocument();
+  });
+
+  it('truncateAddress: dirección vacía muestra "—"', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        usdcDestAddress: '',
+      }
+    ];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/→ —/)).toBeInTheDocument();
+  });
+
   it('muestra "—" para usdcDestAddress cuando no existe', () => {
     const trades = [
       { date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50', savings: '0' }
@@ -355,5 +386,17 @@ describe('Export CSV button', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exportar historial como CSV' }));
     const afterClick = localStorage.getItem('trade_history');
     expect(afterClick).toBe(beforeClick);
+  });
+
+  it('handleExportCsv: silently handles errors without crashing (catch branch)', () => {
+    const trades = [{ date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50' }];
+    localStorage.setItem('trade_history', JSON.stringify(trades));
+    // Make tradeHistoryToCsv throw to trigger the catch branch
+    tradeHistoryToCsv.mockImplementation(() => { throw new Error('csv error'); });
+    render(<History onClose={() => {}} />);
+    // Should not throw when clicking
+    expect(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Exportar historial como CSV' }));
+    }).not.toThrow();
   });
 });

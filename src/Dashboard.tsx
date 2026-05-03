@@ -39,6 +39,7 @@ export default function Dashboard({ user }: { user: any }) {
                     !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));
     const [showSettings, setShowSettings] = useState(false);
     const [showTestnetModal, setShowTestnetModal] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'alerts'>('sync');
     const [showUpdateBanner, setShowUpdateBanner] = useState(false);
     const [versionUpdating, setVersionUpdating] = useState(false);
@@ -74,6 +75,7 @@ export default function Dashboard({ user }: { user: any }) {
                         setVersionUpdating(true);
                         setTimeout(() => { window.location.href = window.location.pathname + '?_t=' + Date.now(); }, 1500);
                     } else {
+                        /* v8 ignore next -- dead branch: AUTOMATIC_UPDATE is always true */
                         setShowUpdateBanner(true);
                     }
                 }
@@ -318,14 +320,15 @@ export default function Dashboard({ user }: { user: any }) {
                     >
                         <Settings2 size={18} />
                     </button>
+                    <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'center', marginInline: '8px' }} />
                     <button
-                        onClick={logout}
+                        onClick={() => setShowLogoutConfirm(true)}
                         title="Salir"
                         aria-label="Salir"
                         style={{
                             background: 'transparent',
                             border: 'none',
-                            color: '#848E9C',
+                            color: '#ef4444',
                             cursor: 'pointer',
                             padding: '8px',
                             borderRadius: '6px',
@@ -333,7 +336,7 @@ export default function Dashboard({ user }: { user: any }) {
                             alignItems: 'center',
                         }}
                     >
-                        <LogOut size={17} />
+                        <LogOut size={17} color="#ef4444" />
                     </button>
                 </div>
             </div>
@@ -408,6 +411,39 @@ export default function Dashboard({ user }: { user: any }) {
             </div>
 
             {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
+
+            {showLogoutConfirm && (
+                <div style={{
+                    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px', padding: '24px', maxWidth: '320px', width: '90%',
+                        textAlign: 'center'
+                    }}>
+                        <p style={{ color: '#fff', marginBottom: '20px', fontSize: '16px' }}>
+                            ¿Cerrar sesión?
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                            <button
+                                onClick={() => setShowLogoutConfirm(false)}
+                                style={{
+                                    padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
+                                    background: 'transparent', color: '#ccc', cursor: 'pointer', fontSize: '14px'
+                                }}
+                            >Cancelar</button>
+                            <button
+                                onClick={() => { setShowLogoutConfirm(false); logout(); }}
+                                style={{
+                                    padding: '8px 20px', borderRadius: '8px', border: 'none',
+                                    background: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: 600
+                                }}
+                            >Cerrar sesión</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showTestnetModal && (
                 <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>

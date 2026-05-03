@@ -4,8 +4,8 @@ import { API_URL } from '../config';
 import { getRateAlertConfig, setRateAlertConfig } from '../utils/rateAlertStorage';
 
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts'>(() => {
-    return ((initialTab as any) || 'sync') as 'sync' | 'binance' | 'alerts';
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts' | 'notif'>(() => {
+    return ((initialTab as any) || 'sync') as 'sync' | 'binance' | 'alerts' | 'notif';
   });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
@@ -25,6 +25,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [binanceSaved, setBinanceSaved] = useState(false);
   const [binanceCleared, setBinanceCleared] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Notif tab state
+  const [notifBannerEnabled, setNotifBannerEnabled] = useState<boolean>(() =>
+    localStorage.getItem('argbot_notif_banner_enabled') !== 'false'
+  );
 
   // Alerts tab state
   const [eurArsUpper, setEurArsUpper] = useState<string>(() => String(getRateAlertConfig().eurArs.upper ?? ''));
@@ -246,6 +251,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>Sync</button>
           <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>Binance</button>
           <button style={tabStyle('alerts')} onClick={() => setActiveTab('alerts')}>Alertas</button>
+          <button style={tabStyle('notif')} onClick={() => setActiveTab('notif')}>Notif</button>
         </div>
 
         {/* Content */}
@@ -383,6 +389,41 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               >
                 {alertsSaved ? '✓ Guardado' : 'Guardar alertas'}
               </button>
+            </div>
+          )}
+
+          {/* NOTIF TAB */}
+          {activeTab === 'notif' && (
+            <div>
+              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Notificaciones</h4>
+              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', border: '1px solid #2B3139' }}>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '12px' }}>
+                  <span style={{ color: '#EAECEF', fontSize: '13px', fontWeight: 600 }}>Mostrar banner de notificaciones</span>
+                  <div
+                    onClick={() => {
+                      const next = !notifBannerEnabled;
+                      setNotifBannerEnabled(next);
+                      localStorage.setItem('argbot_notif_banner_enabled', next ? 'true' : 'false');
+                    }}
+                    style={{
+                      width: '42px', height: '24px', borderRadius: '12px', flexShrink: 0,
+                      backgroundColor: notifBannerEnabled ? '#F0B90B' : '#2B3139',
+                      position: 'relative', cursor: 'pointer', transition: 'background-color 0.2s',
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute', top: '3px',
+                      left: notifBannerEnabled ? '21px' : '3px',
+                      width: '18px', height: '18px', borderRadius: '50%',
+                      backgroundColor: notifBannerEnabled ? '#181A20' : '#474D57',
+                      transition: 'left 0.2s',
+                    }} />
+                  </div>
+                </label>
+                <p style={{ color: '#848E9C', fontSize: '12px', lineHeight: '1.5', margin: '10px 0 0' }}>
+                  Cuando está activo, verás el aviso para activar notificaciones en segundo plano.
+                </p>
+              </div>
             </div>
           )}
 

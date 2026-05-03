@@ -17,13 +17,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // ─── Firebase auth mock (top-level, applies to all tests) ────────────────────
 vi.mock('firebase/auth', () => ({
   getAuth: vi.fn(() => ({})),
-  GoogleAuthProvider: class MockGoogleAuthProvider {},
+  GoogleAuthProvider: class MockGoogleAuthProvider {
+    addScope = vi.fn();
+    static credentialFromResult = vi.fn(() => null);
+  },
   signInWithPopup: vi.fn(),
   signOut: vi.fn(),
   onAuthStateChanged: vi.fn(),
 }));
 
 vi.mock('../firebaseConfig', () => ({ auth: {} }));
+
+vi.mock('../googleDrive', () => ({
+  storeTokenFromFirebase: vi.fn(),
+}));
 
 // ─── Helper mocks for child components used in Dashboard / Login ──────────────
 vi.mock('../components/LandingDocs', () => ({

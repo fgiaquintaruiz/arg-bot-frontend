@@ -504,5 +504,40 @@ describe('Withdraw Component', () => {
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       expect(screen.getByText(/La dirección seleccionada fue eliminada/)).toBeInTheDocument();
     });
+
+    it('storage event con newValue=null: actualiza address_book a array vacío', async () => {
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+
+      // newValue null → the else branch: updated = []
+      await act(async () => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'address_book',
+          newValue: null,
+        }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/La dirección seleccionada fue eliminada/)).toBeInTheDocument();
+      });
+    });
+
+    it('storage event con clave diferente: ignora el evento (no address_book)', async () => {
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      expect(screen.getByText('Nexo')).toBeInTheDocument();
+
+      // Event for a different key — should be ignored
+      await act(async () => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'some_other_key',
+          newValue: '[]',
+        }));
+      });
+
+      // Nexo should still be selected
+      expect(screen.getByText('Nexo')).toBeInTheDocument();
+      expect(screen.queryByText(/La dirección seleccionada fue eliminada/)).not.toBeInTheDocument();
+    });
   });
 });

@@ -9,7 +9,10 @@ import {
   AlertTriangle,
   Copy,
   Smartphone,
+  ChevronRight,
+  CloudDownload,
 } from 'lucide-react';
+import { downloadFromDrive } from '../googleDrive';
 import Trade from './Trade';
 import Withdraw from './Withdraw';
 
@@ -228,7 +231,15 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                     onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openSettings(); }}
                     style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
                   >
-                    Configuración → Binance
+                    Configuración <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle', marginInline: '2px' }} /> Binance
+                  </span>
+                  {' · '}
+                  <span
+                    onClick={downloadFromDrive}
+                    onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); downloadFromDrive(); }}
+                    style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    <CloudDownload size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }} />Descargar desde Drive
                   </span>
                 </span>
               </div>
@@ -319,7 +330,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                 fontFamily: "'IBM Plex Sans', sans-serif",
               }}
             >
-              Continuar con la transferencia →
+              Continuar con la transferencia <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '4px' }} />
             </button>
           </div>
         )}
@@ -453,7 +464,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                   cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif",
                 }}
               >
-                Ya realicé la transferencia →
+                Ya realicé la transferencia <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '4px' }} />
               </button>
             </div>
           )}

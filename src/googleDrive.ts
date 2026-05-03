@@ -91,6 +91,7 @@ const getAccessToken = async (forceConsent = false): Promise<string | null> => {
 
 const driveRequest = async (url: string, options: RequestInit = {}) => {
   const token = getCachedToken() || await getAccessToken();
+  /* v8 ignore next -- defensive guard: callers (uploadToDrive/downloadFromDrive) already check token before calling driveRequest */
   if (!token) throw new Error('No se pudo obtener acceso a Google Drive');
 
   const response = await fetch(url, {

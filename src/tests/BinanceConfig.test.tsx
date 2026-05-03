@@ -94,6 +94,100 @@ describe('BinanceConfig — plain-text key storage (no encryption)', () => {
   });
 });
 
+// ─── IP fetch error handling ────────────────────────────────────────────────
+
+describe('BinanceConfig — IP fetch error handling', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('shows "No se pudo conectar al servidor" when fetch rejects', async () => {
+    vi.spyOn(window, 'fetch').mockRejectedValue(new Error('network error'));
+
+    render(<BinanceConfig onSave={() => {}} onCancel={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('No se pudo conectar al servidor')).toBeInTheDocument();
+    });
+  });
+
+  it('shows "Error al obtener IP" when fetch resolves but ip field is missing', async () => {
+    vi.spyOn(window, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({}),
+    } as unknown as Response);
+
+    render(<BinanceConfig onSave={() => {}} onCancel={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Error al obtener IP')).toBeInTheDocument();
+    });
+  });
+});
+
+// ─── copyIp button ───────────────────────────────────────────────────────────
+
+describe('BinanceConfig — copy IP button', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.spyOn(window, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ip: '1.2.3.4' }),
+    } as unknown as Response);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('clicking Copiar writes the server IP to clipboard and shows "✓ Copiada"', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    render(<BinanceConfig onSave={() => {}} onCancel={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('1.2.3.4')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Copiar'));
+
+    expect(writeText).toHaveBeenCalledWith('1.2.3.4');
+    expect(screen.getByText('✓ Copiada')).toBeInTheDocument();
+  });
+
+  it('after 2000ms the copy button reverts back to "Copiar"', async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    render(<BinanceConfig onSave={() => {}} onCancel={() => {}} />);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByText('Copiar'));
+    expect(screen.getByText('✓ Copiada')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(screen.getByText('Copiar')).toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+});
+
 // ─── Dual key storage: Producción / Testnet tabs ────────────────────────────
 
 describe('BinanceConfig — dual key storage (Producción / Testnet tabs)', () => {
@@ -182,5 +276,17 @@ describe('BinanceConfig — dual key storage (Producción / Testnet tabs)', () =
     expect(localStorage.setItem).toHaveBeenCalledWith('binance_secret', 'prod-api-secret');
     expect(localStorage.setItem).not.toHaveBeenCalledWith('binance_key_testnet', 'prod-api-key');
     expect(localStorage.setItem).not.toHaveBeenCalledWith('binance_secret_testnet', 'prod-api-secret');
+  });
+
+  it('clicking Producción tab from Testnet switches back to prod context', () => {
+    render(<BinanceConfig onSave={() => {}} onCancel={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Testnet/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Producción/i }));
+    fireEvent.change(screen.getByPlaceholderText('Ingresá tu API Key'), {
+      target: { value: 'back-to-prod-key' },
+    });
+    fireEvent.click(screen.getByText('Guardar credenciales'));
+    expect(localStorage.setItem).toHaveBeenCalledWith('binance_key', 'back-to-prod-key');
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('binance_key_testnet', 'back-to-prod-key');
   });
 });

@@ -534,4 +534,177 @@ describe('Settings Component', () => {
     expect(screen.getByPlaceholderText('Umbral superior EUR/ARS')).toBeInTheDocument();
   });
 
+  it('Alertas tab: alertsSaved desaparece después de 3 segundos', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: false });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(screen.getByText('✓ Guardado')).toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(screen.queryByText('✓ Guardado')).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('Alertas tab: EUR/USDC upper <= lower → validation error shown', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    fireEvent.change(screen.getByPlaceholderText('Umbral superior EUR/USDC'), { target: { value: '0.90' } });
+    fireEvent.change(screen.getByPlaceholderText('Umbral inferior EUR/USDC'), { target: { value: '1.10' } });
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(screen.getByText(/EUR\/USDC: el umbral superior debe ser mayor/i)).toBeInTheDocument();
+  });
+
+  it('Alertas tab: save button is disabled when validation error is present', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    fireEvent.change(screen.getByPlaceholderText('Umbral superior EUR/ARS'), { target: { value: '0.50' } });
+    fireEvent.change(screen.getByPlaceholderText('Umbral inferior EUR/ARS'), { target: { value: '1.00' } });
+    fireEvent.click(screen.getByText('Guardar alertas'));
+    expect(screen.getByText(/superior debe ser mayor/i)).toBeInTheDocument();
+    expect(screen.getByText('Guardar alertas').closest('button')).toBeDisabled();
+  });
+
+  it('Alertas tab: initializes fields from getRateAlertConfig', async () => {
+    const { getRateAlertConfig } = await import('../utils/rateAlertStorage');
+    getRateAlertConfig.mockReturnValue({ eurArs: { upper: 1.5, lower: 0.5 }, eurUsdc: { upper: 1.1, lower: 0.9 } });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Alertas'));
+    expect(screen.getByPlaceholderText('Umbral superior EUR/ARS').value).toBe('1.5');
+    expect(screen.getByPlaceholderText('Umbral inferior EUR/ARS').value).toBe('0.5');
+    expect(screen.getByPlaceholderText('Umbral superior EUR/USDC').value).toBe('1.1');
+    expect(screen.getByPlaceholderText('Umbral inferior EUR/USDC').value).toBe('0.9');
+  });
+
+  it('should open to notif tab when initialTab="notif"', () => {
+    render(<Settings onClose={() => {}} user={mockUser} initialTab="notif" />);
+    expect(screen.getByRole('heading', { name: /Notificaciones/i })).toBeInTheDocument();
+    expect(screen.getByText(/Mostrar banner de notificaciones/i)).toBeInTheDocument();
+  });
+
+  it('Notif tab: renders toggle and description', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Notif'));
+    expect(screen.getByRole('heading', { name: /Notificaciones/i })).toBeInTheDocument();
+    expect(screen.getByText(/Mostrar banner de notificaciones/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cuando está activo/i)).toBeInTheDocument();
+  });
+
+  it('Notif tab: toggle ON → OFF saves "false" to localStorage', () => {
+    localStorage.setItem('argbot_notif_banner_enabled', 'true');
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Notif'));
+    const toggleDiv = screen.getByText(/Mostrar banner/).closest('label').querySelector('div[style]');
+    fireEvent.click(toggleDiv);
+    expect(localStorage.setItem).toHaveBeenCalledWith('argbot_notif_banner_enabled', 'false');
+  });
+
+  it('Notif tab: toggle OFF → ON saves "true" to localStorage', () => {
+    localStorage.setItem('argbot_notif_banner_enabled', 'false');
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Notif'));
+    const toggleDiv = screen.getByText(/Mostrar banner/).closest('label').querySelector('div[style]');
+    fireEvent.click(toggleDiv);
+    expect(localStorage.setItem).toHaveBeenCalledWith('argbot_notif_banner_enabled', 'true');
+  });
+
+  it('Notif tab: initial state reads localStorage (false branch)', () => {
+    localStorage.setItem('argbot_notif_banner_enabled', 'false');
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Notif'));
+    expect(screen.getByText(/Mostrar banner/)).toBeInTheDocument();
+  });
+
+  it('Binance tab: switching to Testnet sub-tab shows testnet inputs', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    fireEvent.click(screen.getByText('Testnet'));
+    expect(screen.getByPlaceholderText('Tu API Key (testnet)')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Tu API Secret (testnet)')).toBeInTheDocument();
+    expect(screen.getByText(/Claves exclusivas de testnet.binance.vision/)).toBeInTheDocument();
+  });
+
+  it('Binance tab: switching back to Producción from Testnet shows prod inputs', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    fireEvent.click(screen.getByText('Testnet'));
+    fireEvent.click(screen.getByText('Producción'));
+    expect(screen.getByPlaceholderText('Tu API Key')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Tu API Secret')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Tu API Key (testnet)')).not.toBeInTheDocument();
+  });
+
+  it('handleSaveBinance en testnet: guarda claves testnet si no están vacías', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    fireEvent.click(screen.getByText('Testnet'));
+    fireEvent.change(screen.getByPlaceholderText('Tu API Key (testnet)'), { target: { value: 'tn-key' } });
+    fireEvent.change(screen.getByPlaceholderText('Tu API Secret (testnet)'), { target: { value: 'tn-secret' } });
+    fireEvent.click(screen.getByText('Guardar'));
+    expect(localStorage.setItem).toHaveBeenCalledWith('binance_key_testnet', 'tn-key');
+    expect(localStorage.setItem).toHaveBeenCalledWith('binance_secret_testnet', 'tn-secret');
+  });
+
+  it('handleSaveBinance en testnet: claves vacías no se guardan', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    fireEvent.click(screen.getByText('Testnet'));
+    fireEvent.click(screen.getByText('Guardar'));
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('binance_key_testnet', expect.anything());
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('binance_secret_testnet', expect.anything());
+  });
+
+  it('Binance tab: initialTab="binance" reads testnet flag from localStorage', () => {
+    localStorage.setItem('argbot_testnet', 'true');
+    render(<Settings onClose={() => {}} user={mockUser} initialTab="binance" />);
+    expect(screen.getByPlaceholderText('Tu API Key (testnet)')).toBeInTheDocument();
+  });
+
+  it('copyToClipboard: catch branch — no throw si clipboard falla', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+      configurable: true,
+      writable: true,
+    });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('Binance'));
+    await waitFor(() => screen.getByText('1.2.3.4'));
+    expect(() => fireEvent.click(screen.getByText('Copiar'))).not.toThrow();
+    await waitFor(() => expect(screen.queryByText('✓ Copiada')).not.toBeInTheDocument());
+  });
+
+  it('Drive download con rateAlertConfig válido: restaura umbrales en el formulario', async () => {
+    const { downloadFromDrive } = await import('../googleDrive');
+    downloadFromDrive.mockResolvedValueOnce({
+      rateAlertConfig: JSON.stringify({ eurArs: { upper: 2.0, lower: 1.0 }, eurUsdc: { upper: 1.2, lower: 0.8 } }),
+      timestamp: '2026-05-01T00:00:00.000Z',
+    });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('↓ Descargar de Drive'));
+    await waitFor(() => expect(screen.getByText(/Datos restaurados/)).toBeInTheDocument());
+    expect(localStorage.getItem('rate_alert_config')).not.toBeNull();
+  });
+
+  it('Sync tab: volver a Sync desde otra tab muestra contenido de sincronización', () => {
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    // Navegar a Binance para que activeTab !== 'sync'
+    fireEvent.click(screen.getByText('Binance'));
+    expect(screen.getByText(/Configuración de Binance/)).toBeInTheDocument();
+    // Hacer click en Sync para volver → dispara setActiveTab('sync')
+    fireEvent.click(screen.getByText('Sync'));
+    expect(screen.getByText(/Sincronización con Google Drive/)).toBeInTheDocument();
+    expect(screen.queryByText(/Configuración de Binance/)).not.toBeInTheDocument();
+  });
+
+  it('Drive download con rateAlertConfig JSON inválido: no lanza error', async () => {
+    const { downloadFromDrive } = await import('../googleDrive');
+    downloadFromDrive.mockResolvedValueOnce({
+      rateAlertConfig: 'not-valid-json',
+      timestamp: '2026-05-01T00:00:00.000Z',
+    });
+    render(<Settings onClose={() => {}} user={mockUser} />);
+    fireEvent.click(screen.getByText('↓ Descargar de Drive'));
+    await waitFor(() => expect(screen.getByText(/Datos restaurados/)).toBeInTheDocument());
+    expect(localStorage.getItem('rate_alert_config')).toBe('not-valid-json');
+  });
+
 });

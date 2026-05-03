@@ -280,10 +280,21 @@ describe('Dashboard', () => {
     expect(localStorage.getItem('argbot_testnet')).toBe('true');
   });
 
-  it('click Salir → llama a logout()', () => {
+  it('click Salir → llama a logout()', async () => {
     render(<Dashboard user={mockUser} />);
     fireEvent.click(screen.getByLabelText('Salir'));
+    await waitFor(() => expect(screen.getByText('¿Cerrar sesión?')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Cerrar sesión'));
     expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  it('click Salir + Cancelar → cierra modal y NO llama a logout', async () => {
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByLabelText('Salir'));
+    await waitFor(() => expect(screen.getByText('¿Cerrar sesión?')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Cancelar'));
+    expect(screen.queryByText('¿Cerrar sesión?')).not.toBeInTheDocument();
+    expect(logout).not.toHaveBeenCalled();
   });
 
   // ─── Stale closure fix: fetchMarketData lee testnet de localStorage ──────────

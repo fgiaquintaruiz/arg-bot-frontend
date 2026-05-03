@@ -149,4 +149,22 @@ describe('useRateAlert', () => {
     expect(result.current.alertActive).toBe(true);
     expect(result.current.direction).toBe('lower');
   });
+
+  it('rate oscillates below lower threshold (anti-spam) → alertActive stays true, no duplicate state change', () => {
+    const { result, rerender } = renderHook(
+      ({ rate }) => useRateAlert(rate, { lower: 0.95 }),
+      { initialProps: { rate: 0.90 } }
+    );
+    expect(result.current.alertActive).toBe(true);
+    expect(result.current.direction).toBe('lower');
+
+    // Rate stays below lower threshold — lastTriggerDirectionRef is 'lower' → branch NOT taken
+    rerender({ rate: 0.88 });
+    expect(result.current.alertActive).toBe(true);
+    expect(result.current.direction).toBe('lower');
+
+    rerender({ rate: 0.92 });
+    expect(result.current.alertActive).toBe(true);
+    expect(result.current.direction).toBe('lower');
+  });
 });

@@ -117,6 +117,19 @@ describe('tradeHistoryToCsv', () => {
     expect(lines[3].startsWith('2026-05-01,')).toBe(true);
   });
 
+  it('two records with identical date → both rows present, order preserved (sort returns 0)', () => {
+    const history = [
+      { date: '2026-04-15', eur: '200' },
+      { date: '2026-04-15', eur: '100' },
+    ];
+    const csv = tradeHistoryToCsv(history);
+    const lines = csv.split('\n');
+    expect(lines).toHaveLength(3); // header + 2 rows
+    // Both dates appear
+    expect(lines[1].startsWith('2026-04-15,')).toBe(true);
+    expect(lines[2].startsWith('2026-04-15,')).toBe(true);
+  });
+
   it('does NOT mutate the input array', () => {
     const history = [
       { date: '2026-05-01', eur: 'C' },

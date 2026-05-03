@@ -7,7 +7,7 @@ test.describe('Login Page', () => {
   });
 
   test('shows ARGBOT heading and tagline', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /ARGBOT/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /ARGBOT/, level: 1 })).toBeVisible();
     await expect(page.getByText('Transferencias internacionales automatizadas')).toBeVisible();
   });
 
@@ -35,9 +35,10 @@ test.describe('Login Page', () => {
   });
 
   test('trust section shows exactly 3 items after support removal', async ({ page }) => {
-    await expect(page.getByText('Encriptación AES-256 local')).toBeVisible();
-    await expect(page.getByText('Open Source')).toBeVisible();
-    await expect(page.getByText('Permisos mínimos')).toBeVisible();
+    const trustSection = page.locator('div').filter({ hasText: '¿Por qué confiar en ARGBOT?' }).last();
+    await expect(trustSection.getByText('Encriptación AES-256 local')).toBeVisible();
+    await expect(trustSection.getByText('Open Source')).toBeVisible();
+    await expect(trustSection.getByText('Permisos mínimos', { exact: true })).toBeVisible();
     await expect(page.getByText('Soporte')).not.toBeVisible();
   });
 

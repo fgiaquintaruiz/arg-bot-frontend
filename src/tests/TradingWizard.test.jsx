@@ -47,7 +47,7 @@ describe('TradingWizard', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     expect(screen.getByText('ES1234567890123456789012')).toBeInTheDocument();
     expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument();
@@ -56,7 +56,7 @@ describe('TradingWizard', () => {
   it('step 1 sin IBAN: muestra empty state de configuración', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     expect(screen.getByText(/No tenés cuenta SEPA configurada/)).toBeInTheDocument();
   });
@@ -65,9 +65,9 @@ describe('TradingWizard', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     // Step 0 → 1
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
     // Step 1 → 2
-    fireEvent.click(screen.getByText('Ya realicé la transferencia →'));
+    fireEvent.click(screen.getByText(/Ya realicé la transferencia/));
     // Step 2 → 3 (Trade mock fires onSuccess)
     fireEvent.click(screen.getByText('Trade Success'));
     // Step 3 → 4 (Withdraw mock fires onSuccess)
@@ -83,7 +83,7 @@ describe('TradingWizard', () => {
 
   it('muestra botón Reiniciar al avanzar al step 1', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
     expect(screen.getByText(/Reiniciar simulación/)).toBeInTheDocument();
   });
 
@@ -100,7 +100,7 @@ describe('TradingWizard', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     expect(screen.getByText('IBAN')).toBeInTheDocument();
     expect(screen.getByText('ES1234567890123456789012')).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('TradingWizard', () => {
 
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     const copyButtons = screen.getAllByText('Copiar');
     fireEvent.click(copyButtons[0]);
@@ -130,7 +130,10 @@ describe('TradingWizard', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     // El link de Ajustes aparece en step 0 cuando no hay IBAN
-    fireEvent.click(screen.getByText('Configuración → Binance'));
+    const configLink = screen.getByText((content, element) =>
+      element?.tagName === 'SPAN' && /Configuraci/.test(element.textContent || '') && /Binance/.test(element.textContent || '') && element.style?.cursor === 'pointer'
+    );
+    fireEvent.click(configLink);
 
     expect(eventSpy).toHaveBeenCalledTimes(1);
     window.removeEventListener('open-settings', eventSpy);
@@ -177,7 +180,7 @@ describe('TradingWizard', () => {
     localStorage.setItem('user_email', 'test@example.com');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     expect(screen.getByText('test@example.com Binance Deposit')).toBeInTheDocument();
   });
@@ -186,8 +189,8 @@ describe('TradingWizard', () => {
     const dataWithoutRipio = { ...mockData, ripioUsdcArsRate: null };
     render(<TradingWizard data={dataWithoutRipio} onRefreshData={onRefreshData} />);
 
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
-    fireEvent.click(screen.getByText('Ya realicé la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
+    fireEvent.click(screen.getByText(/Ya realicé la transferencia/));
     fireEvent.click(screen.getByText('Trade Success'));
     fireEvent.click(screen.getByText('Withdraw Success'));
 
@@ -197,7 +200,7 @@ describe('TradingWizard', () => {
   it('step 1: cuando IBAN está configurado, muestra el IBAN con botón copiar (sin QR)', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     expect(screen.getByText('ES1234567890123456789012')).toBeInTheDocument();
     expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument();
@@ -205,7 +208,7 @@ describe('TradingWizard', () => {
 
   it('step 1: cuando IBAN NO está configurado, muestra empty state con texto de configuración', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
     expect(screen.getByText(/No tenés cuenta SEPA configurada/)).toBeInTheDocument();
     expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument();
@@ -218,18 +221,18 @@ describe('TradingWizard', () => {
 
   it('avanzar al step 1 muestra "2. Transferir al banco" numerado', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
     expect(screen.getByText('2. Transferir al banco')).toBeInTheDocument();
   });
 
   it('clickear un step completado (anterior) navega de vuelta a ese step', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     // Avanzar al step 1
-    fireEvent.click(screen.getByText('Continuar con la transferencia →'));
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
     // El step 0 (Simulación) está completado — debe ser clickeable
     fireEvent.click(screen.getByText('1. Simulación'));
     // Debe volver al step 0: el botón "Continuar" debe aparecer de nuevo
-    expect(screen.getByText('Continuar con la transferencia →')).toBeInTheDocument();
+    expect(screen.getByText(/Continuar con la transferencia/)).toBeInTheDocument();
   });
 
   it('el step activo NO es clickeable (no navega al hacer click)', () => {
@@ -237,7 +240,7 @@ describe('TradingWizard', () => {
     // Step 0 está activo — click no debe cambiar nada
     fireEvent.click(screen.getByText('1. Simulación'));
     // El botón "Continuar" sigue visible (sigue en step 0)
-    expect(screen.getByText('Continuar con la transferencia →')).toBeInTheDocument();
+    expect(screen.getByText(/Continuar con la transferencia/)).toBeInTheDocument();
   });
 
 });

@@ -89,4 +89,18 @@ describe('NotificationOptIn', () => {
     render(<NotificationOptIn />);
     expect(screen.queryByRole('button', { name: /enable notifications/i })).not.toBeInTheDocument();
   });
+
+  it('does not render when Notification.permission is already granted', () => {
+    // Simulate browser where permission was already granted (e.g., after a reload)
+    vi.stubGlobal('Notification', { permission: 'granted', requestPermission: vi.fn() });
+    render(<NotificationOptIn />);
+    expect(screen.queryByRole('button', { name: /enable notifications/i })).not.toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
+  it('does not render when argbot_notif_banner_enabled is false', () => {
+    localStorage.setItem('argbot_notif_banner_enabled', 'false');
+    render(<NotificationOptIn />);
+    expect(screen.queryByRole('button', { name: /enable notifications/i })).not.toBeInTheDocument();
+  });
 });

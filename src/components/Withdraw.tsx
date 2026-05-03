@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Building2, User, Pencil, AlertTriangle, X } from 'lucide-react';
+import { Building2, User, Pencil, AlertTriangle, X, ChevronRight } from 'lucide-react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
 import {
@@ -187,7 +187,7 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
                             </div>
                         ) : (
                             <div style={{ color: '#474D57', fontSize: '14px', flex: 1, userSelect: 'none' }}>
-                                Seleccioná una dirección →
+                                Seleccioná una dirección <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle' }} />
                             </div>
                         )}
                         <Pencil size={14} color="#848E9C" style={{ marginLeft: '8px', flexShrink: 0 }} />

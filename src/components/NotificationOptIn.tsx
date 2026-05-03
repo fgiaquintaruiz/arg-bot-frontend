@@ -10,6 +10,9 @@ export default function NotificationOptIn() {
 
   useEffect(() => {
     if (isIOS() || !isPeriodicSyncSupported()) return;
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return;
+    const bannerEnabled = localStorage.getItem('argbot_notif_banner_enabled');
+    if (bannerEnabled === 'false') return;
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (dismissed && Date.now() - parseInt(dismissed, 10) < DISMISS_DURATION_MS) return;
     setVisible(true);
@@ -18,6 +21,7 @@ export default function NotificationOptIn() {
   const handleEnable = async () => {
     const perm = await requestNotificationPermission();
     if (perm === 'granted') {
+      localStorage.setItem('argbot_notifications_enabled', 'true');
       setStatus('granted');
       setVisible(false);
     } else {

@@ -3,6 +3,7 @@ import { Pencil, Check, X, ClipboardList, Download } from 'lucide-react';
 import { tradeHistoryToCsv, downloadCsv } from '../utils/csvExport';
 
 function truncateAddress(addr: string): string {
+  /* v8 ignore next -- caller guards with ternary: `h.usdcDestAddress ? truncateAddress(...) : '—'` */
   if (!addr) return '—';
   if (addr.length <= 12) return addr;
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;

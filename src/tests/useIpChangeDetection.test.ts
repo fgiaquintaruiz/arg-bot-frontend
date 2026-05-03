@@ -201,6 +201,33 @@ describe('useIpChangeDetection', () => {
     });
   });
 
+  // ─── dismiss() when newIp is null (acknowledge without IP) ──────────────────
+
+  describe('dismiss() when newIp is null', () => {
+    it('calling dismiss() when ipChanged is false and newIp is null → does NOT write to localStorage', async () => {
+      // No IP change: ipChanged=false, newIp=null
+      mockFetchIp('203.0.113.42');
+      localStorage.setItem(LS_KEY, '203.0.113.42'); // same IP → no change
+
+      const { result } = renderHook(() => useIpChangeDetection());
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalled();
+      });
+
+      const callsBefore = (localStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.length;
+
+      // dismiss() when newIp is null — branch `if (newIp)` is FALSE
+      act(() => {
+        result.current.dismiss();
+      });
+
+      // setIpChanged(false) still called, but localStorage NOT written (no new setItem)
+      expect(result.current.ipChanged).toBe(false);
+      expect((localStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callsBefore);
+    });
+  });
+
   // ─── persist() ───────────────────────────────────────────────────────────────
 
   describe('persist()', () => {

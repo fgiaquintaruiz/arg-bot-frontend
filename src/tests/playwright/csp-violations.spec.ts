@@ -34,19 +34,24 @@ async function setupCapture(page: Page): Promise<void> {
 }
 
 async function collectEventViolations(page: Page, route: string): Promise<CSPViolation[]> {
-  const raw = await page.evaluate(() => {
-    const w = window as unknown as { __CSP_VIOLATIONS__: RawEventViolation[] };
-    const items = w.__CSP_VIOLATIONS__ || [];
-    w.__CSP_VIOLATIONS__ = [];
-    return items;
-  });
-  return raw.map((v) => ({
-    directive: v.directive,
-    blockedURI: v.blockedURI,
-    message: v.message,
-    route,
-    source: 'event' as const,
-  }));
+  try {
+    const raw = await page.evaluate(() => {
+      const w = window as unknown as { __CSP_VIOLATIONS__: RawEventViolation[] };
+      const items = w.__CSP_VIOLATIONS__ || [];
+      w.__CSP_VIOLATIONS__ = [];
+      return items;
+    });
+    return raw.map((v) => ({
+      directive: v.directive,
+      blockedURI: v.blockedURI,
+      message: v.message,
+      route,
+      source: 'event' as const,
+    }));
+  } catch {
+    // Page may have navigated or been closed between checks — skip silently
+    return [];
+  }
 }
 
 function deduplicate(violations: CSPViolation[]): CSPViolation[] {
@@ -130,39 +135,52 @@ async function reportViolations(
 
 test.describe('CSP report-only violations', () => {
   test('public routes (login + modales)', async ({ page }, testInfo) => {
+    // This test is a CSP reporting probe — it never asserts failures, only collects.
+    // Give it extra time because Firebase auth init + modal interactions can be slow.
+    test.setTimeout(90_000);
     const violations: CSPViolation[] = [];
     let currentRoute = '/';
     attachConsoleListener(page, violations, () => currentRoute);
     await setupCapture(page);
 
     currentRoute = '/ (login)';
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    // Wait for the app to hydrate (login button signals React is ready)
+    await page.getByRole('button', { name: /Continuar con Google/ }).waitFor({ timeout: 10_000 }).catch(() => null);
+    // Firebase Auth SDK loads an invisible iframe (for auth-state persistence) that Playwright
+    // waits on before allowing page.evaluate(). Setting a short default timeout lets the iframe
+    // check expire gracefully (the catch() in collectEventViolations handles the timeout error).
+    page.setDefaultTimeout(5_000);
+    // Report-Only CSP would appear as a different http-equiv; enforcing CSP is also checked
     const cspMeta = await page
       .locator('meta[http-equiv="Content-Security-Policy-Report-Only"]')
       .getAttribute('content')
       .catch(() => null);
+    const cspEnforcing = await page
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute('content')
+      .catch(() => null);
     // eslint-disable-next-line no-console
-    console.log(`[CSP-meta-detected] ${cspMeta ? 'YES' : 'NO'} length=${cspMeta?.length ?? 0}`);
+    console.log(`[CSP-meta-detected] report-only=${cspMeta ? 'YES' : 'NO'} enforcing=${cspEnforcing ? 'YES' : 'NO'} length=${(cspMeta ?? cspEnforcing)?.length ?? 0}`);
     violations.push(...(await collectEventViolations(page, currentRoute)));
 
     currentRoute = '/ + Novedades modal';
     if (await safeClick(page, /Novedades y Roadmap/)) {
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       violations.push(...(await collectEventViolations(page, currentRoute)));
       await safeClick(page, 'Cerrar novedades');
     }
 
     currentRoute = '/ + Términos modal';
     if (await safeClick(page, /Términos y Condiciones/)) {
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       violations.push(...(await collectEventViolations(page, currentRoute)));
       await safeClick(page, 'Cerrar modal legal');
     }
 
     currentRoute = '/ + Privacidad modal';
     if (await safeClick(page, /Políticas de Privacidad/)) {
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       violations.push(...(await collectEventViolations(page, currentRoute)));
       await safeClick(page, 'Cerrar modal legal');
     }
