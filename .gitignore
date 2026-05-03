@@ -36,3 +36,13 @@ bash.exe.stackdump
 
 # Auto-generated version file (bumped by CI/scripts)
 public/version.json
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Tooling local config
+.claude/
+.gga
+AGENTS.md
