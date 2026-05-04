@@ -245,6 +245,26 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               </div>
             )}
 
+            <div style={{
+              backgroundColor: '#181A20', padding: '14px', borderRadius: '8px',
+              fontSize: '13px', marginBottom: '14px', border: '1px solid #2B3139',
+            }}>
+              {[
+                { label: 'Depósito SEPA', value: `+ ${sepaFee.toFixed(2)} €`, danger: true },
+                { label: `EUR→USDC (${eurUsdc.toFixed(4)})`, value: `${beforeTradeFee.toFixed(2)} €`, danger: false },
+                { label: 'Fee trading (0.1%)', value: `+ ${tradingFee.toFixed(4)} €`, danger: true },
+                { label: 'Retiro Binance BEP20', value: '0 USDC', danger: false },
+                { label: `USDC destino (${usdcArs})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
+              ].map((row, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: i < 4 ? '8px' : 0, alignItems: 'center' }}>
+                  <span style={{ color: '#848E9C', fontSize: '12px' }}>{row.label}</span>
+                  <span style={{ color: row.danger ? '#F6465D' : '#EAECEF', fontFamily: "'IBM Plex Mono', monospace", fontSize: '12px', fontWeight: 500 }}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
             <div style={{ marginBottom: '12px' }}>
               <label style={ROW_LABEL}>Querés recibir (ARS)</label>
               <input
@@ -296,26 +316,6 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                   ⚠ Monto muy bajo — los fees consumen toda la conversión. Probá con un monto mayor.
                 </div>
               )}
-            </div>
-
-            <div style={{
-              backgroundColor: '#181A20', padding: '14px', borderRadius: '8px',
-              fontSize: '13px', marginBottom: '14px', border: '1px solid #2B3139',
-            }}>
-              {[
-                { label: 'Depósito SEPA', value: `+ ${sepaFee.toFixed(2)} €`, danger: true },
-                { label: `EUR→USDC (${eurUsdc.toFixed(4)})`, value: `${beforeTradeFee.toFixed(2)} €`, danger: false },
-                { label: 'Fee trading (0.1%)', value: `+ ${tradingFee.toFixed(4)} €`, danger: true },
-                { label: 'Retiro Binance BEP20', value: '0 USDC', danger: false },
-                { label: `USDC destino (${usdcArs})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
-              ].map((row, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: i < 4 ? '8px' : 0, alignItems: 'center' }}>
-                  <span style={{ color: '#848E9C', fontSize: '12px' }}>{row.label}</span>
-                  <span style={{ color: row.danger ? '#F6465D' : '#EAECEF', fontFamily: "'IBM Plex Mono', monospace", fontSize: '12px', fontWeight: 500 }}>
-                    {row.value}
-                  </span>
-                </div>
-              ))}
             </div>
 
             <button
