@@ -8,19 +8,15 @@ import {
     clearSelectedWithdrawAddress,
     migrateLegacyUsdcWallet,
 } from '../lib/withdrawAddress';
+import { CoreData } from '../types';
 
-export interface CoreData {
-  balances: { eur: string; usdc: string };
-  fees: { tradingRate: number };
-}
 interface WithdrawProps {
   data: CoreData;
   onClose?: () => void;
   onSuccess?: () => void;
-  variant?: 'standalone' | 'embedded';
 }
 
-export default function Withdraw({ data, onClose, onSuccess, variant = 'standalone' }: WithdrawProps) {
+export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     const [selectedId, setSelectedId] = useState<string | null>(
         () => localStorage.getItem('usdc_wallet_id')
     );
@@ -137,7 +133,8 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
             setSuccessMsg('¡Solicitud de retiro enviada!');
             fetch(`${API_URL}/api/push/notify/withdraw-complete`, {
-              method: 'POST',              headers: { 'Content-Type': 'application/json' },
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({}),
             }).catch(() => {});
             setIsConfirming(false);
@@ -329,7 +326,7 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
                                 <span style={{ color: '#848E9C' }}>Fee</span>
-                                <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace" }}>Fee: 0 USDC</span>
+                                <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace" }}>0 USDC</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #2B3139', paddingTop: '10px', marginTop: '4px' }}>
                                 <span style={{ color: '#EAECEF', fontWeight: 600 }}>Total que llega al destino</span>

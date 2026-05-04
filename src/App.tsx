@@ -1,6 +1,6 @@
 import pkg from "../package.json";
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './firebaseConfig';
 import { loginWithGoogle } from './authService';
 import Login from './components/Login';
@@ -13,7 +13,7 @@ import NotificationOptIn from './components/NotificationOptIn';
 const e2eUser: any = (window as any).__E2E_USER__ ?? null;
 
 function App() {
-  const [user, setUser] = useState<any>(e2eUser);
+  const [user, setUser] = useState<User | null>(e2eUser);
   const [loading, setLoading] = useState(e2eUser === null);
   const [rejected, setRejected] = useState(false);
 

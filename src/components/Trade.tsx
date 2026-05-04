@@ -2,13 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeftRight, X } from 'lucide-react';
 import { API_URL } from '../config';
 import { getSelectedWithdrawEntry } from '../lib/withdrawAddress';
+import { CoreData } from '../types';
 
-export interface CoreData {
-  balances: { eur: string; usdc: string };
-  rate: string;
-  usdcArsRate?: string;
-  fees: { tradingRate: number };
-}
 interface TradeProps {
   data: CoreData;
   onClose?: () => void;
@@ -61,7 +56,8 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       }).catch(() => {});
-      const history = JSON.parse(localStorage.getItem("trade_history") || "[]");
+      let history: any[] = [];
+      try { history = JSON.parse(localStorage.getItem("trade_history") || "[]"); } catch { history = []; }
       const usdcArs = parseFloat(data.usdcArsRate || '0');
       const eurUsdc = parseFloat(data.rate || '0');
       const eurArsRate = usdcArs > 0 && eurUsdc > 0 ? (eurUsdc * usdcArs).toFixed(2) : undefined;
@@ -161,7 +157,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
         )}
 
         {isConfirming ? (
-          <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '18px', borderRadius: '8px', marginBottom: '14px', textAlign: 'center' }}>
+          <div role="dialog" aria-modal="true" style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '18px', borderRadius: '8px', marginBottom: '14px', textAlign: 'center' }}>
             <div style={{ color: '#F0B90B', fontWeight: 700, marginBottom: '10px', fontSize: '14px' }}>Confirmar operación</div>
             <div style={{ fontSize: '13px', marginBottom: '16px', color: '#848E9C' }}>
               Estás a punto de cambiar <span style={{ color: '#EAECEF', fontWeight: 600 }}>{eurInput} EUR</span>. Esta acción es irreversible.

@@ -15,9 +15,10 @@ import {
 import { downloadFromDrive } from '../googleDrive';
 import Trade from './Trade';
 import Withdraw from './Withdraw';
+import { CoreData } from '../types';
 
 interface TradingWizardProps {
-  data: any;
+  data: CoreData | null;
   onRefreshData?: () => void;
 }
 
@@ -48,6 +49,55 @@ const STEP_LABEL_ROW: React.CSSProperties = {
   letterSpacing: '0.5px',
   fontWeight: 600,
 };
+
+function StepBadge({ step, icon: Icon, label, activeStep, onStepClick }: {
+  step: number;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  label: string;
+  activeStep: number;
+  onStepClick: (step: number) => void;
+}) {
+  const done = step < activeStep;
+  const active = step === activeStep;
+  const numberedLabel = `${step + 1}. ${label}`;
+  return (
+    <div
+      onClick={done ? () => onStepClick(step) : undefined}
+      style={{
+        padding: '14px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        backgroundColor: done ? 'rgba(14,203,129,0.04)' : 'transparent',
+        borderBottom: active ? '1px solid #2B3139' : 'none',
+        cursor: done ? 'pointer' : 'default',
+      }}
+    >
+      <div style={{
+        width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+        backgroundColor: done ? 'rgba(14,203,129,0.15)' : active ? 'rgba(240,185,11,0.12)' : '#2B3139',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {done ? <Check size={14} color="#0ECB81" /> : active ? <Icon size={14} color="#F0B90B" /> : <Lock size={12} color="#474D57" />}
+      </div>
+      <span style={{
+        fontSize: '14px',
+        fontWeight: active ? 700 : done ? 500 : 400,
+        color: done ? '#0ECB81' : active ? '#EAECEF' : '#474D57',
+        fontFamily: "'IBM Plex Sans', sans-serif",
+        flex: 1,
+      }}>
+        {numberedLabel}
+      </span>
+      {done && <span style={{ fontSize: '11px', color: '#474D57' }}>Completado</span>}
+      {!done && !active && (
+        <span style={{ fontSize: '10px', color: '#474D57', backgroundColor: '#2B3139', padding: '2px 8px', borderRadius: '4px' }}>
+          Pendiente
+        </span>
+      )}
+    </div>
+  );
+}
 
 export default function TradingWizard({ data, onRefreshData }: TradingWizardProps) {
   const [activeStep, setActiveStep] = useState(0);
@@ -164,56 +214,12 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
     flexShrink: 0,
   });
 
-  // Step header indicator
-  const StepBadge = ({ step, icon: Icon, label }: { step: number; icon: any; label: string }) => {
-    const done = step < activeStep;
-    const active = step === activeStep;
-    const numberedLabel = `${step + 1}. ${label}`;
-    return (
-      <div
-        onClick={done ? () => setActiveStep(step) : undefined}
-        style={{
-          padding: '14px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          backgroundColor: done ? 'rgba(14,203,129,0.04)' : 'transparent',
-          borderBottom: active ? '1px solid #2B3139' : 'none',
-          cursor: done ? 'pointer' : 'default',
-        }}
-      >
-        <div style={{
-          width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-          backgroundColor: done ? 'rgba(14,203,129,0.15)' : active ? 'rgba(240,185,11,0.12)' : '#2B3139',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {done ? <Check size={14} color="#0ECB81" /> : active ? <Icon size={14} color="#F0B90B" /> : <Lock size={12} color="#474D57" />}
-        </div>
-        <span style={{
-          fontSize: '14px',
-          fontWeight: active ? 700 : done ? 500 : 400,
-          color: done ? '#0ECB81' : active ? '#EAECEF' : '#474D57',
-          fontFamily: "'IBM Plex Sans', sans-serif",
-          flex: 1,
-        }}>
-          {numberedLabel}
-        </span>
-        {done && <span style={{ fontSize: '11px', color: '#474D57' }}>Completado</span>}
-        {!done && !active && (
-          <span style={{ fontSize: '10px', color: '#474D57', backgroundColor: '#2B3139', padding: '2px 8px', borderRadius: '4px' }}>
-            Pendiente
-          </span>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div>
 
       {/* ── Paso 0: Simulación ── */}
       <div style={CARD}>
-        <StepBadge step={0} icon={CalcIcon} label="Simulación" />
+        <StepBadge step={0} icon={CalcIcon} label="Simulación" activeStep={activeStep} onStepClick={setActiveStep} />
 
         {activeStep === 0 && (
           <div style={{ padding: '20px' }}>
@@ -354,7 +360,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
       {/* ── Paso 1: Transferencia SEPA ── */}
       {activeStep >= 1 && (
         <div style={CARD}>
-          <StepBadge step={1} icon={Smartphone} label="Transferir al banco" />
+          <StepBadge step={1} icon={Smartphone} label="Transferir al banco" activeStep={activeStep} onStepClick={setActiveStep} />
 
           {activeStep === 1 && (
             <div style={{ padding: '20px' }}>
@@ -501,7 +507,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           )}
           {activeStep > 2 && (
             <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
-              <StepBadge step={2} icon={ArrowLeftRight} label="Cambiar EUR → USDC" />
+              <StepBadge step={2} icon={ArrowLeftRight} label="Cambiar EUR → USDC" activeStep={activeStep} onStepClick={setActiveStep} />
             </div>
           )}
         </>
@@ -537,7 +543,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           )}
           {activeStep > 3 && (
             <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
-              <StepBadge step={3} icon={Building2} label="Retirar USDC a Bitso" />
+              <StepBadge step={3} icon={Building2} label="Retirar USDC a Bitso" activeStep={activeStep} onStepClick={setActiveStep} />
             </div>
           )}
         </>
@@ -546,7 +552,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
       {/* ── Paso 4: Ripio USDC → ARS ── */}
       {activeStep >= 4 && (
         <div style={CARD}>
-          <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en Ripio" />
+          <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en Ripio" activeStep={activeStep} onStepClick={setActiveStep} />
           {activeStep === 4 && (
             <div style={{ padding: '20px' }}>
               <button

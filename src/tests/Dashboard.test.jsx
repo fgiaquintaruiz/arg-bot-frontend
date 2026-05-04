@@ -578,21 +578,13 @@ describe('Dashboard', () => {
   });
 
   it('useRateAlert EUR/ARS active → RateAlertBanner EUR/ARS rendered with role="alert"', () => {
-    useRateAlertModule.useRateAlert
-      .mockImplementationOnce(() => ({
-        alertActive: true,
-        direction: 'upper',
-        currentRate: 1350,
-        threshold: 1300,
-        dismiss: vi.fn(),
-      }))
-      .mockImplementationOnce(() => ({
-        alertActive: false,
-        direction: null,
-        currentRate: null,
-        threshold: null,
-        dismiss: vi.fn(),
-      }));
+    let callIndex = 0;
+    useRateAlertModule.useRateAlert.mockImplementation(() => {
+      const isEurArs = (callIndex++ % 2) === 0;
+      return isEurArs
+        ? { alertActive: true, direction: 'upper', currentRate: 1350, threshold: 1300, dismiss: vi.fn() }
+        : { alertActive: false, direction: null, currentRate: null, threshold: null, dismiss: vi.fn() };
+    });
 
     render(<Dashboard user={mockUser} />);
     const banners = screen.getAllByTestId('rate-alert-banner-mock');
@@ -602,21 +594,13 @@ describe('Dashboard', () => {
   });
 
   it('useRateAlert EUR/USDC active → RateAlertBanner EUR/USDC rendered', () => {
-    useRateAlertModule.useRateAlert
-      .mockImplementationOnce(() => ({
-        alertActive: false,
-        direction: null,
-        currentRate: null,
-        threshold: null,
-        dismiss: vi.fn(),
-      }))
-      .mockImplementationOnce(() => ({
-        alertActive: true,
-        direction: 'lower',
-        currentRate: 0.90,
-        threshold: 0.95,
-        dismiss: vi.fn(),
-      }));
+    let callIndex = 0;
+    useRateAlertModule.useRateAlert.mockImplementation(() => {
+      const isEurArs = (callIndex++ % 2) === 0;
+      return isEurArs
+        ? { alertActive: false, direction: null, currentRate: null, threshold: null, dismiss: vi.fn() }
+        : { alertActive: true, direction: 'lower', currentRate: 0.90, threshold: 0.95, dismiss: vi.fn() };
+    });
 
     render(<Dashboard user={mockUser} />);
     const banners = screen.getAllByTestId('rate-alert-banner-mock');
@@ -626,21 +610,13 @@ describe('Dashboard', () => {
 
   it('click Descartar on EUR/ARS banner → calls dismiss from eurArsAlert hook', () => {
     const dismissMock = vi.fn();
-    useRateAlertModule.useRateAlert
-      .mockImplementationOnce(() => ({
-        alertActive: true,
-        direction: 'upper',
-        currentRate: 1350,
-        threshold: 1300,
-        dismiss: dismissMock,
-      }))
-      .mockImplementationOnce(() => ({
-        alertActive: false,
-        direction: null,
-        currentRate: null,
-        threshold: null,
-        dismiss: vi.fn(),
-      }));
+    let callIndex = 0;
+    useRateAlertModule.useRateAlert.mockImplementation(() => {
+      const isEurArs = (callIndex++ % 2) === 0;
+      return isEurArs
+        ? { alertActive: true, direction: 'upper', currentRate: 1350, threshold: 1300, dismiss: dismissMock }
+        : { alertActive: false, direction: null, currentRate: null, threshold: null, dismiss: vi.fn() };
+    });
 
     render(<Dashboard user={mockUser} />);
     fireEvent.click(screen.getByText('Descartar'));
@@ -648,21 +624,13 @@ describe('Dashboard', () => {
   });
 
   it('both alerts active → two banners rendered', () => {
-    useRateAlertModule.useRateAlert
-      .mockImplementationOnce(() => ({
-        alertActive: true,
-        direction: 'upper',
-        currentRate: 1350,
-        threshold: 1300,
-        dismiss: vi.fn(),
-      }))
-      .mockImplementationOnce(() => ({
-        alertActive: true,
-        direction: 'lower',
-        currentRate: 0.90,
-        threshold: 0.95,
-        dismiss: vi.fn(),
-      }));
+    let callIndex = 0;
+    useRateAlertModule.useRateAlert.mockImplementation(() => {
+      const isEurArs = (callIndex++ % 2) === 0;
+      return isEurArs
+        ? { alertActive: true, direction: 'upper', currentRate: 1350, threshold: 1300, dismiss: vi.fn() }
+        : { alertActive: true, direction: 'lower', currentRate: 0.90, threshold: 0.95, dismiss: vi.fn() };
+    });
 
     render(<Dashboard user={mockUser} />);
     const banners = screen.getAllByTestId('rate-alert-banner-mock');

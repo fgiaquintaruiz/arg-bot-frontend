@@ -59,8 +59,9 @@ describe('Withdraw confirmation modal', () => {
     expect(dialog.textContent).toMatch(/100\s*USDC/);
     // 4. Network
     expect(screen.getByText(/BSC.*BEP20/)).toBeInTheDocument();
-    // 5. Fee: 0 USDC (explicit)
-    expect(screen.getByText(/Fee:\s*0\s*USDC/i)).toBeInTheDocument();
+    // 5. Fee row: label "Fee" + value "0 USDC" in separate elements
+    expect(screen.getByText(/^Fee$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^0 USDC$/i)).toBeInTheDocument();
     // 6. Total que llega al destino
     expect(screen.getByText(/Total que llega al destino/i)).toBeInTheDocument();
 

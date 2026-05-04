@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { User } from 'firebase/auth';
 import { Settings2, AlertTriangle, Bot, History as HistoryIcon, LogOut } from 'lucide-react';
 import { logout } from './authService';
 import pkg from '../package.json';
@@ -13,12 +14,13 @@ import IpChangeAlert from './components/IpChangeAlert';
 import { useRateAlert } from './hooks/useRateAlert';
 import RateAlertBanner from './components/RateAlertBanner';
 import { getRateAlertConfig } from './utils/rateAlertStorage';
+import { CoreData } from './types';
 
 const AUTOMATIC_UPDATE = true;
 
-export default function Dashboard({ user }: { user: any }) {
-    const [data, setData] = useState<any>(null);
-    const testnetRef = useRef<boolean>(false);
+export default function Dashboard({ user }: { user: User }) {
+    const [data, setData] = useState<CoreData | null>(null);
+    const [marketLoading, setMarketLoading] = useState(false);
     const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem('argbot_testnet') !== 'false');
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
     const [currentView, setCurrentView] = useState('calculator');
@@ -35,20 +37,17 @@ export default function Dashboard({ user }: { user: any }) {
     const eurArsAlert = useRateAlert(eurArsRate, rateAlertConfig.eurArs);
     const eurUsdcAlert = useRateAlert(data?.rate, rateAlertConfig.eurUsdc);
 
-    const hasKeys = !!(localStorage.getItem('binance_key') || localStorage.getItem('binance_key_testnet')) &&
-                    !!(localStorage.getItem('binance_secret') || localStorage.getItem('binance_secret_testnet'));
     const [showSettings, setShowSettings] = useState(false);
     const [showTestnetModal, setShowTestnetModal] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'alerts'>('sync');
-    const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+    const [settingsTab, setSettingsTab] = useState<'sync' | 'binance' | 'alerts' | 'notif'>('sync');
     const [versionUpdating, setVersionUpdating] = useState(false);
 
     // Listen for custom event to open Settings with specific tab
     useEffect(() => {
       const handler = (e: CustomEvent) => {
         if (e.detail?.tab) {
-          setSettingsTab(e.detail.tab as any);
+          setSettingsTab(e.detail.tab as 'sync' | 'binance' | 'alerts' | 'notif');
           setShowSettings(true);
         }
       };
@@ -69,14 +68,11 @@ export default function Dashboard({ user }: { user: any }) {
             try {
                 const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
                 if (!res.ok) return;
-                const data = await res.json();
-                if (data.buildDate && data.buildDate !== bundledVersion.buildDate) {
+                const versionPayload = await res.json();
+                if (versionPayload.buildDate && versionPayload.buildDate !== bundledVersion.buildDate) {
                     if (AUTOMATIC_UPDATE) {
                         setVersionUpdating(true);
                         setTimeout(() => { window.location.href = window.location.pathname + '?_t=' + Date.now(); }, 1500);
-                    } else {
-                        /* v8 ignore next -- dead branch: AUTOMATIC_UPDATE is always true */
-                        setShowUpdateBanner(true);
                     }
                 }
             } catch { /* silent fail */ }
@@ -90,6 +86,7 @@ export default function Dashboard({ user }: { user: any }) {
         const testnet = localStorage.getItem('argbot_testnet') !== 'false';
         const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
         const apiSecret = localStorage.getItem(testnet ? 'binance_secret_testnet' : 'binance_secret') || '';
+        setMarketLoading(true);
         fetch(`${getApiUrl()}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -99,7 +96,7 @@ export default function Dashboard({ user }: { user: any }) {
                 if (!res.ok) throw new Error("Server Error");
                 return res.json();
             })
-            .then(d => { testnetRef.current = !!d?.testnet; setData(d); })
+            .then(d => { setData(d); })
             .catch(err => {
                 console.error("Error fetching market data", err);
                 setData({
@@ -108,7 +105,8 @@ export default function Dashboard({ user }: { user: any }) {
                     usdcArsRate: "1150.50",
                     fees: { tradingRate: 0.001 }
                 });
-            });
+            })
+            .finally(() => { setMarketLoading(false); });
     };
 
     // Initial data fetch — on mount/user change
@@ -356,6 +354,11 @@ export default function Dashboard({ user }: { user: any }) {
                 flexShrink: 0,
                 boxSizing: 'border-box',
             }}>
+                {marketLoading && (
+                    <span style={{ fontSize: '11px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap', opacity: 0.7 }}>
+                        Actualizando...
+                    </span>
+                )}
                 <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
                     EUR/USDC <span style={{ color: '#0ECB81', fontWeight: 600 }}>
                         {data ? parseFloat(data.rate).toFixed(4) : '—'}

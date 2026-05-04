@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
 import { uploadToDrive, downloadFromDrive, setUserHint } from '../googleDrive';
 import { API_URL } from '../config';
 import { getRateAlertConfig, setRateAlertConfig } from '../utils/rateAlertStorage';
 
-export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: any; initialTab?: string }) {
+export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: User; initialTab?: 'sync' | 'binance' | 'alerts' | 'notif' }) {
   const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts' | 'notif'>(() => {
-    return ((initialTab as any) || 'sync') as 'sync' | 'binance' | 'alerts' | 'notif';
+    return initialTab ?? 'sync';
   });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
@@ -65,7 +66,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   // Google Drive Sync
   const handleDriveSync = async (action: 'upload' | 'download') => {
     setSyncStatus(action === 'upload' ? 'uploading' : 'downloading');
-    setSyncMessage(action === 'upload' ? 'Conectando con Google Drive...' : 'Conectando con Google Drive...');
+    setSyncMessage('Conectando con Google Drive...');
 
     try {
       if (action === 'upload') {
@@ -87,20 +88,20 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           rateAlertConfig: localStorage.getItem('rate_alert_config') || '',
         };
 
-        console.log('[Settings] Uploading to Google Drive...');
         const success = await uploadToDrive(dataToSync);
 
         if (success) {
           setSyncStatus('success');
           setSyncMessage('✅ Datos subidos a tu Google Drive correctamente. Ya podés descargarlos desde cualquier dispositivo.');
-          console.log('[Settings] Upload successful');
         } else {
           setSyncStatus('error');
           setSyncMessage('❌ No se pudo subir. Cancelaste el permiso o hubo un error de conexión.');
         }
       } else {
-        console.log('[Settings] Downloading from Google Drive...');
-        const data = await downloadFromDrive();
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Drive sync timeout')), 10000)
+        );
+        const data = await Promise.race([downloadFromDrive(), timeout]);
 
         if (data) {
           // Restore data
@@ -139,7 +140,6 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
 
           setSyncStatus('success');
           setSyncMessage(`✅ Datos restaurados desde Google Drive (${data.timestamp || 'fecha desconocida'}). Cambios aplicados — recargá para actualizar balances.`);
-          console.log('[Settings] Download successful');
         } else {
           setSyncStatus('error');
           setSyncMessage('⚠️ No se encontró un respaldo en tu Google Drive. Primero necesitás subir tus datos desde otro dispositivo.');
