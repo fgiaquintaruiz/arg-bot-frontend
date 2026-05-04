@@ -5,6 +5,9 @@ import {
   updateStoredIp,
   isPeriodicSyncSupported,
   isIOS,
+  isPushSupported,
+  urlBase64ToUint8Array,
+  subscribeToPush,
 } from '../utils/swRegistration';
 
 // Mock ServiceWorker registration
@@ -193,5 +196,83 @@ describe('swRegistration', () => {
       });
       expect(isIOS()).toBe(false);
     });
+  });
+});
+
+describe('isPushSupported', () => {
+  it('returns true when PushManager is available', () => {
+    vi.stubGlobal('window', { PushManager: {} });
+    vi.stubGlobal('navigator', { serviceWorker: {} });
+    expect(isPushSupported()).toBe(true);
+    vi.unstubAllGlobals();
+  });
+
+  it('returns false when PushManager is not available', () => {
+    vi.stubGlobal('window', {});
+    vi.stubGlobal('navigator', { serviceWorker: {} });
+    expect(isPushSupported()).toBe(false);
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('urlBase64ToUint8Array', () => {
+  it('decodes a base64url string to Uint8Array', () => {
+    const base64url = 'BL8CKi0EKvGwLKNkly-HEyUOwmzscs8qFM4bItC_NLmjZD8vRA2-kj0dyU-SdhJPMiOBu_6PLfJRd3v554W5-LI';
+    const result = urlBase64ToUint8Array(base64url);
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('handles padding correctly', () => {
+    const short = 'YQ';
+    const result = urlBase64ToUint8Array(short);
+    expect(result).toBeInstanceOf(Uint8Array);
+  });
+});
+
+describe('subscribeToPush', () => {
+  it('calls pushManager.subscribe with userVisibleOnly:true', async () => {
+    const mockSubscription = { toJSON: () => ({ endpoint: 'https://example.com', keys: {} }) };
+    const mockRegistration = {
+      pushManager: { subscribe: vi.fn().mockResolvedValue(mockSubscription) },
+    } as unknown as ServiceWorkerRegistration;
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', mockFetch);
+
+    await subscribeToPush(mockRegistration, 'YQ');
+
+    expect(mockRegistration.pushManager.subscribe).toHaveBeenCalledWith(
+      expect.objectContaining({ userVisibleOnly: true })
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('posts subscription to /api/push/subscribe', async () => {
+    const mockSubscription = { toJSON: () => ({ endpoint: 'https://example.com' }) };
+    const mockRegistration = {
+      pushManager: { subscribe: vi.fn().mockResolvedValue(mockSubscription) },
+    } as unknown as ServiceWorkerRegistration;
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', mockFetch);
+
+    await subscribeToPush(mockRegistration, 'YQ');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/push/subscribe'),
+      expect.objectContaining({ method: 'POST' })
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('does not throw when fetch fails (fire-and-forget)', async () => {
+    const mockSubscription = { toJSON: () => ({}) };
+    const mockRegistration = {
+      pushManager: { subscribe: vi.fn().mockResolvedValue(mockSubscription) },
+    } as unknown as ServiceWorkerRegistration;
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(subscribeToPush(mockRegistration, 'YQ')).resolves.toBeUndefined();
+    vi.unstubAllGlobals();
   });
 });

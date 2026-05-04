@@ -3,8 +3,17 @@ import { ArrowLeftRight, X } from 'lucide-react';
 import { API_URL } from '../config';
 import { getSelectedWithdrawEntry } from '../lib/withdrawAddress';
 
-export interface CoreData { balances: { eur: string; usdc: string }; rate: string; usdcArsRate?: string; fees: { tradingRate: number }; }
-interface TradeProps { data: CoreData; onClose?: () => void; onSuccess: () => void; }
+export interface CoreData {
+  balances: { eur: string; usdc: string };
+  rate: string;
+  usdcArsRate?: string;
+  fees: { tradingRate: number };
+}
+interface TradeProps {
+  data: CoreData;
+  onClose?: () => void;
+  onSuccess: () => void;
+}
 
 export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const [eurInput, setEurInput] = useState<string>('');
@@ -36,7 +45,9 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   };
 
   const handleConfirmTrade = async () => {
-    setLoading(true); setErrorMsg(''); setSuccessMsg('');
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
     try {
       const testnet = localStorage.getItem('argbot_testnet') !== 'false';
       const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
@@ -45,6 +56,11 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
       setSuccessMsg('¡Cambio ejecutado con éxito!');
+      fetch(`${API_URL}/api/push/notify/trade-complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      }).catch(() => {});
       const history = JSON.parse(localStorage.getItem("trade_history") || "[]");
       const usdcArs = parseFloat(data.usdcArsRate || '0');
       const eurUsdc = parseFloat(data.rate || '0');
@@ -57,7 +73,12 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       localStorage.setItem("trade_history", JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);
-    } catch (e: any) { setErrorMsg(e.message); setIsConfirming(false); } finally { setLoading(false); }
+    } catch (e: any) {
+      setErrorMsg(e.message);
+      setIsConfirming(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {

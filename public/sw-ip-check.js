@@ -5,7 +5,6 @@ const SW_VERSION = '1.0.0';
 const DB_NAME = 'argbot-ip';
 const STORE_NAME = 'ip';
 const IP_KEY = 'last_known_ip';
-const CHANNEL_NAME = 'argbot-sw';
 const BACKEND_URL = 'https://arg-bot-backend-kotlin.onrender.com';
 const PERIODIC_SYNC_TAG = 'ip-check';
 const MIN_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
@@ -88,7 +87,7 @@ async function handleIpCheck() {
 
 // ── Event listeners ───────────────────────────────────────────────────────────
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
@@ -120,12 +119,28 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const url = event.notification.data?.url || '/';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       if (clientList.length > 0) {
         return clientList[0].focus();
       }
-      return self.clients.openWindow('/');
+      return self.clients.openWindow(url);
+    })
+  );
+});
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  const payload = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: payload.url || 'notification',
+      requireInteraction: false,
+      data: { url: payload.url || '/' },
     })
   );
 });

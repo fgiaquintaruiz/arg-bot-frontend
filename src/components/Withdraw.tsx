@@ -9,8 +9,16 @@ import {
     migrateLegacyUsdcWallet,
 } from '../lib/withdrawAddress';
 
-export interface CoreData { balances: { eur: string; usdc: string }; fees: { tradingRate: number }; }
-interface WithdrawProps { data: CoreData; onClose?: () => void; onSuccess?: () => void; variant?: 'standalone' | 'embedded'; }
+export interface CoreData {
+  balances: { eur: string; usdc: string };
+  fees: { tradingRate: number };
+}
+interface WithdrawProps {
+  data: CoreData;
+  onClose?: () => void;
+  onSuccess?: () => void;
+  variant?: 'standalone' | 'embedded';
+}
 
 export default function Withdraw({ data, onClose, onSuccess, variant = 'standalone' }: WithdrawProps) {
     const [selectedId, setSelectedId] = useState<string | null>(
@@ -117,7 +125,9 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
     };
 
     const handleConfirmWithdraw = async () => {
-        setLoading(true); setErrorMsg(''); setSuccessMsg('');
+        setLoading(true);
+        setErrorMsg('');
+        setSuccessMsg('');
         try {
             const isTestnet = localStorage.getItem('argbot_testnet') !== 'false';
             const apiKey = localStorage.getItem(isTestnet ? 'binance_key_testnet' : 'binance_key') || '';
@@ -126,10 +136,20 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
             setSuccessMsg('¡Solicitud de retiro enviada!');
+            fetch(`${API_URL}/api/push/notify/withdraw-complete`, {
+              method: 'POST',              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({}),
+            }).catch(() => {});
             setIsConfirming(false);
             setIrreversibleAccepted(false);
             setTimeout(() => onSuccess && onSuccess(), 2000);
-        } catch (e: any) { setErrorMsg(e.message); setIsConfirming(false); setIrreversibleAccepted(false); } finally { setLoading(false); }
+        } catch (e: any) {
+            setErrorMsg(e.message);
+            setIsConfirming(false);
+            setIrreversibleAccepted(false);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -249,7 +269,7 @@ export default function Withdraw({ data, onClose, onSuccess, variant = 'standalo
 
                 <button
                     onClick={handleInitiateWithdraw}
-                    style={{ width: '100%', padding: '13px', backgroundColor: '#C3A1FF', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '8px', fontFamily: "'IBM Plex Sans', sans-serif', opacity: loading || !hasAddressBookEntry ? 0.5 : 1" }}
+                    style={{ width: '100%', padding: '13px', backgroundColor: '#C3A1FF', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '8px', fontFamily: "'IBM Plex Sans', sans-serif", opacity: loading || !hasAddressBookEntry ? 0.5 : 1 }}
                     disabled={loading || !hasAddressBookEntry}
                 >
                     {loading ? 'Procesando...' : 'Retirar'}

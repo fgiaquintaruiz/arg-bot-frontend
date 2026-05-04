@@ -238,13 +238,13 @@ describe('Withdraw Component', () => {
 
     it('amount exactamente igual a balance: permite retirar (boundary, vía modal)', async () => {
       setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
-      global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
+      global.fetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '500' } });
       fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
       fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
       fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
-      await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(global.fetch).toHaveBeenCalled());
     });
 
     it('sin amount (vacío): no llama a fetch', () => {
@@ -287,12 +287,12 @@ describe('Withdraw Component', () => {
     };
 
     it('llama al endpoint correcto con los datos del formulario', async () => {
-      global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
+      global.fetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
       render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
       fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
       openModalAndConfirm();
 
-      await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(global.fetch).toHaveBeenCalled());
       const [url, options] = global.fetch.mock.calls[0];
       expect(url).toContain('/api/withdraw');
       const body = JSON.parse(options.body);
@@ -391,6 +391,20 @@ describe('Withdraw Component', () => {
 
       resolveFetch({ ok: true, json: async () => ({ success: true }) });
     });
+
+    it('calls push notify after successful withdraw (fire-and-forget)', async () => {
+      setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
+      global.fetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+      render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+      fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
+      fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+      fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+      fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
+      await waitFor(() => {
+        const calls = global.fetch.mock.calls.map(([url]) => url);
+        expect(calls.some(url => String(url).includes('/api/push/notify/withdraw-complete'))).toBe(true);
+      });
+    });
   });
 
   // ─── truncateAddress ──────────────────────────────────────────────────────────
@@ -443,8 +457,6 @@ describe('Withdraw Component', () => {
 
   describe('multi-wallet behavior', () => {
     it('mount: llama migrateLegacyUsdcWallet() al montar (migración)', async () => {
-      const { migrateLegacyUsdcWallet } = await import('../lib/withdrawAddress');
-      const spy = vi.spyOn({ migrateLegacyUsdcWallet }, 'migrateLegacyUsdcWallet');
       // With a legacy usdc_wallet key and matching address_book entry,
       // the migration should set usdc_wallet_id after mount
       localStorage.setItem('usdc_wallet', mockAddress);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { requestNotificationPermission, isIOS, isPeriodicSyncSupported } from '../utils/swRegistration';
+import { requestNotificationPermission, isIOS, isPeriodicSyncSupported, isPushSupported, subscribeToPush } from '../utils/swRegistration';
 
 const DISMISS_KEY = 'argbot_notif_opt_in_dismissed';
 const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -9,7 +9,7 @@ export default function NotificationOptIn() {
   const [status, setStatus] = useState<'idle' | 'granted' | 'denied'>('idle');
 
   useEffect(() => {
-    if (isIOS() || !isPeriodicSyncSupported()) return;
+    if (isIOS() || (!isPeriodicSyncSupported() && !isPushSupported())) return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return;
     const bannerEnabled = localStorage.getItem('argbot_notif_banner_enabled');
     if (bannerEnabled === 'false') return;
@@ -21,6 +21,14 @@ export default function NotificationOptIn() {
   const handleEnable = async () => {
     const perm = await requestNotificationPermission();
     if (perm === 'granted') {
+      if (isPushSupported()) {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          await subscribeToPush(reg, import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '');
+        } catch (err) {
+          console.error('[Push] VAPID subscription failed:', err);
+        }
+      }
       localStorage.setItem('argbot_notifications_enabled', 'true');
       setStatus('granted');
       setVisible(false);

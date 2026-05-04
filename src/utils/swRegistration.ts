@@ -1,3 +1,5 @@
+import { getApiUrl } from '../config';
+
 const SW_PATH = '/sw-ip-check.js';
 const PERIODIC_SYNC_TAG = 'ip-check';
 const MIN_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
@@ -44,4 +46,30 @@ export function isPeriodicSyncSupported(): boolean {
 
 export function isIOS(): boolean {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+export function isPushSupported(): boolean {
+  return typeof window !== 'undefined' && 'PushManager' in window && 'serviceWorker' in navigator;
+}
+
+export function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+}
+
+export async function subscribeToPush(
+  registration: ServiceWorkerRegistration,
+  vapidPublicKey: string
+): Promise<void> {
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+  });
+  fetch(`${getApiUrl()}/api/push/subscribe`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription.toJSON()),
+  }).catch((err) => console.error('[Push] subscribe failed:', err));
 }

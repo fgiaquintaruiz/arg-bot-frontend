@@ -238,4 +238,20 @@ describe('Trade Component', () => {
       expect(confirmButton).toBeDisabled();
     });
   });
+
+  it('calls push notify after successful trade (fire-and-forget)', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true, data: { orderId: 12345 } })
+    });
+    render(<Trade data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+    const input = screen.getByPlaceholderText('Monto en EUR');
+    fireEvent.change(input, { target: { value: '50' } });
+    fireEvent.click(screen.getByText('Ejecutar cambio'));
+    fireEvent.click(screen.getByText('Confirmar'));
+    await waitFor(() => {
+      const calls = global.fetch.mock.calls.map(([url]) => url);
+      expect(calls.some(url => String(url).includes('/api/push/notify/trade-complete'))).toBe(true);
+    });
+  });
 });

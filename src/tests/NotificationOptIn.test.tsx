@@ -8,9 +8,11 @@ vi.mock('../utils/swRegistration', () => ({
   requestNotificationPermission: vi.fn().mockResolvedValue('granted'),
   isIOS: vi.fn().mockReturnValue(false),
   isPeriodicSyncSupported: vi.fn().mockReturnValue(true),
+  isPushSupported: vi.fn().mockReturnValue(false),
+  subscribeToPush: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { requestNotificationPermission, isIOS, isPeriodicSyncSupported } from '../utils/swRegistration';
+import { requestNotificationPermission, isIOS, isPeriodicSyncSupported, isPushSupported, subscribeToPush } from '../utils/swRegistration';
 
 describe('NotificationOptIn', () => {
   const DISMISS_KEY = 'argbot_notif_opt_in_dismissed';
@@ -20,6 +22,8 @@ describe('NotificationOptIn', () => {
     vi.clearAllMocks();
     (isIOS as ReturnType<typeof vi.fn>).mockReturnValue(false);
     (isPeriodicSyncSupported as ReturnType<typeof vi.fn>).mockReturnValue(true);
+    (isPushSupported as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (subscribeToPush as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -102,5 +106,29 @@ describe('NotificationOptIn', () => {
     localStorage.setItem('argbot_notif_banner_enabled', 'false');
     render(<NotificationOptIn />);
     expect(screen.queryByRole('button', { name: /enable notifications/i })).not.toBeInTheDocument();
+  });
+
+  it('renders when isPushSupported is true (even if isPeriodicSyncSupported is false)', () => {
+    (isPeriodicSyncSupported as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (isPushSupported as ReturnType<typeof vi.fn>).mockReturnValue(true);
+    render(<NotificationOptIn />);
+    expect(screen.getByRole('button', { name: /enable notifications/i })).toBeInTheDocument();
+  });
+
+  it('calls subscribeToPush when push is supported and permission granted', async () => {
+    (requestNotificationPermission as ReturnType<typeof vi.fn>).mockResolvedValue('granted');
+    (isPushSupported as ReturnType<typeof vi.fn>).mockReturnValue(true);
+    const mockReady = Promise.resolve({
+      pushManager: { subscribe: vi.fn().mockResolvedValue({ toJSON: () => ({}) }) },
+    });
+    vi.stubGlobal('navigator', {
+      serviceWorker: { ready: mockReady, controller: null },
+    });
+    render(<NotificationOptIn />);
+    fireEvent.click(screen.getByRole('button', { name: /enable notifications/i }));
+    await waitFor(() => {
+      expect(subscribeToPush).toHaveBeenCalled();
+    });
+    vi.unstubAllGlobals();
   });
 });
