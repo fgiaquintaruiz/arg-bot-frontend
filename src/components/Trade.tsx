@@ -4,6 +4,7 @@ import { API_URL } from '../config';
 import { getSelectedWithdrawEntry } from '../lib/withdrawAddress';
 import { CoreData, TradeHistoryEntry } from '../types';
 import { STORAGE_KEYS } from '../utils/storageKeys';
+import styles from './Trade.module.css';
 
 interface TradeProps {
   data: CoreData;
@@ -18,7 +19,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const [successMsg, setSuccessMsg] = useState<string>('');
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
 
-  if (!data) return <div style={{ color: '#848E9C', padding: '40px 20px', textAlign: 'center', fontSize: '14px' }}>Cargando mercado...</div>;
+  if (!data) return <div className={styles['loading-placeholder']}>Cargando mercado...</div>;
 
   const eurAmount = parseFloat(eurInput) || 0;
   const grossUsdc = eurAmount * parseFloat(data.rate || '0');
@@ -79,32 +80,25 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px', backgroundColor: '#181A20',
-    border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '8px',
-    fontSize: '16px', fontWeight: 600, boxSizing: 'border-box',
-    fontFamily: "'IBM Plex Mono', monospace", outline: 'none',
-  };
-
   return (
-    <div style={{ backgroundColor: '#1E2329', borderRadius: '12px', border: '1px solid #2B3139' }}>
+    <div className={styles.container}>
 
       {/* Header */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className={styles.header}>
         <ArrowLeftRight size={16} color="#848E9C" />
-        <h3 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>
+        <h3 className={styles['header-title']}>
           Cambiar EUR a USDC
         </h3>
       </div>
 
-      <div style={{ padding: '20px' }}>
+      <div className={styles.body}>
 
         {/* Rate + MAX row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#848E9C', marginBottom: '10px', alignItems: 'center', gap: '12px' }}>
-          <span style={{ color: '#474D57', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace" }}>Tasa: {data.rate}</span>
+        <div className={styles['rate-row']}>
+          <span className={styles['rate-label']}>Tasa: {data.rate}</span>
           <button
             onClick={() => { setEurInput(Math.max(0, parseFloat(data.balances?.eur || '0')).toFixed(2)); setIsConfirming(false); setErrorMsg(''); }}
-            style={{ padding: '4px 10px', backgroundColor: 'rgba(240,185,11,0.1)', color: '#F0B90B', border: '1px solid rgba(240,185,11,0.2)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}
+            className={styles['max-button']}
           >
             MAX
           </button>
@@ -114,66 +108,66 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
           type="number"
           value={eurInput}
           onChange={(e) => { setEurInput(e.target.value); setIsConfirming(false); setErrorMsg(''); }}
-          style={inputStyle}
+          className={styles['eur-input']}
           placeholder="Monto en EUR"
           disabled={loading || isConfirming}
         />
 
-        <p style={{ fontSize: '12px', color: '#474D57', textAlign: 'center', margin: '10px 0 16px' }}>
+        <p className={styles['minimum-hint']}>
           Mínimo ~10 EUR por operación (límite Binance)
         </p>
 
         {/* Breakdown */}
-        <div style={{ backgroundColor: '#181A20', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #2B3139' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
-            <span style={{ color: '#848E9C' }}>Comisión est. ({(data.fees?.tradingRate || 0.001) * 100}%)</span>
-            <span style={{ color: '#F6465D', fontFamily: "'IBM Plex Mono', monospace" }}>- {fee.toFixed(2)} USDC</span>
+        <div className={styles.breakdown}>
+          <div className={styles['breakdown-row']}>
+            <span className={styles['breakdown-label']}>Comisión est. ({(data.fees?.tradingRate || 0.001) * 100}%)</span>
+            <span className={styles['breakdown-fee']}>- {fee.toFixed(2)} USDC</span>
           </div>
           {effectiveFee > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
-              <span style={{ color: '#848E9C' }}>Fee de servicio</span>
-              <span style={{ color: '#F0B90B', fontFamily: "'IBM Plex Mono', monospace" }}>- €{effectiveFee.toFixed(2)}</span>
+            <div className={styles['breakdown-row']}>
+              <span className={styles['breakdown-label']}>Fee de servicio</span>
+              <span className={styles['breakdown-service-fee']}>- €{effectiveFee.toFixed(2)}</span>
             </div>
           )}
           {isExempt && effectiveFee === 0 && serviceFee > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
-              <span style={{ color: '#848E9C' }}>Fee de servicio</span>
-              <span style={{ color: '#0ECB81' }}>Exento</span>
+            <div className={styles['breakdown-row']}>
+              <span className={styles['breakdown-label']}>Fee de servicio</span>
+              <span className={styles['breakdown-exempt']}>Exento</span>
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #2B3139', paddingTop: '10px', marginTop: '4px' }}>
-            <span style={{ color: '#EAECEF', fontWeight: 600 }}>Recibirás (~)</span>
-            <span style={{ color: '#0ECB81', fontSize: '18px', fontWeight: 700, fontFamily: "'IBM Plex Mono', monospace" }}>{Math.max(0, netUsdc).toFixed(2)} USDC</span>
+          <div className={styles['breakdown-total-row']}>
+            <span className={styles['breakdown-total-label']}>Recibirás (~)</span>
+            <span className={styles['breakdown-total-value']}>{Math.max(0, netUsdc).toFixed(2)} USDC</span>
           </div>
         </div>
 
         {errorMsg && (
-          <div style={{ color: '#F6465D', fontSize: '13px', textAlign: 'center', marginBottom: '14px', backgroundColor: 'rgba(246,70,93,0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(246,70,93,0.2)' }}>
+          <div className={styles['error-message']}>
             {errorMsg}
           </div>
         )}
         {successMsg && (
-          <div style={{ color: '#0ECB81', fontSize: '14px', textAlign: 'center', marginBottom: '14px', fontWeight: 600 }}>
+          <div className={styles['success-message']}>
             ✓ {successMsg}
           </div>
         )}
 
         {isConfirming ? (
-          <div role="dialog" aria-modal="true" style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', padding: '18px', borderRadius: '8px', marginBottom: '14px', textAlign: 'center' }}>
-            <div style={{ color: '#F0B90B', fontWeight: 700, marginBottom: '10px', fontSize: '14px' }}>Confirmar operación</div>
-            <div style={{ fontSize: '13px', marginBottom: '16px', color: '#848E9C' }}>
-              Estás a punto de cambiar <span style={{ color: '#EAECEF', fontWeight: 600 }}>{eurInput} EUR</span>. Esta acción es irreversible.
+          <div role="dialog" aria-modal="true" className={styles['confirm-dialog']}>
+            <div className={styles['confirm-title']}>Confirmar operación</div>
+            <div className={styles['confirm-body']}>
+              Estás a punto de cambiar <span className={styles['confirm-body-accent']}>{eurInput} EUR</span>. Esta acción es irreversible.
             </div>
             <button
               onClick={handleConfirmTrade}
-              style={{ width: '100%', padding: '13px', backgroundColor: '#F6465D', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '8px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+              className={styles['confirm-button']}
               disabled={loading}
             >
               {loading ? 'Ejecutando...' : 'Confirmar'}
             </button>
             <button
               onClick={() => setIsConfirming(false)}
-              style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: '1px solid #2B3139', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
+              className={styles['cancel-button']}
               disabled={loading}
             >
               Cancelar
@@ -183,7 +177,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
           <>
             <button
               onClick={handleInitiateTrade}
-              style={{ width: '100%', padding: '13px', backgroundColor: '#0ECB81', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '8px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+              className={styles['execute-button']}
               disabled={loading || !eurInput || parseFloat(eurInput) <= 0}
             >
               Ejecutar cambio
@@ -192,7 +186,7 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
               <button
                 onClick={onClose}
                 aria-label="Cerrar"
-                style={{ width: '100%', padding: '13px', backgroundColor: 'transparent', border: 'none', color: '#848E9C', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                className={styles['close-button']}
                 disabled={loading}
               >
                 <X size={14} /> Cerrar
