@@ -1,7 +1,7 @@
 {
   "name": "client",
   "private": true,
-  "version": "1.8.193",
+  "version": "1.8.194",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "push": "node scripts/push.mjs"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
