@@ -1,0 +1,15 @@
+.loading-screen {
+  background-color: #181A20;
+  height: 100vh;
+  color: #EAECEF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+.loading-accent {
+  color: #F0B90B;
+}

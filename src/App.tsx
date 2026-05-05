@@ -7,6 +7,7 @@ import Login from './components/Login';
 import Dashboard from './Dashboard';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationOptIn from './components/NotificationOptIn';
+import styles from './App.module.css';
 
 // E2E test seam — Playwright sets window.__E2E_USER__ via addInitScript before app code runs.
 // In production this is always undefined → null → Firebase auth runs normally.
@@ -41,8 +42,8 @@ function App() {
   };
 
   if (loading) return (
-    <div style={{ backgroundColor: '#181A20', height: '100vh', color: '#EAECEF', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '14px', letterSpacing: '-0.2px' }}>
-      ARG<span style={{ color: '#F0B90B' }}>BOT</span> v{pkg.version}
+    <div className={styles['loading-screen']}>
+      ARG<span className={styles['loading-accent']}>BOT</span> v{pkg.version}
     </div>
   );
 

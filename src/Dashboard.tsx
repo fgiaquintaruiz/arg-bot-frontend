@@ -16,6 +16,7 @@ import RateAlertBanner from './components/RateAlertBanner';
 import { getRateAlertConfig } from './utils/rateAlertStorage';
 import { CoreData } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
+import styles from './Dashboard.module.css';
 
 const AUTOMATIC_UPDATE = true;
 
@@ -150,28 +151,10 @@ export default function Dashboard({ user }: { user: User }) {
     };
 
     return (
-        <div style={{
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: '#181A20',
-            display: 'flex',
-            flexDirection: 'column',
-            color: '#EAECEF',
-            overflow: 'hidden', // contenedor fijo; el scroll va en el área de contenido
-        }}>
+        <div className={styles.root}>
             {/* Testnet banner */}
             {isTestnet && (
-                <div style={{
-                    backgroundColor: 'rgba(240,185,11,0.12)',
-                    borderBottom: '1px solid rgba(240,185,11,0.3)',
-                    color: '#F0B90B',
-                    padding: '6px 16px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    letterSpacing: '0.5px',
-                    flexShrink: 0,
-                }}>
+                <div className={styles['testnet-banner']}>
                     BINANCE TESTNET — datos y saldos de prueba, no reales
                 </div>
             )}
@@ -209,55 +192,19 @@ export default function Dashboard({ user }: { user: User }) {
             )}
 
             {/* Access restricted banner */}
-            <div style={{
-                backgroundColor: 'rgba(246,70,93,0.1)',
-                borderBottom: '1px solid rgba(246,70,93,0.2)',
-                color: '#F6465D',
-                padding: '6px 16px',
-                textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: 500,
-                letterSpacing: '0.3px',
-                flexShrink: 0,
-            }}>
+            <div className={styles['restricted-banner']}>
                 Acceso restringido — solo usuarios autorizados
             </div>
 
             {/* Header */}
-            <div style={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: isMobile ? 'column' : 'row',
-                justifyContent: isMobile ? 'center' : 'space-between',
-                alignItems: 'center',
-                padding: isMobile ? '10px 16px' : '0 20px',
-                height: isMobile ? 'auto' : '56px',
-                gap: isMobile ? '8px' : undefined,
-                backgroundColor: '#181A20',
-                borderBottom: '1px solid #2B3139',
-                flexShrink: 0,
-                boxSizing: 'border-box',
-            }}>
+            <div className={`${styles.header} ${isMobile ? styles['header-mobile'] : styles['header-desktop']}`}>
                 {/* Row 1 (mobile) / Left group (desktop): logo + version + Kotlin badge + TESTNET button */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: isMobile ? 'center' : undefined }}>
+                <div className={isMobile ? styles['header-left-mobile'] : styles['header-left']}>
                     <Bot size={16} color="#F0B90B" />
-                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#EAECEF', letterSpacing: '-0.3px' }}>
-                        ARG<span style={{ color: '#F0B90B' }}>BOT</span>
+                    <span className={styles['logo-text']}>
+                        ARG<span className={styles['logo-accent']}>BOT</span>
                     </span>
-                    <span style={{
-                        fontSize: '11px',
-                        color: versionUpdating ? '#F0B90B' : '#848E9C',
-                        backgroundColor: '#2B3139',
-                        padding: '2px 7px',
-                        borderRadius: '4px',
-                        fontWeight: 600,
-                        fontFamily: "'IBM Plex Mono', monospace",
-                        letterSpacing: '0.2px',
-                        ...(versionUpdating ? {
-                            animation: 'pulse 0.5s ease-in-out infinite',
-                        } : {}),
-                    }}>
-                        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+                    <span className={`${styles['version-badge']} ${versionUpdating ? styles['version-badge-updating'] : styles['version-badge-normal']}`}>
                         v{pkg.version}
                     </span>
                     <BackendToggle />
@@ -272,40 +219,19 @@ export default function Dashboard({ user }: { user: User }) {
                             }
                         }}
                         aria-label={isTestnet ? 'Modo testnet activo' : 'Modo real activo'}
-                        style={{
-                            background: 'transparent',
-                            border: isTestnet ? '1px solid rgba(240,185,11,0.4)' : '1px solid rgba(14,203,129,0.4)',
-                            backgroundColor: isTestnet ? 'rgba(240,185,11,0.15)' : 'rgba(14,203,129,0.15)',
-                            color: isTestnet ? '#F0B90B' : '#0ECB81',
-                            cursor: 'pointer',
-                            padding: '6px 14px',
-                            borderRadius: '20px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            letterSpacing: '0.5px',
-                            marginRight: isMobile ? undefined : '24px',
-                        }}
+                        className={`${isTestnet ? styles['testnet-toggle-testnet'] : styles['testnet-toggle-real']} ${isMobile ? '' : styles['testnet-toggle-desktop']}`}
                     >
                         {isTestnet ? 'TESTNET' : 'REAL'}
                     </button>
                 </div>
 
                 {/* Row 2 (mobile) / Right group (desktop): historial + ajustes + salir */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: isMobile ? 'center' : undefined }}>
+                <div className={isMobile ? styles['header-right-mobile'] : styles['header-right']}>
                     <button
                         onClick={() => setCurrentView('history')}
                         title="Historial"
                         aria-label="Ver historial"
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#848E9C',
-                            cursor: 'pointer',
-                            padding: '8px',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                        }}
+                        className={styles['icon-btn']}
                     >
                         <HistoryIcon size={17} />
                     </button>
@@ -313,36 +239,16 @@ export default function Dashboard({ user }: { user: User }) {
                         onClick={() => setShowSettings(true)}
                         title="Configuración"
                         aria-label="Abrir configuración"
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#848E9C',
-                            fontSize: '18px',
-                            cursor: 'pointer',
-                            padding: '8px',
-                            borderRadius: '6px',
-                            lineHeight: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                        }}
+                        className={styles['icon-btn-settings']}
                     >
                         <Settings2 size={18} />
                     </button>
-                    <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'center', marginInline: '8px' }} />
+                    <div className={styles.divider} />
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
                         title="Salir"
                         aria-label="Salir"
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            padding: '8px',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                        }}
+                        className={styles['logout-btn']}
                     >
                         <LogOut size={17} color="#ef4444" />
                     </button>
@@ -350,75 +256,54 @@ export default function Dashboard({ user }: { user: User }) {
             </div>
 
             {/* Rate strip */}
-            <div style={{
-                width: '100%',
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                alignItems: 'center',
-                columnGap: '12px',
-                rowGap: '4px',
-                padding: '6px 12px',
-                backgroundColor: '#1E2329',
-                borderBottom: '1px solid #2B3139',
-                flexShrink: 0,
-                boxSizing: 'border-box',
-            }}>
+            <div className={styles['rate-strip']}>
                 {marketLoading && (
-                    <span style={{ fontSize: '11px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap', opacity: 0.7 }}>
+                    <span className={styles['rate-loading']}>
                         Actualizando...
                     </span>
                 )}
-                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
-                    EUR/USDC <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                <span className={styles['rate-item']}>
+                    EUR/USDC <span className={styles['rate-value']}>
                         {data ? parseFloat(data.rate).toFixed(4) : '—'}
                     </span>
                 </span>
-                <span style={{ color: '#2B3139' }}>·</span>
-                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
-                    USDC/ARS <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                <span className={styles['rate-separator']}>·</span>
+                <span className={styles['rate-item']}>
+                    USDC/ARS <span className={styles['rate-value']}>
                         {data?.nexoUsdcArsRate ? parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
                     </span>
                 </span>
-                <span style={{ color: '#2B3139' }}>·</span>
-                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
-                    1 EUR = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                <span className={styles['rate-separator']}>·</span>
+                <span className={styles['rate-item']}>
+                    1 EUR = <span className={styles['rate-value']}>
                         {data?.nexoUsdcArsRate ? (parseFloat(data.rate) * parseFloat(data.nexoUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
-                <span style={{ color: '#2B3139' }}>·</span>
-                <span style={{ fontSize: '12px', color: '#848E9C', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
-                    1 USDC = <span style={{ color: '#0ECB81', fontWeight: 600 }}>
+                <span className={styles['rate-separator']}>·</span>
+                <span className={styles['rate-item']}>
+                    1 USDC = <span className={styles['rate-value']}>
                         {data?.nexoUsdcArsRate ? parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
                     </span>
                 </span>
                 {data?.balances?.eur != null && (
-                    <span data-testid="rate-strip-balance" style={isMobile ? { width: '100%', textAlign: 'center', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' } : { marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", whiteSpace: 'nowrap' }}>
-                        <span style={{ color: '#848E9C', fontSize: '12px' }}>Disponible:</span>
-                        <span style={{ color: '#EAECEF' }}>
+                    <span data-testid="rate-strip-balance" className={isMobile ? styles['rate-balance-mobile'] : styles['rate-balance-desktop']}>
+                        <span className={styles['balance-label']}>Disponible:</span>
+                        <span className={styles['balance-value']}>
                             {parseFloat(data.balances.eur).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span style={{ color: '#848E9C' }}> €</span>
+                            <span className={styles['balance-currency']}> €</span>
                         </span>
-                        <span style={{ color: '#2B3139' }}>|</span>
-                        <span style={{ color: '#EAECEF' }}>
+                        <span className={styles['balance-pipe']}>|</span>
+                        <span className={styles['balance-value']}>
                             {parseFloat(data.balances.usdc).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span style={{ color: '#848E9C' }}> USDC</span>
+                            <span className={styles['balance-currency']}> USDC</span>
                         </span>
                     </span>
                 )}
             </div>
 
             {/* Content — único contenedor de scroll, todo lo demás sin overflow propio */}
-            <div style={{
-                flex: 1,
-                width: '100%',
-                overflowY: 'scroll',        // scroll siempre visible → wheel funciona sin hover-focus
-                WebkitOverflowScrolling: 'touch',
-                overscrollBehaviorY: 'none', // bloquea pull-to-refresh en Android PWA
-                padding: '24px 20px 60px',  // paddingBottom generoso para scroll completo
-                boxSizing: 'border-box',
-            }}>
-                <div style={{ maxWidth: '420px', margin: '0 auto' }}>
+            <div className={styles.content}>
+                <div className={styles['content-inner']}>
                     {renderView()}
                 </div>
             </div>
@@ -426,32 +311,19 @@ export default function Dashboard({ user }: { user: User }) {
             {showSettings && <Settings onClose={() => { setShowSettings(false); setSettingsTab('sync'); }} user={user} initialTab={settingsTab} />}
 
             {showLogoutConfirm && (
-                <div style={{
-                    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                }}>
-                    <div style={{
-                        backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '12px', padding: '24px', maxWidth: '320px', width: '90%',
-                        textAlign: 'center'
-                    }}>
-                        <p style={{ color: '#fff', marginBottom: '20px', fontSize: '16px' }}>
+                <div className={styles['logout-overlay']}>
+                    <div className={styles['logout-dialog']}>
+                        <p className={styles['logout-question']}>
                             ¿Cerrar sesión?
                         </p>
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                        <div className={styles['logout-buttons']}>
                             <button
                                 onClick={() => setShowLogoutConfirm(false)}
-                                style={{
-                                    padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
-                                    background: 'transparent', color: '#ccc', cursor: 'pointer', fontSize: '14px'
-                                }}
+                                className={styles['logout-cancel-btn']}
                             >Cancelar</button>
                             <button
                                 onClick={() => { setShowLogoutConfirm(false); logout(); }}
-                                style={{
-                                    padding: '8px 20px', borderRadius: '8px', border: 'none',
-                                    background: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: 600
-                                }}
+                                className={styles['logout-confirm-btn']}
                             >Cerrar sesión</button>
                         </div>
                     </div>
@@ -459,14 +331,14 @@ export default function Dashboard({ user }: { user: User }) {
             )}
 
             {showTestnetModal && (
-                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div style={{ backgroundColor: '#1E2329', border: '1px solid #2B3139', borderRadius: '20px', padding: '28px 24px', maxWidth: '340px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                        <div style={{ fontSize: '32px', textAlign: 'center', marginBottom: '12px' }}>⚠️</div>
-                        <h3 style={{ color: '#EAECEF', margin: '0 0 8px', textAlign: 'center', fontSize: '16px' }}>Cambiar a modo REAL</h3>
-                        <p style={{ color: '#848E9C', margin: '0 0 24px', textAlign: 'center', fontSize: '13px', lineHeight: '1.5' }}>Tus operaciones afectarán fondos reales en Binance. ¿Confirmás el cambio?</p>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={() => setShowTestnetModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '20px', border: '1px solid #2B3139', backgroundColor: 'transparent', color: '#848E9C', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>Cancelar</button>
-                            <button onClick={handleConfirmRealMode} style={{ flex: 1, padding: '12px', borderRadius: '20px', border: 'none', backgroundColor: '#F6465D', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>Confirmar</button>
+                <div className={styles['testnet-overlay']}>
+                    <div className={styles['testnet-dialog']}>
+                        <div className={styles['testnet-icon']}>⚠️</div>
+                        <h3 className={styles['testnet-modal-title']}>Cambiar a modo REAL</h3>
+                        <p className={styles['testnet-modal-desc']}>Tus operaciones afectarán fondos reales en Binance. ¿Confirmás el cambio?</p>
+                        <div className={styles['testnet-modal-buttons']}>
+                            <button onClick={() => setShowTestnetModal(false)} className={styles['testnet-cancel-btn']}>Cancelar</button>
+                            <button onClick={handleConfirmRealMode} className={styles['testnet-confirm-btn']}>Confirmar</button>
                         </div>
                     </div>
                 </div>
