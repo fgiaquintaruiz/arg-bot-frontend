@@ -1,97 +1,84 @@
 import React from 'react';
+import styles from './LandingDocs.module.css';
 
 export default function LandingDocs() {
-    const card: React.CSSProperties = {
-        backgroundColor: '#1E2329',
-        padding: '20px',
-        borderRadius: '12px',
-        border: '1px solid #2B3139',
-    };
-
-    const itemStyle: React.CSSProperties = {
-        color: '#848E9C',
-        lineHeight: '1.7',
-        fontSize: '14px',
-        marginBottom: '10px',
-    };
-
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
+        <div className={styles.container}>
 
             {/* Card 1: Qué hace */}
-            <div style={card}>
-                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#EAECEF', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className={styles.card}>
+                <h2 className={styles['card-title']}>
                     <span>⚡</span> ¿Cómo te ayuda ARGBOT?
                 </h2>
-                <p style={itemStyle}>
+                <p className={styles['item-text']}>
                     Olvidate de las comisiones ocultas de los servicios de envío tradicionales. Automatizamos el mercado cripto por vos:
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className={styles['items-list']}>
                     {[
                         ['🎯', 'Cálculo exacto', 'Miramos el precio en tiempo real para decirte exactamente cuántos EUR necesitás.'],
                         ['🤖', 'Piloto automático', 'El bot entra a Binance y compra los USDC usando tus propios Euros.'],
                         ['💸', 'A donde vos quieras', 'Podés mandar tus USDC a cualquier billetera BEP20 (Lemon, Nexo, Fiwind, etc.).'],
                     ].map(([icon, title, desc]) => (
-                        <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
-                            <span style={{ flexShrink: 0 }}>{icon}</span>
-                            <span style={{ color: '#848E9C' }}><strong style={{ color: '#EAECEF' }}>{title}:</strong> {desc}</span>
+                        <div key={title} className={styles['item-row']}>
+                            <span className={styles['item-icon']}>{icon}</span>
+                            <span className={styles['item-description']}><strong className={styles['item-description-strong']}>{title}:</strong> {desc}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Card 2: Antes de arrancar */}
-            <div style={{ ...card, backgroundColor: 'rgba(240,185,11,0.05)', border: '1px solid rgba(240,185,11,0.15)' }}>
-                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#F0B90B', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className={styles['card-warning']}>
+                <h2 className={styles['card-title-warning']}>
                     <span>⚠️</span> Antes de arrancar
                 </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className={styles['items-list']}>
                     {[
                         ['📝', 'Tu nombre tiene que coincidir', 'La cuenta bancaria desde donde mandás los EUR tiene que estar a tu mismo nombre que la de Binance.'],
                         ['🛑', 'Cero transferencias SWIFT', 'Usá solo SEPA. Por SWIFT, el banco lo rebota y tu plata puede quedar trabada hasta 2 semanas.'],
                     ].map(([icon, title, desc]) => (
-                        <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
-                            <span style={{ flexShrink: 0 }}>{icon}</span>
-                            <span style={{ color: '#848E9C' }}><strong style={{ color: '#F0B90B' }}>{title}:</strong> {desc}</span>
+                        <div key={title} className={styles['item-row']}>
+                            <span className={styles['item-icon']}>{icon}</span>
+                            <span className={styles['item-description']}><strong className={styles['item-description-strong-warning']}>{title}:</strong> {desc}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Card 3: Seguridad */}
-            <div style={card}>
-                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '14px', color: '#EAECEF', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className={styles.card}>
+                <h2 className={styles['card-title']}>
                     <span>🛡️</span> Tu plata, tu seguridad
                 </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className={styles['items-list-lg']}>
                     {[
                         ['No tocamos tus fondos', 'ARGBOT es un control remoto, no un banco. Tus claves quedan encriptadas solo en tu dispositivo.'],
                         ['Permisos mínimos + whitelist IP', 'Solo permisos de lectura, trade y retiro. Con la whitelist IP de Binance, los retiros solo van a tu wallet.'],
                         ['Herramienta independiente', 'Sin relación comercial con Binance, Nexo ni ninguna otra empresa.'],
                         ['Las cosas claras', 'Vos sos responsable de verificar que la dirección de retiro sea la correcta antes de confirmar.'],
                     ].map(([title, desc], i) => (
-                        <div key={i} style={{ fontSize: '13px', color: '#848E9C' }}>
-                            <strong style={{ color: '#EAECEF' }}>{i + 1}. {title}:</strong> {desc}
+                        <div key={i} className={styles['security-item']}>
+                            <strong className={styles['security-item-strong']}>{i + 1}. {title}:</strong> {desc}
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Card 4: Trust — lista compacta, sin grid de rectángulos */}
-            <div style={{ ...card, border: '1px solid rgba(14,203,129,0.2)', backgroundColor: 'rgba(14,203,129,0.04)' }}>
-                <h2 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '12px', color: '#0ECB81', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Card 4: Trust */}
+            <div className={styles['card-trust']}>
+                <h2 className={styles['card-title-trust']}>
                     <span>✅</span> ¿Por qué confiar en ARGBOT?
                 </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className={styles['items-list']}>
                     {[
                         ['🔒', 'Encriptación AES-256 local', 'Tus claves nunca salen de tu dispositivo sin cifrar.'],
                         ['🌐', 'Open Source', 'Todo el código está en GitHub para que lo puedas revisar.'],
                         ['🔑', 'Permisos mínimos', 'Solo lectura, trade y retiro. Sin acceso a depósitos fiat.'],
                     ].map(([icon, title, desc]) => (
-                        <div key={title} style={{ display: 'flex', gap: '10px', fontSize: '13px' }}>
-                            <span style={{ flexShrink: 0 }}>{icon}</span>
-                            <span style={{ color: '#848E9C' }}>
-                                <strong style={{ color: '#0ECB81' }}>{title}</strong>
+                        <div key={title} className={styles['item-row']}>
+                            <span className={styles['item-icon']}>{icon}</span>
+                            <span className={styles['item-description']}>
+                                <strong className={styles['item-description-strong-trust']}>{title}</strong>
                                 {desc ? ` — ${desc}` : ''}
                             </span>
                         </div>
