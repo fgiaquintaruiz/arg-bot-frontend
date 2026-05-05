@@ -1,0 +1,55 @@
+.wrapper {
+  min-height: 100vh;
+  background-color: #181A20;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+.icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.title {
+  color: #EAECEF;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.description {
+  color: #848E9C;
+  font-size: 13px;
+  margin-bottom: 24px;
+  text-align: center;
+  max-width: 320px;
+}
+
+.error-pre {
+  background-color: #1E2329;
+  border: 1px solid #2B3139;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 11px;
+  color: #F6465D;
+  max-width: 400px;
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.reload-button {
+  background-color: #F0B90B;
+  color: #181A20;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
