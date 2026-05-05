@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { requestNotificationPermission, isIOS, isPeriodicSyncSupported, isPushSupported, subscribeToPush } from '../utils/swRegistration';
 import { STORAGE_KEYS } from '../utils/storageKeys';
+import styles from './NotificationOptIn.module.css';
 
 const DISMISS_KEY = STORAGE_KEYS.ARGBOT_NOTIF_OPT_IN_DISMISSED;
 const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -10,6 +11,7 @@ export default function NotificationOptIn() {
   const [status, setStatus] = useState<'idle' | 'granted' | 'denied'>('idle');
 
   useEffect(() => {
+    // show banner only when push/periodic-sync available, permission not yet granted, and dismiss cooldown elapsed
     if (isIOS() || (!isPeriodicSyncSupported() && !isPushSupported())) return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return;
     const bannerEnabled = localStorage.getItem(STORAGE_KEYS.ARGBOT_NOTIF_BANNER_ENABLED);
@@ -49,42 +51,14 @@ export default function NotificationOptIn() {
 
   if (status === 'denied') {
     return (
-      <div
-        role="status"
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          backgroundColor: 'rgba(24,26,32,0.97)',
-          borderTop: '1px solid #2B3139',
-          padding: '12px 16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '12px',
-        }}
-      >
-        <span style={{ color: '#848E9C', fontSize: '12px' }}>
+      <div role="status" className={styles.banner}>
+        <span className={styles['denied-text']}>
           Notificaciones bloqueadas — habilitá en configuración del navegador
         </span>
         <button
           aria-label="Dismiss"
           onClick={handleDismiss}
-          style={{
-            backgroundColor: 'transparent',
-            color: '#848E9C',
-            border: '1px solid #2B3139',
-            borderRadius: '6px',
-            padding: '6px 12px',
-            fontSize: '11px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            minHeight: '30px',
-            flexShrink: 0,
-          }}
+          className={styles['dismiss-button-sm']}
         >
           Cerrar
         </button>
@@ -98,58 +72,23 @@ export default function NotificationOptIn() {
     <div
       role="banner"
       aria-label="Enable IP change notifications"
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        backgroundColor: 'rgba(24,26,32,0.97)',
-        borderTop: '1px solid #2B3139',
-        padding: '12px 16px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '12px',
-      }}
+      className={styles.banner}
     >
-      <p style={{ color: '#848E9C', fontSize: '13px', margin: 0, flex: 1 }}>
+      <p className={styles['opt-in-text']}>
         Recibí notificaciones cuando cambie la IP del servidor (hasta 24h de demora)
       </p>
-      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+      <div className={styles['button-group']}>
         <button
           aria-label="Enable Notifications"
           onClick={handleEnable}
-          style={{
-            backgroundColor: '#F0B90B',
-            color: '#181A20',
-            border: 'none',
-            borderRadius: '6px',
-            padding: '8px 14px',
-            fontSize: '12px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            minHeight: '36px',
-          }}
+          className={styles['enable-button']}
         >
           Activar notificaciones
         </button>
         <button
           aria-label="Dismiss"
           onClick={handleDismiss}
-          style={{
-            backgroundColor: 'transparent',
-            color: '#848E9C',
-            border: '1px solid #2B3139',
-            borderRadius: '6px',
-            padding: '8px 14px',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            minHeight: '36px',
-          }}
+          className={styles['dismiss-button']}
         >
           Cerrar
         </button>

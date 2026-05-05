@@ -1,0 +1,72 @@
+.banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: rgba(24, 26, 32, 0.97);
+  border-top: 1px solid #2B3139;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.denied-text {
+  color: #848E9C;
+  font-size: 12px;
+}
+
+.opt-in-text {
+  color: #848E9C;
+  font-size: 13px;
+  margin: 0;
+  flex: 1;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.enable-button {
+  background-color: #F0B90B;
+  color: #181A20;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-height: 36px;
+}
+
+.dismiss-button {
+  background-color: transparent;
+  color: #848E9C;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-height: 36px;
+}
+
+.dismiss-button-sm {
+  background-color: transparent;
+  color: #848E9C;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-height: 30px;
+  flex-shrink: 0;
+}
