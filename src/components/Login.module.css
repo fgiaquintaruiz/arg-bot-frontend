@@ -1,0 +1,138 @@
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  color: #EAECEF;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+.restricted-banner {
+  background-color: rgba(246, 70, 93, 0.08);
+  border: 1px solid rgba(246, 70, 93, 0.2);
+  color: #F6465D;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.hero-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.hero-title {
+  font-size: 2rem;
+  margin: 0 0 6px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.hero-title-accent {
+  color: #F0B90B;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  color: #848E9C;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.google-button {
+  padding: 13px 28px;
+  font-size: 15px;
+  background-color: #fff;
+  color: #181A20;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.rejected-banner {
+  background-color: rgba(246, 70, 93, 0.08);
+  border: 1px solid rgba(246, 70, 93, 0.2);
+  color: #F6465D;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.no-password-hint {
+  font-size: 12px;
+  color: #474D57;
+  margin-top: 12px;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #2B3139;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-link-button {
+  background: transparent;
+  border: none;
+  color: #474D57;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.updates-button {
+  background: transparent;
+  border: none;
+  color: #848E9C;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.version-badge {
+  font-size: 11px;
+  color: #848E9C;
+  background-color: #2B3139;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.2px;
+}
+
+.updates-chevron {
+  display: inline;
+  vertical-align: middle;
+  margin-left: 2px;
+}
