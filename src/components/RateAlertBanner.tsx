@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './RateAlertBanner.module.css';
 
 interface RateAlertBannerProps {
   pair: string;
@@ -21,22 +22,11 @@ export default function RateAlertBanner({ pair, direction, currentRate, threshol
     <div
       role="alert"
       aria-label={`Alerta de rate: ${pair}`}
-      style={{
-        backgroundColor: bgColor,
-        borderBottom: `1px solid ${borderColor}`,
-        color,
-        padding: '8px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '8px',
-        flexShrink: 0,
-        flexWrap: 'wrap',
-        boxSizing: 'border-box',
-      }}
+      className={styles['banner-container']}
+      style={{ backgroundColor: bgColor, borderBottom: `1px solid ${borderColor}`, color }}
     >
       {/* Left: icon + message */}
-      <span style={{ fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <span className={styles.message}>
         {icon}
         <span>
           {pair} {symbol} {threshold} (ahora: {currentRate.toFixed(4)})
@@ -47,16 +37,8 @@ export default function RateAlertBanner({ pair, direction, currentRate, threshol
       <button
         onClick={onDismiss}
         aria-label={`Descartar alerta ${pair}`}
-        style={{
-          background: 'transparent',
-          border: `1px solid ${borderColor}`,
-          borderRadius: '20px',
-          color,
-          padding: '5px 12px',
-          fontSize: '11px',
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
+        className={styles['dismiss-button']}
+        style={{ border: `1px solid ${borderColor}`, color }}
       >
         Descartar
       </button>
