@@ -4,6 +4,7 @@ import { uploadToDrive, downloadFromDrive, setUserHint } from '../googleDrive';
 import { API_URL } from '../config';
 import { getRateAlertConfig, setRateAlertConfig } from '../utils/rateAlertStorage';
 import { STORAGE_KEYS } from '../utils/storageKeys';
+import styles from './Settings.module.css';
 
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: User; initialTab?: 'sync' | 'binance' | 'alerts' | 'notif' }) {
   const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts' | 'notif'>(() => {
@@ -229,62 +230,53 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
     setTimeout(() => setAlertsSaved(false), 3000);
   };
 
-  const tabStyle = (tab: string): React.CSSProperties => ({
-    flex: 1, padding: '8px 6px',
-    backgroundColor: activeTab === tab ? '#F0B90B' : 'transparent',
-    color: activeTab === tab ? '#181A20' : '#848E9C',
-    border: activeTab === tab ? 'none' : '1px solid #2B3139',
-    borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '12px',
-    fontFamily: "'IBM Plex Sans', sans-serif",
-  });
-
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', boxSizing: 'border-box' }}>
-      <div style={{ backgroundColor: '#1E2329', width: '100%', maxWidth: '500px', maxHeight: '85vh', borderRadius: '12px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className={styles.overlay}>
+      <div className={styles.panel}>
 
         {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #2B3139', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, color: '#EAECEF', fontSize: '1rem', fontWeight: 700, fontFamily: "'IBM Plex Sans', sans-serif" }}>Configuración</h2>
-          <button onClick={onClose} aria-label="Cerrar configuración" style={{ background: 'transparent', border: 'none', color: '#848E9C', fontSize: '1.3rem', cursor: 'pointer', lineHeight: 1, padding: '4px' }}>✖</button>
+        <div className={styles.header}>
+          <h2 className={styles['header-title']}>Configuración</h2>
+          <button onClick={onClose} aria-label="Cerrar configuración" className={styles['close-btn']}>✖</button>
         </div>
 
         {/* Tabs */}
-        <div style={{ padding: '10px 20px', display: 'flex', gap: '6px', borderBottom: '1px solid #2B3139' }}>
-          <button style={tabStyle('sync')} onClick={() => setActiveTab('sync')}>Sync</button>
-          <button style={tabStyle('binance')} onClick={() => setActiveTab('binance')}>Binance</button>
-          <button style={tabStyle('alerts')} onClick={() => setActiveTab('alerts')}>Alertas</button>
-          <button style={tabStyle('notif')} onClick={() => setActiveTab('notif')}>Notif</button>
+        <div className={styles.tabs}>
+          <button className={activeTab === 'sync' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('sync')}>Sync</button>
+          <button className={activeTab === 'binance' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('binance')}>Binance</button>
+          <button className={activeTab === 'alerts' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('alerts')}>Alertas</button>
+          <button className={activeTab === 'notif' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('notif')}>Notif</button>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+        <div className={styles.content}>
 
           {/* SYNC TAB */}
           {activeTab === 'sync' && (
             <div>
-              <h4 style={{ color: '#EAECEF', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600 }}>Sincronización con Google Drive</h4>
-              <p style={{ color: '#848E9C', fontSize: '13px', lineHeight: '1.6', marginBottom: '16px' }}>
+              <h4 className={styles['sync-title']}>Sincronización con Google Drive</h4>
+              <p className={styles['sync-desc']}>
                 Guardá tus claves API, libreta de direcciones e historial en Google Drive. Los datos se encriptan antes de subirse.
               </p>
 
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139' }}>
+              <div className={styles['sync-feature-box']}>
                 {[['🔒', 'Encriptado AES-256', 'Tus datos se cifran antes de subirse'], ['📱', 'Multi-dispositivo', 'Usá la app desde cualquier celular o PC']].map(([icon, title, sub]) => (
-                  <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: title === 'Encriptado AES-256' ? '10px' : 0 }}>
+                  <div key={title} className={title === 'Encriptado AES-256' ? styles['sync-feature-row'] : styles['sync-feature-row-last']}>
                     <span>{icon}</span>
                     <div>
-                      <div style={{ color: '#EAECEF', fontWeight: 600, fontSize: '13px' }}>{title}</div>
-                      <div style={{ color: '#848E9C', fontSize: '12px' }}>{sub}</div>
+                      <div className={styles['sync-feature-label']}>{title}</div>
+                      <div className={styles['sync-feature-sub']}>{sub}</div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+              <div className={styles['sync-buttons']}>
                 <button
                   onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleDriveSync('upload'); }}
                   onClick={() => handleDriveSync('upload')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
-                  style={{ flex: 1, padding: '13px', backgroundColor: '#0ECB81', color: '#181A20', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: syncStatus === 'uploading' ? 'wait' : 'pointer', opacity: syncStatus === 'uploading' ? 0.7 : 1, WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                  className={`${styles['upload-btn']} ${syncStatus === 'uploading' ? styles['upload-btn-waiting'] : ''}`}
                 >
                   {syncStatus === 'uploading' ? 'Subiendo...' : '↑ Subir a Drive'}
                 </button>
@@ -292,19 +284,18 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                   onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleDriveSync('download'); }}
                   onClick={() => handleDriveSync('download')}
                   disabled={syncStatus === 'uploading' || syncStatus === 'downloading'}
-                  style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', color: '#EAECEF', border: '1px solid #2B3139', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: syncStatus === 'downloading' ? 'wait' : 'pointer', opacity: syncStatus === 'downloading' ? 0.7 : 1, WebkitTapHighlightColor: 'transparent', WebkitAppearance: 'none', touchAction: 'manipulation', minHeight: '48px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                  className={`${styles['download-btn']} ${syncStatus === 'downloading' ? styles['download-btn-waiting'] : ''}`}
                 >
                   {syncStatus === 'downloading' ? 'Bajando...' : '↓ Descargar de Drive'}
                 </button>
               </div>
 
               {syncMessage && (
-                <div style={{
-                  padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.5',
-                  backgroundColor: syncStatus === 'success' ? 'rgba(14,203,129,0.08)' : syncStatus === 'error' ? 'rgba(246,70,93,0.08)' : '#181A20',
-                  color: syncStatus === 'success' ? '#0ECB81' : syncStatus === 'error' ? '#F6465D' : '#848E9C',
-                  border: `1px solid ${syncStatus === 'success' ? 'rgba(14,203,129,0.2)' : syncStatus === 'error' ? 'rgba(246,70,93,0.2)' : '#2B3139'}`
-                }}>
+                <div className={
+                  syncStatus === 'success' ? styles['sync-message-success']
+                  : syncStatus === 'error' ? styles['sync-message-error']
+                  : styles['sync-message-neutral']
+                }>
                   {syncMessage}
                 </div>
               )}
@@ -314,22 +305,22 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {/* ALERTS TAB */}
           {activeTab === 'alerts' && (
             <div>
-              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Alertas de tasa</h4>
-              <p style={{ color: '#848E9C', fontSize: '13px', lineHeight: '1.6', marginBottom: '16px' }}>
+              <h4 className={styles['alerts-title']}>Alertas de tasa</h4>
+              <p className={styles['alerts-desc']}>
                 Configurá umbrales de precio para EUR/ARS y EUR/USDC. El dashboard mostrará un banner cuando la tasa cruce el umbral configurado.
               </p>
 
               {alertsValidationError && (
-                <div style={{ padding: '10px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '12px', backgroundColor: 'rgba(246,70,93,0.08)', color: '#F6465D', border: '1px solid rgba(246,70,93,0.2)' }}>
+                <div className={styles['alerts-error']}>
                   {alertsValidationError}
                 </div>
               )}
 
               {/* EUR/ARS section */}
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 4px' }}>EUR/ARS</p>
+              <div className={styles['alerts-section']}>
+                <p className={styles['alerts-section-label']}>EUR/ARS</p>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral superior (≥)</label>
+                  <label className={styles['alerts-field-label']}>Umbral superior (≥)</label>
                   <input
                     type="number"
                     min="0"
@@ -337,11 +328,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                     value={eurArsUpper}
                     onChange={e => setEurArsUpper(e.target.value)}
                     placeholder="Umbral superior EUR/ARS"
-                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                    className={styles['alerts-input']}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral inferior (≤)</label>
+                  <label className={styles['alerts-field-label']}>Umbral inferior (≤)</label>
                   <input
                     type="number"
                     min="0"
@@ -349,16 +340,16 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                     value={eurArsLower}
                     onChange={e => setEurArsLower(e.target.value)}
                     placeholder="Umbral inferior EUR/ARS"
-                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                    className={styles['alerts-input']}
                   />
                 </div>
               </div>
 
               {/* EUR/USDC section */}
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 4px' }}>EUR/USDC</p>
+              <div className={styles['alerts-section']}>
+                <p className={styles['alerts-section-label']}>EUR/USDC</p>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral superior (≥)</label>
+                  <label className={styles['alerts-field-label']}>Umbral superior (≥)</label>
                   <input
                     type="number"
                     min="0"
@@ -366,11 +357,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                     value={eurUsdcUpper}
                     onChange={e => setEurUsdcUpper(e.target.value)}
                     placeholder="Umbral superior EUR/USDC"
-                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                    className={styles['alerts-input']}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Umbral inferior (≤)</label>
+                  <label className={styles['alerts-field-label']}>Umbral inferior (≤)</label>
                   <input
                     type="number"
                     min="0"
@@ -378,7 +369,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                     value={eurUsdcLower}
                     onChange={e => setEurUsdcLower(e.target.value)}
                     placeholder="Umbral inferior EUR/USDC"
-                    style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: "'IBM Plex Mono', monospace", outline: 'none' }}
+                    className={styles['alerts-input']}
                   />
                 </div>
               </div>
@@ -387,7 +378,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               <button
                 onClick={handleSaveAlerts}
                 disabled={!!alertsValidationError}
-                style={{ width: '100%', padding: '13px', backgroundColor: alertsSaved ? 'rgba(14,203,129,0.1)' : '#0ECB81', color: alertsSaved ? '#0ECB81' : '#181A20', border: alertsSaved ? '1px solid rgba(14,203,129,0.3)' : 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                className={alertsSaved ? styles['alerts-save-btn-saved'] : styles['alerts-save-btn-idle']}
               >
                 {alertsSaved ? '✓ Guardado' : 'Guardar alertas'}
               </button>
@@ -397,32 +388,22 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {/* NOTIF TAB */}
           {activeTab === 'notif' && (
             <div>
-              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Notificaciones</h4>
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', border: '1px solid #2B3139' }}>
-                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', gap: '12px' }}>
-                  <span style={{ color: '#EAECEF', fontSize: '13px', fontWeight: 600 }}>Mostrar banner de notificaciones</span>
+              <h4 className={styles['notif-title']}>Notificaciones</h4>
+              <div className={styles['notif-box']}>
+                <label className={styles['notif-toggle-row']}>
+                  <span className={styles['notif-toggle-label']}>Mostrar banner de notificaciones</span>
                   <div
                     onClick={() => {
                       const next = !notifBannerEnabled;
                       setNotifBannerEnabled(next);
                       localStorage.setItem(STORAGE_KEYS.ARGBOT_NOTIF_BANNER_ENABLED, next ? 'true' : 'false');
                     }}
-                    style={{
-                      width: '42px', height: '24px', borderRadius: '12px', flexShrink: 0,
-                      backgroundColor: notifBannerEnabled ? '#F0B90B' : '#2B3139',
-                      position: 'relative', cursor: 'pointer', transition: 'background-color 0.2s',
-                    }}
+                    className={notifBannerEnabled ? styles['notif-toggle-track-on'] : styles['notif-toggle-track-off']}
                   >
-                    <div style={{
-                      position: 'absolute', top: '3px',
-                      left: notifBannerEnabled ? '21px' : '3px',
-                      width: '18px', height: '18px', borderRadius: '50%',
-                      backgroundColor: notifBannerEnabled ? '#181A20' : '#474D57',
-                      transition: 'left 0.2s',
-                    }} />
+                    <div className={notifBannerEnabled ? styles['notif-toggle-thumb-on'] : styles['notif-toggle-thumb-off']} />
                   </div>
                 </label>
-                <p style={{ color: '#848E9C', fontSize: '12px', lineHeight: '1.5', margin: '10px 0 0' }}>
+                <p className={styles['notif-desc']}>
                   Cuando está activo, verás el aviso para activar notificaciones en segundo plano.
                 </p>
               </div>
@@ -432,33 +413,33 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           {/* BINANCE TAB */}
           {activeTab === 'binance' && (
             <div>
-              <h4 style={{ color: '#EAECEF', margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Configuración de Binance</h4>
+              <h4 className={styles['binance-title']}>Configuración de Binance</h4>
 
               {/* IP Whitelist */}
-              <div style={{ backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.2)', borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
-                <div style={{ fontSize: '11px', color: '#F0B90B', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>IP para Whitelist de Binance</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '14px', color: '#EAECEF', flex: 1 }}>{serverIp}</span>
+              <div className={styles['ip-box']}>
+                <div className={styles['ip-label']}>IP para Whitelist de Binance</div>
+                <div className={styles['ip-row']}>
+                  <span className={styles['ip-value']}>{serverIp}</span>
                   <button
                     onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyToClipboard(serverIp, 'serverip'); }}
                     onClick={() => copyToClipboard(serverIp, 'serverip')}
-                    style={{ padding: '5px 12px', backgroundColor: copiedField === 'serverip' ? 'rgba(14,203,129,0.1)' : 'rgba(240,185,11,0.1)', color: copiedField === 'serverip' ? '#0ECB81' : '#F0B90B', border: `1px solid ${copiedField === 'serverip' ? 'rgba(14,203,129,0.3)' : 'rgba(240,185,11,0.3)'}`, borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', minHeight: '32px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                    className={copiedField === 'serverip' ? styles['ip-copy-btn-copied'] : styles['ip-copy-btn-idle']}
                   >
                     {copiedField === 'serverip' ? '✓ Copiada' : 'Copiar'}
                   </button>
                 </div>
-                <div style={{ fontSize: '11px', color: '#474D57', marginTop: '6px' }}>
+                <div className={styles['ip-hint']}>
                   Binance › Gestión de API › Restricciones de IP
                 </div>
               </div>
 
               {/* EUR Deposit Details */}
-              <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 8px' }}>Datos de Depósito EUR</p>
-              <p style={{ color: '#474D57', fontSize: '12px', lineHeight: '1.5', marginBottom: '12px' }}>
+              <p className={styles['section-heading']}>Datos de Depósito EUR</p>
+              <p className={styles['section-hint']}>
                 Binance › Billetera › Depósito › EUR › Datos SEPA
               </p>
 
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className={styles['field-group']}>
                 {[
                   { label: 'Beneficiario', val: binanceEurName, set: setBinanceEurName, ph: 'Tu nombre en Binance', mono: false },
                   { label: 'IBAN', val: binanceEurIban, set: setBinanceEurIban, ph: 'LT12 3456 7890 1234 5678', mono: true },
@@ -467,35 +448,28 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                   { label: 'Dirección del banco', val: binanceBankAddress, set: setBinanceBankAddress, ph: 'Konstitucijos pr. 21B, Vilnius', mono: false },
                 ].map(({ label, val, set, ph, mono }) => (
                   <div key={label}>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</label>
+                    <label className={styles['field-label']}>{label}</label>
                     <input type="text" value={val} onChange={e => set(e.target.value)} placeholder={ph}
-                      style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', fontFamily: mono ? "'IBM Plex Mono', monospace" : "'IBM Plex Sans', sans-serif", outline: 'none' }}
+                      className={`${styles['field-input']} ${mono ? styles['field-input-mono'] : styles['field-input-sans']}`}
                     />
                   </div>
                 ))}
               </div>
 
               {/* API Keys */}
-              <p style={{ color: '#848E9C', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600, margin: '0 0 8px' }}>Claves API de Binance</p>
-              <p style={{ color: '#474D57', fontSize: '12px', lineHeight: '1.5', marginBottom: '12px' }}>
+              <p className={styles['section-heading']}>Claves API de Binance</p>
+              <p className={styles['section-hint']}>
                 Binance › Gestión de API › Nueva clave. Permisos: lectura, trade, retiro.
               </p>
 
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', padding: '14px', marginBottom: '14px', border: '1px solid #2B3139', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className={styles['field-group']}>
                 {/* Producción / Testnet tab bar */}
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div className={styles['api-tabs']}>
                   {(['prod', 'testnet'] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => setBinanceApiTabActive(tab)}
-                      style={{
-                        flex: 1, padding: '7px 10px',
-                        backgroundColor: binanceApiTabActive === tab ? '#F0B90B' : 'transparent',
-                        color: binanceApiTabActive === tab ? '#181A20' : '#848E9C',
-                        border: binanceApiTabActive === tab ? 'none' : '1px solid #2B3139',
-                        borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '12px',
-                        fontFamily: "'IBM Plex Sans', sans-serif",
-                      }}
+                      className={binanceApiTabActive === tab ? styles['api-tab-btn-active'] : styles['api-tab-btn-inactive']}
                     >
                       {tab === 'prod' ? 'Producción' : 'Testnet'}
                     </button>
@@ -503,8 +477,8 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                 </div>
 
                 {binanceApiTabActive === 'testnet' && (
-                  <div style={{ backgroundColor: 'rgba(14,203,129,0.06)', border: '1px solid rgba(14,203,129,0.2)', padding: '9px 12px', borderRadius: '6px' }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#0ECB81', lineHeight: '1.5' }}>
+                  <div className={styles['testnet-notice']}>
+                    <p className={styles['testnet-notice-text']}>
                       Claves exclusivas de testnet.binance.vision
                     </p>
                   </div>
@@ -513,30 +487,30 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                 {binanceApiTabActive === 'prod' ? (
                   <>
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Key</label>
+                      <label className={styles['field-label']}>API Key</label>
                       <input type="password" value={binanceApiKey} onChange={e => setBinanceApiKey(e.target.value)} autoComplete="off" data-form-type="other" placeholder="Tu API Key"
-                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                        className={`${styles['field-input']} ${styles['field-input-mono']}`}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Secret</label>
+                      <label className={styles['field-label']}>API Secret</label>
                       <input type="password" value={binanceApiSecret} onChange={e => setBinanceApiSecret(e.target.value)} autoComplete="new-password" data-form-type="other" placeholder="Tu API Secret"
-                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                        className={`${styles['field-input']} ${styles['field-input-mono']}`}
                       />
                     </div>
                   </>
                 ) : (
                   <>
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Key</label>
+                      <label className={styles['field-label']}>API Key</label>
                       <input type="password" value={binanceApiKeyTestnet} onChange={e => setBinanceApiKeyTestnet(e.target.value)} autoComplete="off" data-form-type="other" placeholder="Tu API Key (testnet)"
-                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                        className={`${styles['field-input']} ${styles['field-input-mono']}`}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#474D57', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>API Secret</label>
+                      <label className={styles['field-label']}>API Secret</label>
                       <input type="password" value={binanceApiSecretTestnet} onChange={e => setBinanceApiSecretTestnet(e.target.value)} autoComplete="new-password" data-form-type="other" placeholder="Tu API Secret (testnet)"
-                        style={{ width: '100%', padding: '10px 12px', backgroundColor: '#1E2329', border: '1px solid #2B3139', color: '#EAECEF', borderRadius: '6px', fontSize: '13px', fontFamily: "'IBM Plex Mono', monospace", boxSizing: 'border-box', outline: 'none' }}
+                        className={`${styles['field-input']} ${styles['field-input-mono']}`}
                       />
                     </div>
                   </>
@@ -544,18 +518,18 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
               </div>
 
               {/* Save / Clear buttons */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <div className={styles['binance-action-buttons']}>
                 <button
                   onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleSaveBinance(); }}
                   onClick={handleSaveBinance}
-                  style={{ flex: 1, padding: '13px', backgroundColor: binanceSaved ? 'rgba(14,203,129,0.1)' : '#0ECB81', color: binanceSaved ? '#0ECB81' : '#181A20', border: binanceSaved ? '1px solid rgba(14,203,129,0.3)' : 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                  className={binanceSaved ? styles['save-btn-saved'] : styles['save-btn-idle']}
                 >
                   {binanceSaved ? '✓ Guardado' : 'Guardar'}
                 </button>
                 <button
                   onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); handleClearBinance(); }}
                   onClick={handleClearBinance}
-                  style={{ flex: 1, padding: '13px', backgroundColor: 'transparent', color: binanceCleared ? '#0ECB81' : '#F6465D', border: `1px solid ${binanceCleared ? 'rgba(14,203,129,0.3)' : 'rgba(246,70,93,0.3)'}`, borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', minHeight: '44px', fontFamily: "'IBM Plex Sans', sans-serif" }}
+                  className={binanceCleared ? styles['clear-btn-cleared'] : styles['clear-btn-idle']}
                 >
                   {binanceCleared ? '✓ Borrado' : 'Borrar todo'}
                 </button>
