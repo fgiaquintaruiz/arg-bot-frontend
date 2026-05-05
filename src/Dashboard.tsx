@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { User } from 'firebase/auth';
 import { Settings2, AlertTriangle, Bot, History as HistoryIcon, LogOut } from 'lucide-react';
 import { logout } from './authService';
@@ -51,8 +51,8 @@ export default function Dashboard({ user }: { user: User }) {
           setShowSettings(true);
         }
       };
-      window.addEventListener('open-settings', handler as any);
-      return () => window.removeEventListener('open-settings', handler as any);
+      window.addEventListener('open-settings', handler as EventListener);
+      return () => window.removeEventListener('open-settings', handler as EventListener);
     }, []);
 
     // Responsive breakpoint tracking
@@ -82,21 +82,30 @@ export default function Dashboard({ user }: { user: User }) {
         return () => clearInterval(interval);
     }, []);
 
-    const fetchMarketData = () => {
+    const fetchMarketData = useCallback(() => {
         const testnet = localStorage.getItem('argbot_testnet') !== 'false';
         const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
         const apiSecret = localStorage.getItem(testnet ? 'binance_secret_testnet' : 'binance_secret') || '';
         setMarketLoading(true);
-        fetch(`${getApiUrl()}/api/data`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret, testnet })
-        })
-            .then(async res => {
-                if (!res.ok) throw new Error("Server Error");
-                return res.json();
-            })
-            .then(d => { setData(d); })
+        const fetchWithRetry = async (attempts: number): Promise<void> => {
+            for (let i = 0; i < attempts; i++) {
+                try {
+                    const res = await fetch(`${getApiUrl()}/api/data`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userEmail: user.email, apiKey, apiSecret, testnet })
+                    });
+                    if (!res.ok) throw new Error("Server Error");
+                    const d = await res.json();
+                    setData(d);
+                    return;
+                } catch (err) {
+                    if (i < attempts - 1) await new Promise(r => setTimeout(r, 2000));
+                    else throw err;
+                }
+            }
+        };
+        fetchWithRetry(3)
             .catch(err => {
                 console.error("Error fetching market data", err);
                 setData({
@@ -107,10 +116,10 @@ export default function Dashboard({ user }: { user: User }) {
                 });
             })
             .finally(() => { setMarketLoading(false); });
-    };
+    }, [user]);
 
     // Initial data fetch — on mount/user change
-    useEffect(() => { fetchMarketData(); }, [user]);
+    useEffect(() => { fetchMarketData(); }, [fetchMarketData]);
 
     // Keep-alive polling every 9 minutes to prevent Render sleep
     useEffect(() => {
