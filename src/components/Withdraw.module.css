@@ -1,0 +1,459 @@
+.container {
+  background-color: #1E2329;
+  border-radius: 12px;
+  border: 1px solid #2B3139;
+}
+
+.header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #2B3139;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-title {
+  margin: 0;
+  color: #EAECEF;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.body {
+  padding: 20px;
+}
+
+.address-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.address-label {
+  font-size: 11px;
+  color: #474D57;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.address-book-status-ok {
+  font-size: 11px;
+  color: #0ECB81;
+  font-weight: 500;
+}
+
+.address-book-status-warn {
+  font-size: 11px;
+  color: #F0B90B;
+  font-weight: 500;
+}
+
+.orphan-error {
+  color: #F6465D;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+/* Address selector button */
+.address-selector {
+  background-color: #181A20;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+  min-height: 64px;
+}
+
+.address-selector-filled {
+  border: 1px solid #0ECB81;
+}
+
+.address-selector-empty {
+  border: 1px solid #2B3139;
+}
+
+.address-selector-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.address-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(14, 203, 129, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.address-info {
+  flex: 1;
+}
+
+.address-name {
+  color: #EAECEF;
+  font-weight: 600;
+  font-size: 14px;
+  user-select: none;
+}
+
+.address-truncated {
+  font-family: 'IBM Plex Mono', monospace;
+  color: #848E9C;
+  font-size: 12px;
+  margin-top: 2px;
+  user-select: none;
+}
+
+.address-placeholder {
+  color: #474D57;
+  font-size: 14px;
+  flex: 1;
+  user-select: none;
+}
+
+.address-edit-icon {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* Empty address book */
+.no-addresses-box {
+  background-color: #181A20;
+  border: 1px solid #2B3139;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.no-addresses-label {
+  color: #848E9C;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.open-address-book-btn {
+  padding: 10px 20px;
+  background-color: rgba(240, 185, 11, 0.1);
+  color: #F0B90B;
+  border: 1px solid rgba(240, 185, 11, 0.2);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* BSC warning */
+.bsc-warning {
+  background-color: rgba(240, 185, 11, 0.06);
+  border: 1px solid rgba(240, 185, 11, 0.15);
+  color: #F0B90B;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* Amount row */
+.amount-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #848E9C;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.max-btn {
+  padding: 3px 10px;
+  background-color: rgba(240, 185, 11, 0.1);
+  color: #F0B90B;
+  border: 1px solid rgba(240, 185, 11, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.amount-input {
+  width: 100%;
+  padding: 13px 14px;
+  background-color: #181A20;
+  border: 1px solid #2B3139;
+  color: #EAECEF;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  box-sizing: border-box;
+  font-family: 'IBM Plex Mono', monospace;
+  outline: none;
+}
+
+/* Feedback messages */
+.error-msg {
+  color: #F6465D;
+  font-size: 13px;
+  margin-bottom: 14px;
+  text-align: center;
+  background-color: rgba(246, 70, 93, 0.08);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(246, 70, 93, 0.2);
+}
+
+.success-msg {
+  color: #0ECB81;
+  font-size: 14px;
+  margin-bottom: 14px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.no-address-warn {
+  color: #F0B90B;
+  font-size: 12px;
+  margin-bottom: 14px;
+  text-align: center;
+  background-color: rgba(240, 185, 11, 0.06);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(240, 185, 11, 0.15);
+}
+
+/* Buttons */
+.withdraw-btn {
+  width: 100%;
+  padding: 13px;
+  background-color: #C3A1FF;
+  color: #181A20;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.close-btn {
+  width: 100%;
+  padding: 13px;
+  background-color: transparent;
+  border: none;
+  color: #848E9C;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Address book overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.overlay-inner {
+  max-width: 500px;
+  width: 100%;
+}
+
+/* Confirm dialog overlay */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.confirm-dialog {
+  max-width: 460px;
+  width: 100%;
+  background-color: #1E2329;
+  border-radius: 12px;
+  border: 1px solid #2B3139;
+  padding: 20px;
+}
+
+.confirm-title {
+  margin: 0 0 14px;
+  color: #EAECEF;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.confirm-details {
+  background-color: #181A20;
+  border: 1px solid #2B3139;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.confirm-row-last {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.confirm-label {
+  color: #848E9C;
+}
+
+.confirm-value {
+  color: #EAECEF;
+  font-weight: 600;
+}
+
+.confirm-value-mono {
+  color: #EAECEF;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.confirm-address-hint {
+  font-size: 11px;
+  color: #F0B90B;
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.confirm-fee-value {
+  color: #0ECB81;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.confirm-total-row {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #2B3139;
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.confirm-total-label {
+  color: #EAECEF;
+  font-weight: 600;
+}
+
+.confirm-total-value {
+  color: #0ECB81;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.confirm-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #EAECEF;
+  cursor: pointer;
+}
+
+.confirm-checkbox {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.confirm-cancel-btn {
+  flex: 1;
+  padding: 13px;
+  background-color: transparent;
+  border: 1px solid #2B3139;
+  color: #848E9C;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.confirm-submit-btn-active {
+  flex: 1;
+  padding: 13px;
+  background-color: #F6465D;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.confirm-submit-btn-disabled {
+  flex: 1;
+  padding: 13px;
+  background-color: #2B3139;
+  color: #474D57;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: not-allowed;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Loading state */
+.loading {
+  color: #848E9C;
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 14px;
+}
