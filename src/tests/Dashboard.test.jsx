@@ -179,14 +179,15 @@ describe('Dashboard', () => {
     });
   });
 
-  it('muestra "—" mientras los datos no cargaron', () => {
+  it('muestra "—" mientras los datos no cargaron', async () => {
     let resolveFetch;
     global.fetch.mockReturnValueOnce(new Promise(r => { resolveFetch = r; }));
     render(<Dashboard user={mockUser} />);
     const dashes = screen.getAllByText('—');
     expect(dashes.length).toBe(4); // EUR/USDC y los tres slots que dependen de nexoUsdcArsRate
-    // cleanup
-    resolveFetch({ ok: true, json: async () => mockApiResponse });
+    await act(async () => {
+      resolveFetch({ ok: true, json: async () => mockApiResponse });
+    });
   });
 
   it('fetch falla: usa datos de fallback (rate 1.08)', async () => {
@@ -411,7 +412,7 @@ describe('Dashboard', () => {
       writable: true,
     });
 
-    const getCallback = setupVersionCheck();
+    setupVersionCheck();
 
     const originalSetTimeout = globalThis.setTimeout;
     let setTimeoutCallback;
@@ -636,4 +637,104 @@ describe('Dashboard', () => {
     const banners = screen.getAllByTestId('rate-alert-banner-mock');
     expect(banners.length).toBe(2);
   });
+
+  // ─── fetchMarketData: marketLoading state ────────────────────────────────────
+
+  it('muestra "Actualizando..." mientras fetchMarketData está en curso', async () => {
+    let resolveFetch;
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('/api/data')) {
+        return new Promise(r => { resolveFetch = r; });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ buildDate: bundledVersion.buildDate }) });
+    });
+
+    render(<Dashboard user={mockUser} />);
+
+    // marketLoading = true → el texto debe estar visible
+    expect(screen.getByText('Actualizando...')).toBeInTheDocument();
+
+    // Resolvemos el fetch y esperamos que React procese todas las actualizaciones
+    resolveFetch({ ok: true, json: async () => mockApiResponse });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Actualizando...')).not.toBeInTheDocument();
+    });
+  });
+
+  it('fetchMarketData: fetch falla 3 veces → usa datos de fallback (rate "1.08")', async () => {
+    // La lógica de retry usa setTimeout(2000) entre intentos (2 gaps para 3 intentos).
+    // Usamos fake timers y avanzamos exactamente lo necesario para no disparar el setInterval de 9 min.
+    vi.useFakeTimers({ shouldAdvanceTime: false });
+
+    global.fetch.mockRejectedValue(new Error('Network error'));
+
+    render(<Dashboard user={mockUser} />);
+
+    // Avanzamos 2× 2000ms para cubrir los delays entre los 3 intentos
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+
+    vi.useRealTimers();
+
+    await waitFor(() => expect(screen.getByText('1.0800')).toBeInTheDocument());
+  });
+
+  it.skip('botón "Actualizar" re-ejecuta fetchMarketData — pendiente: no existe botón explícito en el componente', () => {
+    // El componente no expone un botón de refresh en el Dashboard.
+    // fetchMarketData se pasa como onRefreshData a TradingWizard (mockeado).
+    // Para testear esto haría falta un mock de TradingWizard que exponga el callback.
+  });
+
+  // ─── renderView: default view ────────────────────────────────────────────────
+
+  it('vista por defecto renderiza TradingWizard (no History)', () => {
+    render(<Dashboard user={mockUser} />);
+    expect(screen.getByTestId('wizard-mock')).toBeInTheDocument();
+    expect(screen.queryByTestId('history-mock')).not.toBeInTheDocument();
+  });
+
+  // ─── Testnet banner ───────────────────────────────────────────────────────────
+
+  it('modo testnet activo → muestra banner "BINANCE TESTNET"', () => {
+    // Por defecto argbot_testnet no está en localStorage → isTestnet = true
+    render(<Dashboard user={mockUser} />);
+    expect(screen.getByText(/BINANCE TESTNET/)).toBeInTheDocument();
+  });
+
+  it('modo real activo → NO muestra banner "BINANCE TESTNET"', () => {
+    localStorage.setItem('argbot_testnet', 'false');
+    render(<Dashboard user={mockUser} />);
+    expect(screen.queryByText(/BINANCE TESTNET/)).not.toBeInTheDocument();
+  });
+
+  // ─── IP change banner: persist() se llama en onConfirm ───────────────────────
+
+  it('click "Actualizar en Binance" → llama a persist() del hook', () => {
+    const persistMock = vi.fn();
+    useIpChangeDetectionModule.useIpChangeDetection.mockReturnValue({
+      ipChanged: true,
+      newIp: '198.51.100.7',
+      dismiss: vi.fn(),
+      persist: persistMock,
+    });
+
+    render(<Dashboard user={mockUser} />);
+    fireEvent.click(screen.getByText('Actualizar en Binance'));
+
+    expect(persistMock).toHaveBeenCalledTimes(1);
+  });
+
+  // ─── Onboarding wizard ────────────────────────────────────────────────────────
+  // El componente Dashboard no incluye OnboardingWizard — estos tests quedan
+  // pendientes hasta que se implemente la funcionalidad.
+
+  it.skip('sin Binance keys en localStorage → muestra OnboardingWizard — pendiente: no implementado en Dashboard', () => {
+    // Dashboard no renderiza OnboardingWizard. La lógica de onboarding
+    // vive dentro de TradingWizard o en una capa superior.
+  });
+
+  it.skip('con Binance keys en localStorage → NO muestra OnboardingWizard — pendiente: no implementado en Dashboard', () => {});
+
+  it.skip('onboarding_completed en localStorage → NO muestra wizard aunque falten keys — pendiente: no implementado en Dashboard', () => {});
 });
