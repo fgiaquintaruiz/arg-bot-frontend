@@ -62,7 +62,11 @@ vi.mock('../components/IpChangeAlert', () => ({
 }));
 
 vi.mock('../components/TradingWizard', () => ({
-  default: () => <div data-testid="wizard-mock" />,
+  default: ({ onRefreshData }) => (
+    <div data-testid="wizard-mock">
+      {onRefreshData && <button data-testid="refresh-btn" onClick={onRefreshData}>Actualizar</button>}
+    </div>
+  ),
 }));
 
 vi.mock('../components/Calculator', () => ({
@@ -378,13 +382,8 @@ describe('Dashboard', () => {
   });
 
   const setupVersionCheck = () => {
-    let checkCallback;
-    vi.spyOn(global, 'setInterval').mockImplementation((fn, ms) => {
-      if (ms === 60 * 1000) checkCallback = fn;
-      return 0;
-    });
+    vi.spyOn(global, 'setInterval').mockImplementation(() => 0);
     vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
-    return () => checkCallback;
   };
 
   it('checkForUpdates se llama inmediatamente al montar (no espera 60s)', async () => {
@@ -680,10 +679,16 @@ describe('Dashboard', () => {
     await waitFor(() => expect(screen.getByText('1.0800')).toBeInTheDocument());
   });
 
-  it.skip('botón "Actualizar" re-ejecuta fetchMarketData — pendiente: no existe botón explícito en el componente', () => {
-    // El componente no expone un botón de refresh en el Dashboard.
-    // fetchMarketData se pasa como onRefreshData a TradingWizard (mockeado).
-    // Para testear esto haría falta un mock de TradingWizard que exponga el callback.
+  it('onRefreshData en TradingWizard re-ejecuta fetchMarketData', async () => {
+    render(<Dashboard user={mockUser} />);
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+
+    const callsBefore = global.fetch.mock.calls.length;
+    fireEvent.click(screen.getByTestId('refresh-btn'));
+
+    await waitFor(() =>
+      expect(global.fetch.mock.calls.length).toBeGreaterThan(callsBefore)
+    );
   });
 
   // ─── renderView: default view ────────────────────────────────────────────────
