@@ -1,0 +1,278 @@
+.container {
+  background-color: #17212b;
+  padding: 30px;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid #1e293b;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.title {
+  margin-top: 0;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.4rem;
+}
+
+.title-icon {
+  font-size: 24px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.list-scroll {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card {
+  background-color: #0e1621;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.card-select-mode {
+  border: 2px solid #38bdf8;
+}
+
+.card-manage-mode {
+  border: 1px solid #334155;
+}
+
+.select-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.card-header-mb8 {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card-name {
+  color: #f8fafc;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.card-network-badge {
+  color: #10b981;
+  font-size: 11px;
+  background-color: #052e16;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.card-address-select {
+  font-family: monospace;
+  font-size: 12px;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
+.card-address-manage {
+  font-family: monospace;
+  font-size: 12px;
+  color: #94a3b8;
+  word-break: break-all;
+  margin-bottom: 8px;
+  cursor: text;
+  user-select: text;
+}
+
+.tap-hint {
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #1e293b;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-footer-select {
+  border-top: 1px solid #1e293b;
+  padding-top: 8px;
+}
+
+.card-date {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn {
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+}
+
+.delete-btn {
+  background: #450a0a;
+  color: #ef4444;
+  border: 1px solid #7f1d1d;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+}
+
+.form-container {
+  background-color: #2d2013;
+  border: 1px solid #ff9800;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.form-title {
+  margin: 0 0 16px 0;
+  color: #ffb74d;
+  font-size: 15px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 16px;
+  background-color: #0e1621;
+  border: 1px solid #334155;
+  color: white;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-search {
+  width: 100%;
+  padding: 16px;
+  background-color: #0e1621;
+  border: 1px solid #334155;
+  color: white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-error {
+  border-color: #ef4444;
+}
+
+.validation-error {
+  color: #ef5350;
+  font-size: 13px;
+  margin-bottom: 16px;
+  background-color: #450a0a;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.validation-success {
+  color: #4caf50;
+  font-size: 13px;
+  margin-bottom: 16px;
+  background-color: #052e16;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.back-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: transparent;
+  border: none;
+  color: #94a3b8;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.add-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 12px;
+}

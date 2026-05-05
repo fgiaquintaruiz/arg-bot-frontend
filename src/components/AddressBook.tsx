@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CryptoJS from 'crypto-js';
+import styles from './AddressBook.module.css';
 
 export interface AddressEntry {
   id: string;
@@ -28,14 +29,14 @@ const isValidChecksum = (address: string): boolean => {
   /* v8 ignore start */
   if (!isValidBSCAddress(address)) return false;
   /* v8 ignore end */
-  
+
   // If all lowercase or all uppercase after 0x, skip checksum validation
   const addressWithoutPrefix = address.slice(2);
   if (addressWithoutPrefix === addressWithoutPrefix.toLowerCase() ||
       addressWithoutPrefix === addressWithoutPrefix.toUpperCase()) {
     return true; // No checksum, format is valid
   }
-  
+
   // Implement EIP-55 checksum validation
   const hash = CryptoJS.SHA3(addressWithoutPrefix.toLowerCase(), { outputLength: 256 }).toString(CryptoJS.enc.Hex);
 
@@ -43,7 +44,7 @@ const isValidChecksum = (address: string): boolean => {
     const hashChar = hash[i];
     const addressChar = addressWithoutPrefix[i];
     const hashValue = parseInt(hashChar, 16);
-    
+
     if (hashValue >= 8) {
       // Should be uppercase
       /* v8 ignore start */
@@ -68,29 +69,24 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
   const [newAddress, setNewAddress] = useState('');
   const [validationError, setValidationError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-
-  console.log('[AddressBook] Render — onSelect:', !!onSelect, 'addresses:', addresses.length, 'editingId:', editingId);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [formError, setFormError] = useState('');
 
   // Load addresses from localStorage on mount
   useEffect(() => {
-    console.log('[AddressBook] Loading from localStorage...');
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        console.log('[AddressBook] Loaded', parsed.length, 'addresses:', parsed);
         setAddresses(parsed);
-      } else {
-        console.log('[AddressBook] No addresses in localStorage');
       }
-    } catch (error) {
-      console.error('[AddressBook] Error loading:', error);
+    } catch {
+      // ignore parse errors
     }
   }, []);
 
   // Save to localStorage whenever addresses change
   const saveAddresses = (updated: AddressEntry[]) => {
-    console.log('[AddressBook] Saving', updated.length, 'addresses');
     setAddresses(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
@@ -111,16 +107,19 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Delete address
   const handleDelete = (id: string) => {
-    console.log('[AddressBook] Delete called for id:', id);
-    if (confirm('¿Estás seguro de que querés eliminar esta dirección?')) {
-      const updated = addresses.filter(addr => addr.id !== id);
+    setDeleteConfirm(id);
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (deleteConfirm) {
+      const updated = addresses.filter(addr => addr.id !== deleteConfirm);
       saveAddresses(updated);
+      setDeleteConfirm(null);
     }
   };
 
   // Start editing
   const handleEdit = (entry: AddressEntry) => {
-    console.log('[AddressBook] Edit called for:', entry.name);
     setEditingId(entry.id);
     setNewName(entry.name);
     setNewAddress(entry.address);
@@ -130,11 +129,11 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
   // Save edited address
   const handleSaveEdit = () => {
-    console.log('[AddressBook] SaveEdit called');
     if (!newName.trim()) {
-      alert('Ingresá un nombre para esta dirección');
+      setFormError('Ingresá un nombre para esta dirección');
       return;
     }
+    setFormError('');
 
     if (!isValidBSCAddress(newAddress)) {
       setValidationError('Formato de dirección BSC/BEP20 inválido');
@@ -157,16 +156,17 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
     setNewName('');
     setNewAddress('');
     setValidationError('');
+    setFormError('');
     setShowAddForm(false);
   };
 
   // Add new address
   const handleAddAddress = () => {
-    console.log('[AddressBook] AddAddress called');
     if (!newName.trim()) {
-      alert('Ingresá un nombre para esta dirección');
+      setFormError('Ingresá un nombre para esta dirección');
       return;
     }
+    setFormError('');
 
     if (!isValidBSCAddress(newAddress)) {
       setValidationError('Formato de dirección BSC/BEP20 inválido');
@@ -192,13 +192,13 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
     setNewName('');
     setNewAddress('');
     setValidationError('');
+    setFormError('');
     setEditingId(null);
     setShowAddForm(false);
   };
 
   // Select address — passes full AddressEntry to caller
   const handleSelect = (entry: AddressEntry) => {
-    console.log('[AddressBook] Select called for:', entry.address);
     if (onSelect) {
       onSelect(entry);
     }
@@ -208,57 +208,15 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
   };
 
   // Filter addresses by search
-  const filteredAddresses = addresses.filter(addr => 
+  const filteredAddresses = addresses.filter(addr =>
     addr.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     addr.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const btnS: React.CSSProperties = {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: '#10b981',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    fontSize: '15px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    marginBottom: '12px'
-  };
-
-  const backBtnS: React.CSSProperties = {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#94a3b8',
-    borderRadius: '12px',
-    fontSize: '15px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '8px',
-    marginTop: '20px'
-  };
-
-  const inS: React.CSSProperties = {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: '#0e1621',
-    border: '1px solid #334155',
-    color: 'white',
-    borderRadius: '12px',
-    marginBottom: '16px',
-    fontSize: '14px',
-    boxSizing: 'border-box'
-  };
-
   return (
-    <div style={{ backgroundColor: '#17212b', padding: '30px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.6)', border: '1px solid #1e293b', width: '100%', boxSizing: 'border-box' }}>
-      <h3 style={{marginTop:0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem'}}>
-        <span style={{fontSize: '24px'}}>📖</span> Address Book
+    <div className={styles.container}>
+      <h3 className={styles.title}>
+        <span className={styles['title-icon']}>📖</span> Address Book
       </h3>
 
       {/* Search */}
@@ -266,73 +224,47 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
         type="text"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        style={{...inS, marginBottom: '12px'}}
+        className={styles['input-search']}
         placeholder="🔍 Search by name or address..."
       />
 
       {/* Address List */}
       {filteredAddresses.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '14px' }}>
+        <div className={styles['empty-state']}>
           {addresses.length === 0 ? 'No hay direcciones guardadas. ¡Agregá tu primera!' : 'Ninguna dirección coincide con tu búsqueda.'}
         </div>
       ) : (
-        <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', marginBottom: '16px', WebkitOverflowScrolling: 'touch' }}>
+        <div className={styles['list-scroll']}>
           {filteredAddresses.map((entry) => (
             <div
               key={entry.id}
-              style={{
-                backgroundColor: '#0e1621',
-                padding: '16px',
-                borderRadius: '12px',
-                marginBottom: '12px',
-                border: onSelect ? '2px solid #38bdf8' : '1px solid #334155',
-              }}
+              className={`${styles.card} ${onSelect ? styles['card-select-mode'] : styles['card-manage-mode']}`}
             >
               {/* Selection button (only in select mode) */}
               {onSelect && (
                 <button
                   onClick={(e) => {
-                    console.log('[AddressBook] Card clicked via onClick');
                     e.preventDefault();
                     handleSelect(entry);
                   }}
                   onTouchEnd={(e) => {
-                    console.log('[AddressBook] Card touched via onTouchEnd');
                     e.preventDefault();
                     handleSelect(entry);
                   }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    margin: 0,
-                    width: '100%',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    WebkitTapHighlightColor: 'transparent',
-                    WebkitAppearance: 'none',
-                    touchAction: 'manipulation',
-                    display: 'block',
-                    marginBottom: '8px'
-                  }}
+                  className={styles['select-btn']}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
+                  <div className={styles['card-header']}>
+                    <span className={styles['card-name']}>
                       {entry.name}
                     </span>
-                    <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
+                    <span className={styles['card-network-badge']}>
                       ✅ BSC/BEP20
                     </span>
                   </div>
-                  <div style={{
-                    fontFamily: 'monospace',
-                    fontSize: '12px',
-                    color: '#94a3b8',
-                    wordBreak: 'break-all',
-                  }}>
+                  <div className={styles['card-address-select']}>
                     {entry.address}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #1e293b' }}>
+                  <div className={styles['tap-hint']}>
                     👆 Tocar para seleccionar
                   </div>
                 </button>
@@ -340,86 +272,50 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
               {/* Always show: name, address, edit/delete */}
               {!onSelect && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#f8fafc', fontWeight: 'bold', fontSize: '15px' }}>
+                <div className={styles['card-header-mb8']}>
+                  <span className={styles['card-name']}>
                     {entry.name}
                   </span>
-                  <span style={{ color: '#10b981', fontSize: '11px', backgroundColor: '#052e16', padding: '4px 8px', borderRadius: '6px' }}>
+                  <span className={styles['card-network-badge']}>
                     ✅ BSC/BEP20
                   </span>
                 </div>
               )}
               {!onSelect && (
-                <div style={{
-                  fontFamily: 'monospace',
-                  fontSize: '12px',
-                  color: '#94a3b8',
-                  wordBreak: 'break-all',
-                  marginBottom: '8px',
-                  cursor: 'text',
-                  userSelect: 'text'
-                }}>
+                <div className={styles['card-address-manage']}>
                   {entry.address}
                 </div>
               )}
 
               {/* Edit/Delete buttons — ALWAYS visible */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: onSelect ? '1px solid #1e293b' : 'none', paddingTop: onSelect ? '8px' : 0 }}>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>
+              <div className={`${styles['card-footer']} ${onSelect ? styles['card-footer-select'] : ''}`}>
+                <span className={styles['card-date']}>
                   {new Date(entry.addedAt).toLocaleDateString('es-AR')}
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className={styles['card-actions']}>
                   <button
                     onTouchEnd={(e) => {
-                      console.log('[AddressBook] Edit touched');
                       e.preventDefault();
                       handleEdit(entry);
                     }}
                     onClick={(e) => {
-                      console.log('[AddressBook] Edit clicked');
                       e.stopPropagation();
                       handleEdit(entry);
                     }}
-                    style={{
-                      background: '#1e293b',
-                      color: '#38bdf8',
-                      border: '1px solid #334155',
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      WebkitTapHighlightColor: 'transparent',
-                      WebkitAppearance: 'none',
-                      touchAction: 'manipulation'
-                    }}
+                    className={styles['edit-btn']}
                   >
                     ✏️ Editar
                   </button>
                   <button
                     onTouchEnd={(e) => {
-                      console.log('[AddressBook] Delete touched for:', entry.name);
                       e.preventDefault();
                       handleDelete(entry.id);
                     }}
                     onClick={(e) => {
-                      console.log('[AddressBook] Delete clicked for:', entry.name);
                       e.stopPropagation();
                       handleDelete(entry.id);
                     }}
-                    style={{
-                      background: '#450a0a',
-                      color: '#ef4444',
-                      border: '1px solid #7f1d1d',
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      WebkitTapHighlightColor: 'transparent',
-                      WebkitAppearance: 'none',
-                      touchAction: 'manipulation'
-                    }}
+                    className={styles['delete-btn']}
                   >
                     🗑️ Eliminar
                   </button>
@@ -432,45 +328,48 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
 
       {/* Add/Edit Address Form */}
       {showAddForm ? (
-        <div style={{ backgroundColor: '#2d2013', border: '1px solid #ff9800', padding: '20px', borderRadius: '16px', marginBottom: '16px' }}>
-          <h4 style={{ margin: '0 0 16px 0', color: '#ffb74d', fontSize: '15px' }}>
+        <div className={styles['form-container']}>
+          <h4 className={styles['form-title']}>
             {editingId ? '✏️ Edit Address' : '➕ Add New Address'}
           </h4>
-          
-          <label style={{display:'block', fontSize:'13px', color:'#94a3b8', marginBottom:'8px'}}>Name</label>
+
+          <label className={styles['form-label']}>Name</label>
           <input
             type="text"
             value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            style={inS}
+            onChange={(e) => { setNewName(e.target.value); setFormError(''); }}
+            className={styles.input}
             placeholder="e.g., My Lemon Wallet"
           />
 
-          <label style={{display:'block', fontSize:'13px', color:'#94a3b8', marginBottom:'8px'}}>BSC/BEP20 Address</label>
+          {formError && (
+            <p style={{ color: 'red', margin: '4px 0 8px', fontSize: '13px' }}>
+              ⚠️ {formError}
+            </p>
+          )}
+
+          <label className={styles['form-label']}>BSC/BEP20 Address</label>
           <input
             type="text"
             value={newAddress}
             onChange={(e) => handleAddressChange(e.target.value)}
-            style={{
-              ...inS,
-              borderColor: validationError ? '#ef4444' : '#334155'
-            }}
+            className={`${styles.input} ${validationError ? styles['input-error'] : ''}`}
             placeholder="0x..."
           />
 
           {validationError && (
-            <div style={{ color: '#ef5350', fontSize: '13px', marginBottom: '16px', backgroundColor: '#450a0a', padding: '10px', borderRadius: '8px' }}>
+            <div className={styles['validation-error']}>
               ⚠️ {validationError}
             </div>
           )}
 
           {!validationError && newAddress.length > 0 && (
-            <div style={{ color: '#4caf50', fontSize: '13px', marginBottom: '16px', backgroundColor: '#052e16', padding: '10px', borderRadius: '8px' }}>
+            <div className={styles['validation-success']}>
               ✅ Valid BSC/BEP20 address format
             </div>
           )}
 
-          <button onClick={editingId ? handleSaveEdit : handleAddAddress} style={btnS}>
+          <button onClick={editingId ? handleSaveEdit : handleAddAddress} className={styles['save-btn']}>
             {editingId ? 'Save Changes' : 'Save Address'}
           </button>
           <button
@@ -480,8 +379,9 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
               setNewName('');
               setNewAddress('');
               setValidationError('');
+              setFormError('');
             }}
-            style={backBtnS}
+            className={styles['back-btn']}
           >
             Cancel
           </button>
@@ -489,28 +389,33 @@ export default function AddressBook({ onSelect, onClose }: AddressBookProps) {
       ) : (
         <button
           onClick={() => setShowAddForm(true)}
-          style={{
-            width: '100%',
-            padding: '16px',
-            backgroundColor: '#1e293b',
-            color: '#38bdf8',
-            border: '1px solid #334155',
-            borderRadius: '12px',
-            fontSize: '15px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            marginBottom: '12px'
-          }}
+          className={styles['add-btn']}
         >
           ➕ Add New Address
         </button>
       )}
 
       {onClose && (
-        <button onClick={onClose} style={backBtnS}>
+        <button onClick={onClose} className={styles['back-btn']}>
           <span>⬅</span>
           <span>Back</span>
         </button>
+      )}
+
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+          <div style={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: '12px', padding: '24px', maxWidth: '320px', width: '90%', textAlign: 'center' }}>
+            <p style={{ color: '#fff', marginBottom: '16px', fontSize: '15px' }}>¿Eliminar esta dirección?</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button onClick={handleDeleteConfirmed} className={styles['delete-btn']}>
+                Sí, eliminar
+              </button>
+              <button onClick={() => setDeleteConfirm(null)} className={styles['back-btn']}>
+                No
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

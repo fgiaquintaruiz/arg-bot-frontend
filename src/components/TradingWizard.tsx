@@ -17,6 +17,7 @@ import Trade from './Trade';
 import Withdraw from './Withdraw';
 import { CoreData } from '../types';
 import { STORAGE_KEYS } from '../utils/storageKeys';
+import styles from './TradingWizard.module.css';
 
 interface TradingWizardProps {
   data: CoreData | null;
@@ -31,34 +32,6 @@ interface SEPAField {
   copyVal?: string;
 }
 
-const CARD: React.CSSProperties = {
-  backgroundColor: '#1E2329',
-  borderRadius: '12px',
-  border: '1px solid #2B3139',
-  marginBottom: '12px',
-  overflow: 'hidden',
-};
-
-const ROW_LABEL: React.CSSProperties = {
-  fontSize: '11px',
-  color: '#474D57',
-  marginBottom: '3px',
-  textTransform: 'uppercase',
-  letterSpacing: '0.4px',
-};
-
-const STEP_LABEL_ROW: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  padding: '10px 0 6px',
-  fontSize: '11px',
-  color: '#474D57',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-  fontWeight: 600,
-};
-
 function StepBadge({ step, icon: Icon, label, activeStep, onStepClick }: {
   step: number;
   icon: React.ComponentType<{ size?: number; color?: string }>;
@@ -69,38 +42,39 @@ function StepBadge({ step, icon: Icon, label, activeStep, onStepClick }: {
   const done = step < activeStep;
   const active = step === activeStep;
   const numberedLabel = `${step + 1}. ${label}`;
+
+  const rowClass = done
+    ? styles['step-badge-done']
+    : active
+    ? styles['step-badge-active']
+    : styles['step-badge-locked'];
+
+  const iconClass = done
+    ? styles['step-icon-done']
+    : active
+    ? styles['step-icon-active']
+    : styles['step-icon-locked'];
+
+  const labelClass = done
+    ? styles['step-label-done']
+    : active
+    ? styles['step-label-active']
+    : styles['step-label-locked'];
+
   return (
     <div
       onClick={done ? () => onStepClick(step) : undefined}
-      style={{
-        padding: '14px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        backgroundColor: done ? 'rgba(14,203,129,0.04)' : 'transparent',
-        borderBottom: active ? '1px solid #2B3139' : 'none',
-        cursor: done ? 'pointer' : 'default',
-      }}
+      className={rowClass}
     >
-      <div style={{
-        width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-        backgroundColor: done ? 'rgba(14,203,129,0.15)' : active ? 'rgba(240,185,11,0.12)' : '#2B3139',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
+      <div className={iconClass}>
         {done ? <Check size={14} color="#0ECB81" /> : active ? <Icon size={14} color="#F0B90B" /> : <Lock size={12} color="#474D57" />}
       </div>
-      <span style={{
-        fontSize: '14px',
-        fontWeight: active ? 700 : done ? 500 : 400,
-        color: done ? '#0ECB81' : active ? '#EAECEF' : '#474D57',
-        fontFamily: "'IBM Plex Sans', sans-serif",
-        flex: 1,
-      }}>
+      <span className={labelClass}>
         {numberedLabel}
       </span>
-      {done && <span style={{ fontSize: '11px', color: '#474D57' }}>Completado</span>}
+      {done && <span className={styles['step-completado']}>Completado</span>}
       {!done && !active && (
-        <span style={{ fontSize: '10px', color: '#474D57', backgroundColor: '#2B3139', padding: '2px 8px', borderRadius: '4px' }}>
+        <span className={styles['step-pendiente']}>
           Pendiente
         </span>
       )}
@@ -121,7 +95,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   const [copiedAll, setCopiedAll] = useState(false);
 
   if (!data) return (
-    <div style={{ textAlign: 'center', padding: '40px 20px', color: '#848E9C', fontSize: '14px' }}>
+    <div className={styles.loading}>
       Cargando tasas de mercado...
     </div>
   );
@@ -197,7 +171,18 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
     if (binanceBank) allText += `\nBanco: ${binanceBank}`;
     if (binanceBankAddr) allText += `\nDirección: ${binanceBankAddr}`;
     allText += `\nMonto: ${displayedEur.toFixed(2)} EUR\nConcepto: ${sepaReference}`;
-    try { await navigator.clipboard.writeText(allText); } catch { /* fallback */ }
+    try {
+      await navigator.clipboard.writeText(allText);
+    } catch {
+      /* v8 ignore start */
+      const ta = document.createElement('textarea');
+      ta.value = allText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      /* v8 ignore end */
+    }
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 3000);
     /* v8 ignore end */
@@ -207,44 +192,24 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   const advance = () => setActiveStep(s => s + 1);
   const retrocede = () => setActiveStep(s => Math.max(0, s - 1));
 
-  const copyBtn = (field: string): React.CSSProperties => ({
-    background: '#2B3139',
-    border: 'none',
-    color: copiedField === field ? '#0ECB81' : '#848E9C',
-    borderRadius: '4px',
-    padding: '4px 10px',
-    fontSize: '11px',
-    cursor: 'pointer',
-    minHeight: '32px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontFamily: "'IBM Plex Sans', sans-serif",
-    flexShrink: 0,
-  });
-
   return (
     <div>
 
       {/* ── Paso 0: Simulación ── */}
-      <div style={CARD}>
+      <div className={styles.card}>
         <StepBadge step={0} icon={CalcIcon} label="Simulación" activeStep={activeStep} onStepClick={setActiveStep} />
 
         {activeStep === 0 && (
-          <div style={{ padding: '20px' }}>
+          <div className={styles['step-content']}>
             {!binanceIBAN && (
-              <div style={{
-                backgroundColor: 'rgba(240,185,11,0.08)', border: '1px solid rgba(240,185,11,0.2)',
-                borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
-                fontSize: '12px', color: '#F0B90B', display: 'flex', gap: '6px', alignItems: 'flex-start',
-              }}>
+              <div className={styles['iban-warning']}>
                 <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '1px' }} />
                 <span>
                   Configurá tu IBAN de Binance en{' '}
                   <span
                     onClick={openSettings}
                     onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openSettings(); }}
-                    style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                    className={styles['iban-warning-link']}
                   >
                     Configuración <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle', marginInline: '2px' }} /> Binance
                   </span>
@@ -252,7 +217,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                   <span
                     onClick={downloadFromDrive}
                     onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); downloadFromDrive(); }}
-                    style={{ color: '#F0B90B', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                    className={styles['iban-warning-link']}
                   >
                     <CloudDownload size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }} />Descargar desde Drive
                   </span>
@@ -260,10 +225,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               </div>
             )}
 
-            <div style={{
-              backgroundColor: '#181A20', padding: '14px', borderRadius: '8px',
-              fontSize: '13px', marginBottom: '14px', border: '1px solid #2B3139',
-            }}>
+            <div className={styles['fee-breakdown']}>
               {[
                 { label: 'Depósito SEPA', value: `+ ${sepaFee.toFixed(2)} €`, danger: true },
                 { label: `EUR→USDC (${eurUsdc.toFixed(4)})`, value: `${beforeTradeFee.toFixed(2)} €`, danger: false },
@@ -271,63 +233,44 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                 { label: 'Retiro Binance BEP20', value: '0 USDC', danger: false },
                 { label: `USDC destino (${usdcArs})`, value: `${usdcForBroker.toFixed(2)} USDC`, danger: false },
               ].map((row, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: i < 4 ? '8px' : 0, alignItems: 'center' }}>
-                  <span style={{ color: '#848E9C', fontSize: '12px' }}>{row.label}</span>
-                  <span style={{ color: row.danger ? '#F6465D' : '#EAECEF', fontFamily: "'IBM Plex Mono', monospace", fontSize: '12px', fontWeight: 500 }}>
+                <div key={i} className={i < 4 ? styles['fee-row'] : styles['fee-row-last']}>
+                  <span className={styles['fee-label']}>{row.label}</span>
+                  <span className={row.danger ? styles['fee-value-danger'] : styles['fee-value-normal']}>
                     {row.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
-              <label style={ROW_LABEL}>Querés recibir (ARS)</label>
+            <div className={styles['ars-input-wrapper']}>
+              <label className={styles['row-label']}>Querés recibir (ARS)</label>
               <input
                 type="text"
                 inputMode="numeric"
                 value={editMode === 'ars' ? arsAmount : displayedArs > 0 ? Math.round(displayedArs).toLocaleString('es-AR') : ''}
                 onChange={e => { setEditMode('ars'); setArsAmount(e.target.value.replace(/\./g, '')); }}
-                style={{
-                  width: '100%', padding: '13px 14px', backgroundColor: '#181A20',
-                  color: '#EAECEF', border: editMode === 'ars' ? '1px solid #F0B90B' : '1px solid #2B3139',
-                  borderRadius: '8px', fontSize: '16px', fontWeight: 600, boxSizing: 'border-box',
-                  fontFamily: "'IBM Plex Mono', monospace", outline: 'none',
-                }}
+                className={`${styles['ars-input']} ${editMode === 'ars' ? styles['ars-input-active'] : styles['ars-input-inactive']}`}
                 placeholder="500000"
               />
             </div>
 
-            <div style={{
-              marginBottom: '16px', backgroundColor: '#181A20', borderRadius: '8px',
-              padding: '12px 14px',
-              border: showLowAmountWarning
-                ? '1px solid #F0B90B'
-                : editMode === 'eur' ? '1px solid #F0B90B' : '1px solid #2B3139',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <label style={ROW_LABEL}>Costo Final (EUR)</label>
-                {editMode === 'ars' && <span style={{ fontSize: '10px', color: '#F0B90B', fontWeight: 500 }}>Calculado</span>}
+            <div className={`${styles['eur-box']} ${showLowAmountWarning || editMode === 'eur' ? styles['eur-box-warning'] : styles['eur-box-inactive']}`}>
+              <div className={styles['eur-box-header']}>
+                <label className={styles['row-label']}>Costo Final (EUR)</label>
+                {editMode === 'ars' && <span className={styles['eur-calculated-badge']}>Calculado</span>}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#0ECB81', fontSize: '20px', fontWeight: 700, flexShrink: 0, fontFamily: "'IBM Plex Mono', monospace" }}>€</span>
+              <div className={styles['eur-input-row']}>
+                <span className={styles['eur-symbol']}>€</span>
                 <input
                   type="number"
                   value={editMode === 'eur' ? eurAmount : displayedEur > 0 ? displayedEur.toFixed(2) : ''}
                   onChange={e => { setEditMode('eur'); setEurAmount(e.target.value); }}
-                  style={{
-                    width: '100%', padding: '4px 0', backgroundColor: 'transparent',
-                    color: '#0ECB81', border: 'none', fontSize: '22px', fontWeight: 700,
-                    boxSizing: 'border-box', minWidth: 0, outline: 'none',
-                    fontFamily: "'IBM Plex Mono', monospace",
-                  }}
+                  className={styles['eur-input']}
                   placeholder="0.00"
                 />
               </div>
               {showLowAmountWarning && (
-                <div style={{
-                  color: '#F0B90B', fontSize: '12px', marginTop: '6px',
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                }}>
+                <div className={styles['eur-low-warning']}>
                   ⚠ Monto muy bajo — los fees consumen toda la conversión. Probá con un monto mayor.
                 </div>
               )}
@@ -336,14 +279,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
             <button
               onClick={advance}
               disabled={displayedEur <= 0}
-              style={{
-                width: '100%', padding: '13px',
-                backgroundColor: displayedEur > 0 ? '#F0B90B' : '#2B3139',
-                color: displayedEur > 0 ? '#181A20' : '#474D57',
-                border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700,
-                cursor: displayedEur > 0 ? 'pointer' : 'not-allowed',
-                fontFamily: "'IBM Plex Sans', sans-serif",
-              }}
+              className={displayedEur > 0 ? styles['continue-btn-active'] : styles['continue-btn-disabled']}
             >
               Continuar con la transferencia <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '4px' }} />
             </button>
@@ -351,14 +287,14 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
         )}
 
         {activeStep > 0 && (
-          <div style={{ padding: '10px 16px 14px', borderTop: '1px solid #2B3139' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-              <span style={{ color: '#848E9C' }}>Enviás</span>
-              <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600 }}>{displayedEur.toFixed(2)} EUR</span>
+          <div className={styles['summary-footer']}>
+            <div className={styles['summary-row']}>
+              <span className={styles['summary-label']}>Enviás</span>
+              <span className={styles['summary-value-green']}>{displayedEur.toFixed(2)} EUR</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginTop: '4px' }}>
-              <span style={{ color: '#848E9C' }}>Recibís</span>
-              <span style={{ color: '#EAECEF', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600 }}>
+            <div className={styles['summary-row-mt']}>
+              <span className={styles['summary-label']}>Recibís</span>
+              <span className={styles['summary-value-white']}>
                 {displayedArs.toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
               </span>
             </div>
@@ -368,25 +304,17 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
 
       {/* ── Paso 1: Transferencia SEPA ── */}
       {activeStep >= 1 && (
-        <div style={CARD}>
+        <div className={styles.card}>
           <StepBadge step={1} icon={Smartphone} label="Transferir al banco" activeStep={activeStep} onStepClick={setActiveStep} />
 
           {activeStep === 1 && (
-            <div style={{ padding: '20px' }}>
-              <button
-                onClick={retrocede}
-                style={{
-                  background: 'transparent', border: 'none',
-                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
-                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                }}
-              >
+            <div className={styles['step-content']}>
+              <button onClick={retrocede} className={styles['back-btn']}>
                 ← Paso anterior
               </button>
 
-              <div style={{ backgroundColor: '#181A20', borderRadius: '8px', border: '1px solid #2B3139', padding: '16px', marginBottom: '16px' }}>
-                <p style={{ margin: '0 0 12px', color: '#848E9C', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div className={styles['sepa-box']}>
+                <p className={styles['sepa-title']}>
                   Datos de transferencia SEPA
                 </p>
 
@@ -395,21 +323,12 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                     <button
                       onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyAllSepaDetails(); }}
                       onClick={copyAllSepaDetails}
-                      style={{
-                        width: '100%', padding: '11px',
-                        backgroundColor: copiedAll ? 'rgba(14,203,129,0.1)' : '#2B3139',
-                        color: copiedAll ? '#0ECB81' : '#EAECEF',
-                        border: `1px solid ${copiedAll ? 'rgba(14,203,129,0.3)' : '#474D57'}`,
-                        borderRadius: '6px', fontSize: '13px', fontWeight: 600,
-                        cursor: 'pointer', marginBottom: '14px', minHeight: '44px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                        fontFamily: "'IBM Plex Sans', sans-serif",
-                      }}
+                      className={copiedAll ? styles['copy-all-btn-active'] : styles['copy-all-btn-idle']}
                     >
                       {copiedAll ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todos los datos</>}
                     </button>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className={styles['sepa-fields']}>
                       {[
                         { label: 'IBAN', value: binanceIBAN, copyVal: binanceIBAN.replace(/\s/g, ''), field: 'iban', mono: true },
                         { label: 'Beneficiario', value: binanceName, field: 'name', mono: false },
@@ -418,13 +337,13 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                         ...(binanceBankAddr ? [{ label: 'Dirección del banco', value: binanceBankAddr, field: 'addr', mono: false }] : []),
                       ].map((row: SEPAField) => (
                         <div key={row.field}>
-                          <div style={ROW_LABEL}>{row.label}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{
-                              color: '#EAECEF', fontSize: '13px', flex: 1, wordBreak: 'break-all',
-                              fontFamily: row.mono ? "'IBM Plex Mono', monospace" : "'IBM Plex Sans', sans-serif",
-                            }}>{row.value}</span>
-                            <button onClick={() => copyToClipboard(row.copyVal ?? row.value, row.field)} style={copyBtn(row.field)}>
+                          <div className={styles['row-label']}>{row.label}</div>
+                          <div className={styles['sepa-field-row']}>
+                            <span className={row.mono ? styles['sepa-field-value-mono'] : styles['sepa-field-value-default']}>{row.value}</span>
+                            <button
+                              onClick={() => copyToClipboard(row.copyVal ?? row.value, row.field)}
+                              className={`${styles['copy-btn']} ${copiedField === row.field ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
+                            >
                               {copiedField === row.field ? <Check size={12} /> : <Copy size={12} />}
                               {copiedField === row.field ? '' : 'Copiar'}
                             </button>
@@ -433,12 +352,15 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                       ))}
 
                       <div>
-                        <div style={ROW_LABEL}>Monto</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ color: '#0ECB81', fontSize: '18px', fontWeight: 700, flex: 1, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        <div className={styles['row-label']}>Monto</div>
+                        <div className={styles['sepa-field-row']}>
+                          <span className={styles['sepa-amount-value']}>
                             {displayedEur.toFixed(2)} EUR
                           </span>
-                          <button onClick={() => copyToClipboard(displayedEur.toFixed(2), 'amount')} style={copyBtn('amount')}>
+                          <button
+                            onClick={() => copyToClipboard(displayedEur.toFixed(2), 'amount')}
+                            className={`${styles['copy-btn']} ${copiedField === 'amount' ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
+                          >
                             {copiedField === 'amount' ? <Check size={12} /> : <Copy size={12} />}
                             {copiedField === 'amount' ? '' : 'Copiar'}
                           </button>
@@ -446,39 +368,34 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                       </div>
 
                       <div>
-                        <div style={ROW_LABEL}>Concepto</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ color: '#F0B90B', fontSize: '12px', fontFamily: "'IBM Plex Mono', monospace", flex: 1, wordBreak: 'break-all' }}>
+                        <div className={styles['row-label']}>Concepto</div>
+                        <div className={styles['sepa-field-row']}>
+                          <span className={styles['sepa-reference-value']}>
                             {sepaReference}
                           </span>
-                          <button onClick={() => copyToClipboard(sepaReference, 'ref')} style={copyBtn('ref')}>
+                          <button
+                            onClick={() => copyToClipboard(sepaReference, 'ref')}
+                            className={`${styles['copy-btn']} ${copiedField === 'ref' ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
+                          >
                             {copiedField === 'ref' ? <Check size={12} /> : <Copy size={12} />}
                             {copiedField === 'ref' ? '' : 'Copiar'}
                           </button>
                         </div>
                       </div>
 
-                      <p style={{ margin: 0, fontSize: '11px', color: '#474D57', textAlign: 'center' }}>
+                      <p className={styles['sepa-note']}>
                         Solo transferencia SEPA — no SWIFT
                       </p>
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '16px', color: '#848E9C', fontSize: '13px' }}>
+                  <div className={styles['sepa-empty']}>
                     No tenés cuenta SEPA configurada. Agregá tu IBAN en ⚙️ Configuración.
                   </div>
                 )}
               </div>
 
-              <button
-                onClick={advance}
-                style={{
-                  width: '100%', padding: '13px', backgroundColor: 'transparent',
-                  color: '#0ECB81', border: '1px solid rgba(14,203,129,0.3)',
-                  borderRadius: '8px', fontSize: '14px', fontWeight: 600,
-                  cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif",
-                }}
-              >
+              <button onClick={advance} className={styles['done-btn']}>
                 Ya realicé la transferencia <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '4px' }} />
               </button>
             </div>
@@ -490,22 +407,14 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
       {activeStep >= 2 && (
         <>
           {activeStep === 2 && (
-            <div style={STEP_LABEL_ROW}>
+            <div className={styles['step-label-row']}>
               <ArrowLeftRight size={12} />
               Paso 3 — Cambiar EUR → USDC
             </div>
           )}
           {activeStep === 2 && (
             <>
-              <button
-                onClick={retrocede}
-                style={{
-                  background: 'transparent', border: 'none',
-                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
-                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                }}
-              >
+              <button onClick={retrocede} className={styles['back-btn']}>
                 ← Paso anterior
               </button>
               <Trade
@@ -515,7 +424,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
             </>
           )}
           {activeStep > 2 && (
-            <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
+            <div className={`${styles.card} ${styles['card-done']}`}>
               <StepBadge step={2} icon={ArrowLeftRight} label="Cambiar EUR → USDC" activeStep={activeStep} onStepClick={setActiveStep} />
             </div>
           )}
@@ -526,22 +435,14 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
       {activeStep >= 3 && (
         <>
           {activeStep === 3 && (
-            <div style={STEP_LABEL_ROW}>
+            <div className={styles['step-label-row']}>
               <Building2 size={12} />
               Paso 4 — Retirar USDC a Bitso
             </div>
           )}
           {activeStep === 3 && (
             <>
-              <button
-                onClick={retrocede}
-                style={{
-                  background: 'transparent', border: 'none',
-                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
-                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                }}
-              >
+              <button onClick={retrocede} className={styles['back-btn']}>
                 ← Paso anterior
               </button>
               <Withdraw
@@ -551,7 +452,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
             </>
           )}
           {activeStep > 3 && (
-            <div style={{ ...CARD, backgroundColor: 'rgba(14,203,129,0.04)' }}>
+            <div className={`${styles.card} ${styles['card-done']}`}>
               <StepBadge step={3} icon={Building2} label="Retirar USDC a Bitso" activeStep={activeStep} onStepClick={setActiveStep} />
             </div>
           )}
@@ -560,55 +461,36 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
 
       {/* ── Paso 4: Ripio USDC → ARS ── */}
       {activeStep >= 4 && (
-        <div style={CARD}>
+        <div className={styles.card}>
           <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en Ripio" activeStep={activeStep} onStepClick={setActiveStep} />
           {activeStep === 4 && (
-            <div style={{ padding: '20px' }}>
-              <button
-                onClick={retrocede}
-                style={{
-                  background: 'transparent', border: 'none',
-                  color: '#848E9C', fontSize: '13px', cursor: 'pointer',
-                  padding: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px',
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                }}
-              >
+            <div className={styles['step-content']}>
+              <button onClick={retrocede} className={styles['back-btn']}>
                 ← Paso anterior
               </button>
               {data.nexoUsdcArsRate ? (
                 <>
-                  <div style={{
-                    backgroundColor: '#181A20', borderRadius: '8px',
-                    border: '1px solid #2B3139', padding: '14px', marginBottom: '14px',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ color: '#848E9C', fontSize: '12px' }}>USDC/ARS Nexo</span>
-                      <span style={{ color: '#0ECB81', fontFamily: "'IBM Plex Mono', monospace", fontSize: '13px', fontWeight: 600 }}>
+                  <div className={styles['ripio-box']}>
+                    <div className={styles['ripio-row']}>
+                      <span className={styles['ripio-label']}>USDC/ARS Nexo</span>
+                      <span className={styles['ripio-rate']}>
                         {parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #2B3139', paddingTop: '10px', marginTop: '4px' }}>
-                      <span style={{ color: '#EAECEF', fontSize: '13px', fontWeight: 600 }}>Estimado a recibir</span>
-                      <span style={{ color: '#0ECB81', fontSize: '18px', fontWeight: 700, fontFamily: "'IBM Plex Mono', monospace" }}>
+                    <div className={styles['ripio-total-row']}>
+                      <span className={styles['ripio-total-label']}>Estimado a recibir</span>
+                      <span className={styles['ripio-total-value']}>
                         {(usdcForBroker * parseFloat(data.nexoUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
                       </span>
                     </div>
                   </div>
 
-                  <div style={{
-                    backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.15)',
-                    borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
-                    fontSize: '12px', color: '#848E9C', lineHeight: '1.5',
-                  }}>
+                  <div className={styles['ripio-disclaimer']}>
                     El monto estimado se calcula usando la tasa de Nexo en tiempo real. Las comisiones de Nexo no están incluidas — el ARS final recibido será menor.
                   </div>
                 </>
               ) : (
-                <div style={{
-                  backgroundColor: 'rgba(240,185,11,0.06)', border: '1px solid rgba(240,185,11,0.15)',
-                  borderRadius: '8px', padding: '14px', marginBottom: '16px',
-                  fontSize: '13px', color: '#848E9C', textAlign: 'center',
-                }}>
+                <div className={styles['ripio-no-rate']}>
                   Rate de Nexo no disponible. Verificá en la app de Nexo.
                 </div>
               )}
@@ -617,14 +499,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                 href="https://exchange.ripio.com/app/trade/USDC_ARS"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  width: '100%', padding: '13px', boxSizing: 'border-box',
-                  backgroundColor: '#2B3139', color: '#EAECEF',
-                  border: '1px solid #474D57', borderRadius: '8px',
-                  fontSize: '14px', fontWeight: 600, textDecoration: 'none',
-                  fontFamily: "'IBM Plex Sans', sans-serif",
-                }}
+                className={styles['ripio-link']}
               >
                 <Banknote size={16} />
                 Abrir Ripio USDC/ARS
@@ -637,11 +512,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
       {activeStep > 0 && (
         <button
           onClick={() => setActiveStep(0)}
-          style={{
-            width: '100%', padding: '12px', backgroundColor: 'transparent',
-            color: '#474D57', border: '1px solid #2B3139', borderRadius: '8px',
-            fontSize: '13px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif",
-          }}
+          className={styles['restart-btn']}
         >
           ↺ Reiniciar simulación
         </button>
