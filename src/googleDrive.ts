@@ -1,4 +1,6 @@
 // Google Drive sync service - uses Google Identity Services + fetch
+import { STORAGE_KEYS } from './utils/storageKeys';
+
 const CLIENT_ID = '207884217858-ssnie582pel88miikiuodl38qm8esqbp.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const BACKUP_FILENAME = 'argbot-backup.json';
@@ -7,7 +9,30 @@ const TOKEN_EXPIRY_KEY = 'gd_token_expiry';
 // Google tokens duran 3600s — refrescamos 5 min antes para no fallar a mitad
 const TOKEN_TTL_MS = 55 * 60 * 1000;
 
-let tokenClient: any = null;
+interface TokenClient {
+  callback: (response: { access_token?: string }) => void;
+  requestAccessToken: (options: { prompt: string }) => void;
+}
+
+export interface DriveData {
+  version?: number;
+  timestamp?: string;
+  apiKey?: string;
+  apiSecret?: string;
+  apiKeyTestnet?: string;
+  apiSecretTestnet?: string;
+  addressBook?: string;
+  tradeHistory?: string;
+  usdcWallet?: string;
+  binanceEurIban?: string;
+  binanceEurName?: string;
+  binanceEurBic?: string;
+  binanceBankName?: string;
+  binanceBankAddress?: string;
+  rateAlertConfig?: string;
+}
+
+let tokenClient: TokenClient | null = null;
 let userEmailHint: string | null = null;
 
 // Llamar desde Settings al montar, con el email del usuario logueado.
@@ -62,8 +87,8 @@ const getAccessToken = async (forceConsent = false): Promise<string | null> => {
   return new Promise((resolve) => {
     if (!window.google?.accounts?.oauth2) { resolve(null); return; }
 
-    const doRequest = (client: any) => {
-      client.callback = (response: any) => {
+    const doRequest = (client: TokenClient) => {
+      client.callback = (response: { access_token?: string }) => {
         if (response.access_token) {
           cacheToken(response.access_token);
           resolve(response.access_token);
@@ -107,14 +132,14 @@ const driveRequest = async (url: string, options: RequestInit = {}) => {
   return response;
 };
 
-export const uploadToDrive = async (data: any): Promise<boolean> => {
+export const uploadToDrive = async (data: DriveData): Promise<boolean> => {
   try {
     const token = getCachedToken() || await getAccessToken(false) || await getAccessToken(true);
     if (!token) return false;
 
     const content = JSON.stringify(data);
     const blob = new Blob([content], { type: 'application/json' });
-    let fileId = localStorage.getItem('drive_file_id');
+    let fileId = localStorage.getItem(STORAGE_KEYS.DRIVE_FILE_ID);
 
     if (!fileId) {
       const searchRes = await driveRequest(
@@ -123,7 +148,7 @@ export const uploadToDrive = async (data: any): Promise<boolean> => {
       const searchData = await searchRes.json();
       if (searchData.files?.length > 0) {
         fileId = searchData.files[0].id;
-        localStorage.setItem('drive_file_id', fileId!);
+        localStorage.setItem(STORAGE_KEYS.DRIVE_FILE_ID, fileId!);
       }
     }
 
@@ -144,17 +169,17 @@ export const uploadToDrive = async (data: any): Promise<boolean> => {
         body: form,
       });
       const result = await response.json();
-      localStorage.setItem('drive_file_id', result.id);
+      localStorage.setItem(STORAGE_KEYS.DRIVE_FILE_ID, result.id);
     }
 
     return true;
-  } catch (err: any) {
+  } catch (err) {
     console.error('[GoogleDrive] Upload failed:', err);
     return false;
   }
 };
 
-export const downloadFromDrive = async (): Promise<any | null> => {
+export const downloadFromDrive = async (): Promise<DriveData | null> => {
   try {
     const token = getCachedToken() || await getAccessToken(false) || await getAccessToken(true);
     if (!token) return null;
@@ -167,7 +192,7 @@ export const downloadFromDrive = async (): Promise<any | null> => {
     if (!searchData.files?.length) return null;
 
     const fileId = searchData.files[0].id;
-    localStorage.setItem('drive_file_id', fileId);
+    localStorage.setItem(STORAGE_KEYS.DRIVE_FILE_ID, fileId);
 
     const downloadRes = await fetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
@@ -176,7 +201,7 @@ export const downloadFromDrive = async (): Promise<any | null> => {
 
     if (!downloadRes.ok) throw new Error(`Download failed: ${downloadRes.status}`);
     return await downloadRes.json();
-  } catch (err: any) {
+  } catch (err) {
     console.error('[GoogleDrive] Download failed:', err);
     return null;
   }

@@ -9,6 +9,7 @@ import {
     migrateLegacyUsdcWallet,
 } from '../lib/withdrawAddress';
 import { CoreData } from '../types';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
 interface WithdrawProps {
   data: CoreData;
@@ -18,11 +19,11 @@ interface WithdrawProps {
 
 export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     const [selectedId, setSelectedId] = useState<string | null>(
-        () => localStorage.getItem('usdc_wallet_id')
+        () => localStorage.getItem(STORAGE_KEYS.USDC_WALLET_ID)
     );
     const [addressBook, setAddressBook] = useState<AddressEntry[]>(() => {
         try {
-            const stored = localStorage.getItem('address_book');
+            const stored = localStorage.getItem(STORAGE_KEYS.ADDRESS_BOOK);
             return stored ? JSON.parse(stored) : [];
         } catch { return []; }
     });
@@ -37,14 +38,14 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     // Run once on mount: migrate legacy usdc_wallet string to usdc_wallet_id
     useEffect(() => {
         migrateLegacyUsdcWallet();
-        const migratedId = localStorage.getItem('usdc_wallet_id');
+        const migratedId = localStorage.getItem(STORAGE_KEYS.USDC_WALLET_ID);
         if (migratedId) setSelectedId(migratedId);
     }, []);
 
     // Cross-tab storage event listener
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
-            if (e.key === 'address_book') {
+            if (e.key === STORAGE_KEYS.ADDRESS_BOOK) {
                 try {
                     const updated: AddressEntry[] = e.newValue ? JSON.parse(e.newValue) : [];
                     setAddressBook(updated);
@@ -125,9 +126,9 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
         setErrorMsg('');
         setSuccessMsg('');
         try {
-            const isTestnet = localStorage.getItem('argbot_testnet') !== 'false';
-            const apiKey = localStorage.getItem(isTestnet ? 'binance_key_testnet' : 'binance_key') || '';
-            const apiSecret = localStorage.getItem(isTestnet ? 'binance_secret_testnet' : 'binance_secret') || '';
+            const isTestnet = localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) !== 'false';
+            const apiKey = localStorage.getItem(isTestnet ? STORAGE_KEYS.BINANCE_KEY_TESTNET : STORAGE_KEYS.BINANCE_KEY) || '';
+            const apiSecret = localStorage.getItem(isTestnet ? STORAGE_KEYS.BINANCE_SECRET_TESTNET : STORAGE_KEYS.BINANCE_SECRET) || '';
             const res = await fetch(`${API_URL}/api/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, apiSecret, address, amountUsdc: amount }) });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
@@ -140,8 +141,9 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
             setIsConfirming(false);
             setIrreversibleAccepted(false);
             setTimeout(() => onSuccess && onSuccess(), 2000);
-        } catch (e: any) {
-            setErrorMsg(e.message);
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setErrorMsg(msg);
             setIsConfirming(false);
             setIrreversibleAccepted(false);
         } finally {

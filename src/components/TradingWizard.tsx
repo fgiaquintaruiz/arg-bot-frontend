@@ -16,10 +16,19 @@ import { downloadFromDrive } from '../googleDrive';
 import Trade from './Trade';
 import Withdraw from './Withdraw';
 import { CoreData } from '../types';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
 interface TradingWizardProps {
   data: CoreData | null;
   onRefreshData?: () => void;
+}
+
+interface SEPAField {
+  label: string;
+  value: string;
+  field: string;
+  mono: boolean;
+  copyVal?: string;
 }
 
 const CARD: React.CSSProperties = {
@@ -156,12 +165,12 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   const showLowAmountWarning = parseFloat(eurAmount) > 0 && displayedArs <= 0;
 
   // SEPA
-  const binanceIBAN = localStorage.getItem('binance_eur_iban') || '';
-  const binanceName = localStorage.getItem('binance_eur_name') || 'Binance Europe Services Ltd';
-  const binanceBIC = localStorage.getItem('binance_eur_bic') || 'REVOLT21XXX';
-  const binanceBank = localStorage.getItem('binance_bank_name') || '';
-  const binanceBankAddr = localStorage.getItem('binance_bank_address') || '';
-  const userEmail = localStorage.getItem('user_email') || '';
+  const binanceIBAN = localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_IBAN) || '';
+  const binanceName = localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_NAME) || 'Binance Europe Services Ltd';
+  const binanceBIC = localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_BIC) || 'REVOLT21XXX';
+  const binanceBank = localStorage.getItem(STORAGE_KEYS.BINANCE_BANK_NAME) || '';
+  const binanceBankAddr = localStorage.getItem(STORAGE_KEYS.BINANCE_BANK_ADDRESS) || '';
+  const userEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || '';
   const sepaReference = userEmail ? `${userEmail} Binance Deposit` : 'Deposito ARGBOT';
 
   const copyToClipboard = async (text: string, field: string) => {
@@ -407,7 +416,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                         { label: 'BIC / SWIFT', value: binanceBIC, field: 'bic', mono: true },
                         ...(binanceBank ? [{ label: 'Banco', value: binanceBank, field: 'bank', mono: false }] : []),
                         ...(binanceBankAddr ? [{ label: 'Dirección del banco', value: binanceBankAddr, field: 'addr', mono: false }] : []),
-                      ].map((row: any) => (
+                      ].map((row: SEPAField) => (
                         <div key={row.field}>
                           <div style={ROW_LABEL}>{row.label}</div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

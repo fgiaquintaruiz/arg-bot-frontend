@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { requestNotificationPermission, isIOS, isPeriodicSyncSupported, isPushSupported, subscribeToPush } from '../utils/swRegistration';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
-const DISMISS_KEY = 'argbot_notif_opt_in_dismissed';
+const DISMISS_KEY = STORAGE_KEYS.ARGBOT_NOTIF_OPT_IN_DISMISSED;
 const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 
 export default function NotificationOptIn() {
@@ -11,7 +12,7 @@ export default function NotificationOptIn() {
   useEffect(() => {
     if (isIOS() || (!isPeriodicSyncSupported() && !isPushSupported())) return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return;
-    const bannerEnabled = localStorage.getItem('argbot_notif_banner_enabled');
+    const bannerEnabled = localStorage.getItem(STORAGE_KEYS.ARGBOT_NOTIF_BANNER_ENABLED);
     if (bannerEnabled === 'false') return;
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (dismissed && Date.now() - parseInt(dismissed, 10) < DISMISS_DURATION_MS) return;
@@ -29,7 +30,7 @@ export default function NotificationOptIn() {
           console.error('[Push] VAPID subscription failed:', err);
         }
       }
-      localStorage.setItem('argbot_notifications_enabled', 'true');
+      localStorage.setItem(STORAGE_KEYS.ARGBOT_NOTIFICATIONS_ENABLED, 'true');
       setStatus('granted');
       setVisible(false);
     } else {

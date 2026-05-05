@@ -3,6 +3,7 @@ import { User } from 'firebase/auth';
 import { uploadToDrive, downloadFromDrive, setUserHint } from '../googleDrive';
 import { API_URL } from '../config';
 import { getRateAlertConfig, setRateAlertConfig } from '../utils/rateAlertStorage';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
 export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: User; initialTab?: 'sync' | 'binance' | 'alerts' | 'notif' }) {
   const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts' | 'notif'>(() => {
@@ -10,18 +11,18 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
   const [syncMessage, setSyncMessage] = useState('');
-  const [binanceEurIban, setBinanceEurIban] = useState<string>(() => localStorage.getItem('binance_eur_iban') || '');
-  const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem('binance_eur_name') || '');
-  const [binanceEurBic, setBinanceEurBic] = useState<string>(() => localStorage.getItem('binance_eur_bic') || '');
-  const [binanceBankName, setBinanceBankName] = useState<string>(() => localStorage.getItem('binance_bank_name') || '');
-  const [binanceBankAddress, setBinanceBankAddress] = useState<string>(() => localStorage.getItem('binance_bank_address') || '');
-  const [binanceApiKey, setBinanceApiKey] = useState<string>(() => localStorage.getItem('binance_key') || '');
-  const [binanceApiSecret, setBinanceApiSecret] = useState<string>(() => localStorage.getItem('binance_secret') || '');
+  const [binanceEurIban, setBinanceEurIban] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_IBAN) || '');
+  const [binanceEurName, setBinanceEurName] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_NAME) || '');
+  const [binanceEurBic, setBinanceEurBic] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_BIC) || '');
+  const [binanceBankName, setBinanceBankName] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_BANK_NAME) || '');
+  const [binanceBankAddress, setBinanceBankAddress] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_BANK_ADDRESS) || '');
+  const [binanceApiKey, setBinanceApiKey] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_KEY) || '');
+  const [binanceApiSecret, setBinanceApiSecret] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET) || '');
   const [binanceApiTabActive, setBinanceApiTabActive] = useState<'prod' | 'testnet'>(() =>
-    localStorage.getItem('argbot_testnet') === 'true' ? 'testnet' : 'prod'
+    localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) === 'true' ? 'testnet' : 'prod'
   );
-  const [binanceApiKeyTestnet, setBinanceApiKeyTestnet] = useState<string>(() => localStorage.getItem('binance_key_testnet') || '');
-  const [binanceApiSecretTestnet, setBinanceApiSecretTestnet] = useState<string>(() => localStorage.getItem('binance_secret_testnet') || '');
+  const [binanceApiKeyTestnet, setBinanceApiKeyTestnet] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_KEY_TESTNET) || '');
+  const [binanceApiSecretTestnet, setBinanceApiSecretTestnet] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET) || '');
   const [serverIp, setServerIp] = useState<string>('Cargando...');
   const [binanceSaved, setBinanceSaved] = useState(false);
   const [binanceCleared, setBinanceCleared] = useState(false);
@@ -29,7 +30,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
 
   // Notif tab state
   const [notifBannerEnabled, setNotifBannerEnabled] = useState<boolean>(() =>
-    localStorage.getItem('argbot_notif_banner_enabled') !== 'false'
+    localStorage.getItem(STORAGE_KEYS.ARGBOT_NOTIF_BANNER_ENABLED) !== 'false'
   );
 
   // Alerts tab state
@@ -73,19 +74,19 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         const dataToSync = {
           version: 1,
           timestamp: new Date().toISOString(),
-          apiKey: localStorage.getItem('binance_key') || '',
-          apiSecret: localStorage.getItem('binance_secret') || '',
-          apiKeyTestnet: localStorage.getItem('binance_key_testnet') || '',
-          apiSecretTestnet: localStorage.getItem('binance_secret_testnet') || '',
-          addressBook: localStorage.getItem('address_book') || '[]',
-          tradeHistory: localStorage.getItem('trade_history') || '[]',
-          usdcWallet: localStorage.getItem('usdc_wallet') || '',
-          binanceEurIban: localStorage.getItem('binance_eur_iban') || '',
-          binanceEurName: localStorage.getItem('binance_eur_name') || '',
-          binanceEurBic: localStorage.getItem('binance_eur_bic') || '',
-          binanceBankName: localStorage.getItem('binance_bank_name') || '',
-          binanceBankAddress: localStorage.getItem('binance_bank_address') || '',
-          rateAlertConfig: localStorage.getItem('rate_alert_config') || '',
+          apiKey: localStorage.getItem(STORAGE_KEYS.BINANCE_KEY) || '',
+          apiSecret: localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET) || '',
+          apiKeyTestnet: localStorage.getItem(STORAGE_KEYS.BINANCE_KEY_TESTNET) || '',
+          apiSecretTestnet: localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET) || '',
+          addressBook: localStorage.getItem(STORAGE_KEYS.ADDRESS_BOOK) || '[]',
+          tradeHistory: localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]',
+          usdcWallet: localStorage.getItem(STORAGE_KEYS.USDC_WALLET) || '',
+          binanceEurIban: localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_IBAN) || '',
+          binanceEurName: localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_NAME) || '',
+          binanceEurBic: localStorage.getItem(STORAGE_KEYS.BINANCE_EUR_BIC) || '',
+          binanceBankName: localStorage.getItem(STORAGE_KEYS.BINANCE_BANK_NAME) || '',
+          binanceBankAddress: localStorage.getItem(STORAGE_KEYS.BINANCE_BANK_ADDRESS) || '',
+          rateAlertConfig: localStorage.getItem(STORAGE_KEYS.RATE_ALERT_CONFIG) || '',
         };
 
         const success = await uploadToDrive(dataToSync);
@@ -105,20 +106,20 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
 
         if (data) {
           // Restore data
-          if (data.apiKey) localStorage.setItem('binance_key', data.apiKey);
-          if (data.apiSecret) localStorage.setItem('binance_secret', data.apiSecret);
-          if (data.apiKeyTestnet) localStorage.setItem('binance_key_testnet', data.apiKeyTestnet);
-          if (data.apiSecretTestnet) localStorage.setItem('binance_secret_testnet', data.apiSecretTestnet);
-          if (data.addressBook) localStorage.setItem('address_book', data.addressBook);
-          if (data.tradeHistory) localStorage.setItem('trade_history', data.tradeHistory);
-          if (data.usdcWallet) localStorage.setItem('usdc_wallet', data.usdcWallet);
-          if (data.binanceEurIban) localStorage.setItem('binance_eur_iban', data.binanceEurIban);
-          if (data.binanceEurName) localStorage.setItem('binance_eur_name', data.binanceEurName);
-          if (data.binanceEurBic) localStorage.setItem('binance_eur_bic', data.binanceEurBic);
-          if (data.binanceBankName) localStorage.setItem('binance_bank_name', data.binanceBankName);
-          if (data.binanceBankAddress) localStorage.setItem('binance_bank_address', data.binanceBankAddress);
+          if (data.apiKey) localStorage.setItem(STORAGE_KEYS.BINANCE_KEY, data.apiKey);
+          if (data.apiSecret) localStorage.setItem(STORAGE_KEYS.BINANCE_SECRET, data.apiSecret);
+          if (data.apiKeyTestnet) localStorage.setItem(STORAGE_KEYS.BINANCE_KEY_TESTNET, data.apiKeyTestnet);
+          if (data.apiSecretTestnet) localStorage.setItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET, data.apiSecretTestnet);
+          if (data.addressBook) localStorage.setItem(STORAGE_KEYS.ADDRESS_BOOK, data.addressBook);
+          if (data.tradeHistory) localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, data.tradeHistory);
+          if (data.usdcWallet) localStorage.setItem(STORAGE_KEYS.USDC_WALLET, data.usdcWallet);
+          if (data.binanceEurIban) localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, data.binanceEurIban);
+          if (data.binanceEurName) localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_NAME, data.binanceEurName);
+          if (data.binanceEurBic) localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_BIC, data.binanceEurBic);
+          if (data.binanceBankName) localStorage.setItem(STORAGE_KEYS.BINANCE_BANK_NAME, data.binanceBankName);
+          if (data.binanceBankAddress) localStorage.setItem(STORAGE_KEYS.BINANCE_BANK_ADDRESS, data.binanceBankAddress);
           if (data.rateAlertConfig) {
-            localStorage.setItem('rate_alert_config', data.rateAlertConfig);
+            localStorage.setItem(STORAGE_KEYS.RATE_ALERT_CONFIG, data.rateAlertConfig);
             try {
               const alertCfg = JSON.parse(data.rateAlertConfig);
               setEurArsUpper(String(alertCfg.eurArs?.upper ?? ''));
@@ -145,26 +146,27 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           setSyncMessage('⚠️ No se encontró un respaldo en tu Google Drive. Primero necesitás subir tus datos desde otro dispositivo.');
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[Settings] Sync error:', err);
       setSyncStatus('error');
-      setSyncMessage(`❌ Error: ${err.message || 'Error desconocido'}`);
+      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      setSyncMessage(`❌ Error: ${msg}`);
     }
   };
 
   // Save Binance config
   const handleSaveBinance = () => {
-    localStorage.setItem('binance_eur_iban', binanceEurIban.trim());
-    localStorage.setItem('binance_eur_name', binanceEurName.trim());
-    localStorage.setItem('binance_eur_bic', binanceEurBic.trim());
-    localStorage.setItem('binance_bank_name', binanceBankName.trim());
-    localStorage.setItem('binance_bank_address', binanceBankAddress.trim());
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, binanceEurIban.trim());
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_NAME, binanceEurName.trim());
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_BIC, binanceEurBic.trim());
+    localStorage.setItem(STORAGE_KEYS.BINANCE_BANK_NAME, binanceBankName.trim());
+    localStorage.setItem(STORAGE_KEYS.BINANCE_BANK_ADDRESS, binanceBankAddress.trim());
     if (binanceApiTabActive === 'testnet') {
-      if (binanceApiKeyTestnet.trim()) localStorage.setItem('binance_key_testnet', binanceApiKeyTestnet.trim());
-      if (binanceApiSecretTestnet.trim()) localStorage.setItem('binance_secret_testnet', binanceApiSecretTestnet.trim());
+      if (binanceApiKeyTestnet.trim()) localStorage.setItem(STORAGE_KEYS.BINANCE_KEY_TESTNET, binanceApiKeyTestnet.trim());
+      if (binanceApiSecretTestnet.trim()) localStorage.setItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET, binanceApiSecretTestnet.trim());
     } else {
-      if (binanceApiKey.trim()) localStorage.setItem('binance_key', binanceApiKey.trim());
-      if (binanceApiSecret.trim()) localStorage.setItem('binance_secret', binanceApiSecret.trim());
+      if (binanceApiKey.trim()) localStorage.setItem(STORAGE_KEYS.BINANCE_KEY, binanceApiKey.trim());
+      if (binanceApiSecret.trim()) localStorage.setItem(STORAGE_KEYS.BINANCE_SECRET, binanceApiSecret.trim());
     }
     setBinanceSaved(true);
     setBinanceCleared(false);
@@ -174,15 +176,15 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   // Clear Binance config
   const handleClearBinance = () => {
     if (!confirm('¿Estás seguro de que querés borrar todos los datos de Binance? Esta acción no se puede deshacer.')) return;
-    localStorage.removeItem('binance_eur_iban');
-    localStorage.removeItem('binance_eur_name');
-    localStorage.removeItem('binance_eur_bic');
-    localStorage.removeItem('binance_bank_name');
-    localStorage.removeItem('binance_bank_address');
-    localStorage.removeItem('binance_key');
-    localStorage.removeItem('binance_secret');
-    localStorage.removeItem('binance_key_testnet');
-    localStorage.removeItem('binance_secret_testnet');
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_EUR_IBAN);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_EUR_NAME);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_EUR_BIC);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_BANK_NAME);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_BANK_ADDRESS);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_KEY);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_SECRET);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_KEY_TESTNET);
+    localStorage.removeItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET);
     setBinanceEurIban('');
     setBinanceEurName('');
     setBinanceEurBic('');
@@ -403,7 +405,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                     onClick={() => {
                       const next = !notifBannerEnabled;
                       setNotifBannerEnabled(next);
-                      localStorage.setItem('argbot_notif_banner_enabled', next ? 'true' : 'false');
+                      localStorage.setItem(STORAGE_KEYS.ARGBOT_NOTIF_BANNER_ENABLED, next ? 'true' : 'false');
                     }}
                     style={{
                       width: '42px', height: '24px', borderRadius: '12px', flexShrink: 0,

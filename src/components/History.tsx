@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Check, X, ClipboardList, Download } from 'lucide-react';
 import { tradeHistoryToCsv, downloadCsv } from '../utils/csvExport';
+import { STORAGE_KEYS } from '../utils/storageKeys';
+import { TradeHistoryEntry } from '../types';
 
 function truncateAddress(addr: string): string {
   /* v8 ignore next -- caller guards with ternary: `h.usdcDestAddress ? truncateAddress(...) : '—'` */
@@ -10,13 +12,13 @@ function truncateAddress(addr: string): string {
 }
 
 export default function History({ onClose }: { onClose: () => void }) {
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<TradeHistoryEntry[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('trade_history') || '[]';
+      const raw = localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]';
       const data = JSON.parse(raw);
       setHistory(Array.isArray(data) ? [...data].reverse() : []);
     } catch {
@@ -26,11 +28,11 @@ export default function History({ onClose }: { onClose: () => void }) {
 
   const handleSaveRipioFee = (reversedIndex: number) => {
     // history is reversed — map back to original array
-    const raw = localStorage.getItem('trade_history') || '[]';
-    const original: any[] = JSON.parse(raw);
+    const raw = localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]';
+    const original: TradeHistoryEntry[] = JSON.parse(raw);
     const originalIndex = original.length - 1 - reversedIndex;
     original[originalIndex] = { ...original[originalIndex], ripioFeeArs: editValue };
-    localStorage.setItem('trade_history', JSON.stringify(original));
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(original));
     setHistory(prev => {
       const updated = [...prev];
       updated[reversedIndex] = { ...updated[reversedIndex], ripioFeeArs: editValue };
@@ -42,7 +44,7 @@ export default function History({ onClose }: { onClose: () => void }) {
 
   const handleExportCsv = () => {
     try {
-      const raw = localStorage.getItem('trade_history') || '[]';
+      const raw = localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]';
       const records = JSON.parse(raw);
       const csv = tradeHistoryToCsv(Array.isArray(records) ? records : []);
       const today = new Date().toISOString().slice(0, 10);
@@ -100,7 +102,7 @@ export default function History({ onClose }: { onClose: () => void }) {
           <div style={{ maxHeight: '460px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {history.map((h, i) => (
               <div
-                key={i}
+                key={h.date + '-' + h.eur + '-' + i}
                 data-testid="history-card"
                 style={{ backgroundColor: '#181A20', padding: '14px 16px', borderRadius: '8px', border: '1px solid #2B3139' }}
               >

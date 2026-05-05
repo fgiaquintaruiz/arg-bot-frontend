@@ -1,8 +1,9 @@
 import { AddressEntry } from '../components/AddressBook';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
-const BOOK_KEY = 'address_book';
-const ID_KEY = 'usdc_wallet_id';
-const LEGACY_KEY = 'usdc_wallet';
+const BOOK_KEY = STORAGE_KEYS.ADDRESS_BOOK;
+const ID_KEY = STORAGE_KEYS.USDC_WALLET_ID;
+const LEGACY_KEY = STORAGE_KEYS.USDC_WALLET;
 
 function readAddressBook(): AddressEntry[] {
   try {

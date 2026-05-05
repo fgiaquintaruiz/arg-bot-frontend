@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeftRight, X } from 'lucide-react';
 import { API_URL } from '../config';
 import { getSelectedWithdrawEntry } from '../lib/withdrawAddress';
-import { CoreData } from '../types';
+import { CoreData, TradeHistoryEntry } from '../types';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
 interface TradeProps {
   data: CoreData;
@@ -24,9 +25,9 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
   const fee = grossUsdc * (data.fees?.tradingRate || 0.001);
   const netUsdc = grossUsdc - fee;
 
-  const serviceFee = parseFloat(localStorage.getItem('service_fee') || '0') || 0;
-  const userEmail = localStorage.getItem('user_email') || '';
-  const whitelist = (localStorage.getItem('fee_whitelist') || '').split('\n').map(e => e.trim().toLowerCase()).filter(Boolean);
+  const serviceFee = parseFloat(localStorage.getItem(STORAGE_KEYS.SERVICE_FEE) || '0') || 0;
+  const userEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || '';
+  const whitelist = (localStorage.getItem(STORAGE_KEYS.FEE_WHITELIST) || '').split('\n').map(e => e.trim().toLowerCase()).filter(Boolean);
   const isExempt = whitelist.includes(userEmail.toLowerCase());
   const effectiveFee = isExempt ? 0 : serviceFee;
 
@@ -44,9 +45,9 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
     setErrorMsg('');
     setSuccessMsg('');
     try {
-      const testnet = localStorage.getItem('argbot_testnet') !== 'false';
-      const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
-      const apiSecret = localStorage.getItem(testnet ? 'binance_secret_testnet' : 'binance_secret') || '';
+      const testnet = localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) !== 'false';
+      const apiKey = localStorage.getItem(testnet ? STORAGE_KEYS.BINANCE_KEY_TESTNET : STORAGE_KEYS.BINANCE_KEY) || '';
+      const apiSecret = localStorage.getItem(testnet ? STORAGE_KEYS.BINANCE_SECRET_TESTNET : STORAGE_KEYS.BINANCE_SECRET) || '';
       const res = await fetch(`${API_URL}/api/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, apiSecret, amountEur: eurInput, testnet }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
@@ -56,8 +57,8 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       }).catch(() => {});
-      let history: any[] = [];
-      try { history = JSON.parse(localStorage.getItem("trade_history") || "[]"); } catch { history = []; }
+      let history: TradeHistoryEntry[] = [];
+      try { history = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || "[]"); } catch { history = []; }
       const usdcArs = parseFloat(data.usdcArsRate || '0');
       const eurUsdc = parseFloat(data.rate || '0');
       const eurArsRate = usdcArs > 0 && eurUsdc > 0 ? (eurUsdc * usdcArs).toFixed(2) : undefined;
@@ -66,11 +67,12 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const binanceFeeEur = '0';
       const usdcDestAddress = getSelectedWithdrawEntry()?.address || undefined;
       history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate, eurUsdcRate: eurUsdc > 0 ? eurUsdc.toFixed(4) : undefined, binanceFeeEur, usdcDestAddress });
-      localStorage.setItem("trade_history", JSON.stringify(history));
+      localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(history));
       setEurInput(''); setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);
-    } catch (e: any) {
-      setErrorMsg(e.message);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setErrorMsg(msg);
       setIsConfirming(false);
     } finally {
       setLoading(false);

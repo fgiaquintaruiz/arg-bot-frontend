@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import {API_URL} from '../config';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
 const CRYPTOJS_AES_PREFIX = 'U2FsdGVkX1+';
 
 export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () => void, onCancel: () => void }>) {
     const [activeTab, setActiveTab] = useState<'prod' | 'testnet'>(() =>
-        localStorage.getItem('argbot_testnet') === 'true' ? 'testnet' : 'prod'
+        localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) === 'true' ? 'testnet' : 'prod'
     );
     const [prodKey, setProdKey] = useState('');
     const [prodSecret, setProdSecret] = useState('');
@@ -16,20 +17,20 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
     const [migrated, setMigrated] = useState(false);
 
     useEffect(() => {
-        const storedKey = localStorage.getItem('binance_key') || '';
-        const storedSecret = localStorage.getItem('binance_secret') || '';
+        const storedKey = localStorage.getItem(STORAGE_KEYS.BINANCE_KEY) || '';
+        const storedSecret = localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET) || '';
 
         if (storedKey.startsWith(CRYPTOJS_AES_PREFIX) || storedSecret.startsWith(CRYPTOJS_AES_PREFIX)) {
-            localStorage.removeItem('binance_key');
-            localStorage.removeItem('binance_secret');
+            localStorage.removeItem(STORAGE_KEYS.BINANCE_KEY);
+            localStorage.removeItem(STORAGE_KEYS.BINANCE_SECRET);
             setMigrated(true);
         } else {
             setProdKey(storedKey);
             setProdSecret(storedSecret);
         }
 
-        setTestnetKey(localStorage.getItem('binance_key_testnet') || '');
-        setTestnetSecret(localStorage.getItem('binance_secret_testnet') || '');
+        setTestnetKey(localStorage.getItem(STORAGE_KEYS.BINANCE_KEY_TESTNET) || '');
+        setTestnetSecret(localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET) || '');
     }, []);
 
     useEffect(() => {
@@ -41,11 +42,11 @@ export default function BinanceConfig({onSave, onCancel}: Readonly<{ onSave: () 
 
     const handleSave = () => {
         if (activeTab === 'testnet') {
-            localStorage.setItem('binance_key_testnet', testnetKey.trim());
-            localStorage.setItem('binance_secret_testnet', testnetSecret.trim());
+            localStorage.setItem(STORAGE_KEYS.BINANCE_KEY_TESTNET, testnetKey.trim());
+            localStorage.setItem(STORAGE_KEYS.BINANCE_SECRET_TESTNET, testnetSecret.trim());
         } else {
-            localStorage.setItem('binance_key', prodKey.trim());
-            localStorage.setItem('binance_secret', prodSecret.trim());
+            localStorage.setItem(STORAGE_KEYS.BINANCE_KEY, prodKey.trim());
+            localStorage.setItem(STORAGE_KEYS.BINANCE_SECRET, prodSecret.trim());
         }
         onSave();
     };

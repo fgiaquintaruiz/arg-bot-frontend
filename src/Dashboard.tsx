@@ -15,13 +15,14 @@ import { useRateAlert } from './hooks/useRateAlert';
 import RateAlertBanner from './components/RateAlertBanner';
 import { getRateAlertConfig } from './utils/rateAlertStorage';
 import { CoreData } from './types';
+import { STORAGE_KEYS } from './utils/storageKeys';
 
 const AUTOMATIC_UPDATE = true;
 
 export default function Dashboard({ user }: { user: User }) {
     const [data, setData] = useState<CoreData | null>(null);
     const [marketLoading, setMarketLoading] = useState(false);
-    const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem('argbot_testnet') !== 'false');
+    const [isTestnet, setIsTestnet] = useState<boolean>(() => localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) !== 'false');
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
     const [currentView, setCurrentView] = useState('calculator');
 
@@ -83,9 +84,9 @@ export default function Dashboard({ user }: { user: User }) {
     }, []);
 
     const fetchMarketData = useCallback(() => {
-        const testnet = localStorage.getItem('argbot_testnet') !== 'false';
-        const apiKey = localStorage.getItem(testnet ? 'binance_key_testnet' : 'binance_key') || '';
-        const apiSecret = localStorage.getItem(testnet ? 'binance_secret_testnet' : 'binance_secret') || '';
+        const testnet = localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) !== 'false';
+        const apiKey = localStorage.getItem(testnet ? STORAGE_KEYS.BINANCE_KEY_TESTNET : STORAGE_KEYS.BINANCE_KEY) || '';
+        const apiSecret = localStorage.getItem(testnet ? STORAGE_KEYS.BINANCE_SECRET_TESTNET : STORAGE_KEYS.BINANCE_SECRET) || '';
         setMarketLoading(true);
         const fetchWithRetry = async (attempts: number): Promise<void> => {
             for (let i = 0; i < attempts; i++) {
@@ -136,7 +137,7 @@ export default function Dashboard({ user }: { user: User }) {
 
     const handleConfirmRealMode = () => {
         setIsTestnet(false);
-        localStorage.setItem('argbot_testnet', 'false');
+        localStorage.setItem(STORAGE_KEYS.ARGBOT_TESTNET, 'false');
         fetchMarketData();
         setShowTestnetModal(false);
     };
@@ -266,7 +267,7 @@ export default function Dashboard({ user }: { user: User }) {
                                 setShowTestnetModal(true);
                             } else {
                                 setIsTestnet(true);
-                                localStorage.setItem('argbot_testnet', 'true');
+                                localStorage.setItem(STORAGE_KEYS.ARGBOT_TESTNET, 'true');
                                 fetchMarketData();
                             }
                         }}
