@@ -262,29 +262,41 @@ export default function Dashboard({ user }: { user: User }) {
                         Actualizando...
                     </span>
                 )}
-                <span className={styles['rate-item']}>
-                    EUR/USDC <span className={styles['rate-value']}>
-                        {data ? parseFloat(data.rate).toFixed(4) : '—'}
-                    </span>
-                </span>
-                <span className={styles['rate-separator']}>·</span>
-                <span className={styles['rate-item']}>
-                    USDC/ARS <span className={styles['rate-value']}>
-                        {data?.nexoUsdcArsRate ? parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
-                    </span>
-                </span>
-                <span className={styles['rate-separator']}>·</span>
-                <span className={styles['rate-item']}>
-                    1 EUR = <span className={styles['rate-value']}>
-                        {data?.nexoUsdcArsRate ? (parseFloat(data.rate) * parseFloat(data.nexoUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
-                    </span>
-                </span>
-                <span className={styles['rate-separator']}>·</span>
-                <span className={styles['rate-item']}>
-                    1 USDC = <span className={styles['rate-value']}>
-                        {data?.nexoUsdcArsRate ? parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
-                    </span>
-                </span>
+                {(() => {
+                    const overrideRaw = localStorage.getItem(STORAGE_KEYS.USDC_ARS_OVERRIDE);
+                    const displayedUsdcArs = overrideRaw
+                        ? parseFloat(overrideRaw)
+                        : data?.nexoUsdcArsRate
+                        ? parseFloat(data.nexoUsdcArsRate)
+                        : null;
+                    return (
+                        <>
+                            <span className={styles['rate-item']}>
+                                EUR/USDC <span className={styles['rate-value']}>
+                                    {data ? parseFloat(data.rate).toFixed(4) : '—'}
+                                </span>
+                            </span>
+                            <span className={styles['rate-separator']}>·</span>
+                            <span className={styles['rate-item']}>
+                                USDC/ARS{overrideRaw ? ' ★' : ''} <span className={styles['rate-value']}>
+                                    {displayedUsdcArs !== null ? displayedUsdcArs.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                                </span>
+                            </span>
+                            <span className={styles['rate-separator']}>·</span>
+                            <span className={styles['rate-item']}>
+                                1 EUR = <span className={styles['rate-value']}>
+                                    {displayedUsdcArs !== null && data ? (parseFloat(data.rate) * displayedUsdcArs).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                                </span>
+                            </span>
+                            <span className={styles['rate-separator']}>·</span>
+                            <span className={styles['rate-item']}>
+                                1 USDC = <span className={styles['rate-value']}>
+                                    {displayedUsdcArs !== null ? displayedUsdcArs.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ARS' : '—'}
+                                </span>
+                            </span>
+                        </>
+                    );
+                })()}
                 {data?.balances?.eur != null && (
                     <span data-testid="rate-strip-balance" className={isMobile ? styles['rate-balance-mobile'] : styles['rate-balance-desktop']}>
                         <span className={styles['balance-label']}>Disponible:</span>

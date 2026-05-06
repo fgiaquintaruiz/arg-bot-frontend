@@ -41,6 +41,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [eurUsdcLower, setEurUsdcLower] = useState<string>(() => String(getRateAlertConfig().eurUsdc.lower ?? ''));
   const [alertsSaved, setAlertsSaved] = useState(false);
   const [alertsValidationError, setAlertsValidationError] = useState<string | null>(null);
+  const [usdcArsOverride, setUsdcArsOverride] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.USDC_ARS_OVERRIDE) || '');
 
   // Registrar el email del usuario para evitar el account picker de Google
   useEffect(() => {
@@ -369,6 +370,31 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                     value={eurUsdcLower}
                     onChange={e => setEurUsdcLower(e.target.value)}
                     placeholder="Umbral inferior EUR/USDC"
+                    className={styles['alerts-input']}
+                  />
+                </div>
+              </div>
+
+              {/* USDC/ARS manual override */}
+              <div className={styles['alerts-section']}>
+                <p className={styles['alerts-section-label']}>Tasa USDC/ARS manual (override)</p>
+                <div>
+                  <label className={styles['alerts-field-label']}>Tasa USDC/ARS manual (override)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={usdcArsOverride}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setUsdcArsOverride(val);
+                      if (val) {
+                        localStorage.setItem(STORAGE_KEYS.USDC_ARS_OVERRIDE, val);
+                      } else {
+                        localStorage.removeItem(STORAGE_KEYS.USDC_ARS_OVERRIDE);
+                      }
+                    }}
+                    placeholder="Ej: 1464.67 — deja vacío para usar tasa de mercado"
                     className={styles['alerts-input']}
                   />
                 </div>

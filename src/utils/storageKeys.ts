@@ -21,4 +21,6 @@ export const STORAGE_KEYS = {
   ARGBOT_NOTIFICATIONS_ENABLED: 'argbot_notifications_enabled',
   DRIVE_FILE_ID: 'drive_file_id',
   RATE_ALERT_CONFIG: 'rate_alert_config',
+  BANK_ACCOUNT_SAVED: 'bank_account_saved',
+  USDC_ARS_OVERRIDE: 'usdc_ars_override',
 } as const;

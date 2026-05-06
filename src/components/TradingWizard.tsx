@@ -93,6 +93,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   // Step 1 — SEPA state
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [bankAccountSaved, setBankAccountSaved] = useState(() => localStorage.getItem(STORAGE_KEYS.BANK_ACCOUNT_SAVED) === 'true');
 
   if (!data) return (
     <div className={styles.loading}>
@@ -101,7 +102,9 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
   );
 
   // Math
-  const usdcArs = parseFloat(data.usdcArsRate) || 1121.00;
+  const usdcArs = parseFloat(
+    localStorage.getItem(STORAGE_KEYS.USDC_ARS_OVERRIDE) || String(data.usdcArsRate) || '1121.00'
+  );
   const eurUsdc = parseFloat(data.rate) || 1.08;
   // Binance no cobra fee de retiro para USDC BEP20 — siempre 0
   const tradingFeeRate = 0.001;
@@ -210,6 +213,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                     onClick={openSettings}
                     onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); openSettings(); }}
                     className={styles['iban-warning-link']}
+                    data-testid="open-settings-link"
                   >
                     Configuración <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle', marginInline: '2px' }} /> Binance
                   </span>
@@ -310,90 +314,105 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           {activeStep === 1 && (
             <div className={styles['step-content']}>
               <button onClick={retrocede} className={styles['back-btn']}>
-                ← Paso anterior
+                {'<'} Paso anterior
               </button>
 
-              <div className={styles['sepa-box']}>
-                <p className={styles['sepa-title']}>
-                  Datos de transferencia SEPA
-                </p>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 12, color: '#B7BDC8', fontSize: 14 }}>
+                <input
+                  type="checkbox"
+                  checked={bankAccountSaved}
+                  onChange={e => {
+                    setBankAccountSaved(e.target.checked);
+                    localStorage.setItem(STORAGE_KEYS.BANK_ACCOUNT_SAVED, String(e.target.checked));
+                  }}
+                  style={{ accentColor: '#F0B90B', width: 16, height: 16, cursor: 'pointer' }}
+                />
+                Ya tengo mi cuenta de Heuro agendada en el banco
+              </label>
 
-                {binanceIBAN ? (
-                  <>
-                    <button
-                      onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyAllSepaDetails(); }}
-                      onClick={copyAllSepaDetails}
-                      className={copiedAll ? styles['copy-all-btn-active'] : styles['copy-all-btn-idle']}
-                    >
-                      {copiedAll ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todos los datos</>}
-                    </button>
+              {!bankAccountSaved && (
+                <div className={styles['sepa-box']}>
+                  <p className={styles['sepa-title']}>
+                    Datos de transferencia SEPA
+                  </p>
 
-                    <div className={styles['sepa-fields']}>
-                      {[
-                        { label: 'IBAN', value: binanceIBAN, copyVal: binanceIBAN.replace(/\s/g, ''), field: 'iban', mono: true },
-                        { label: 'Beneficiario', value: binanceName, field: 'name', mono: false },
-                        { label: 'BIC / SWIFT', value: binanceBIC, field: 'bic', mono: true },
-                        ...(binanceBank ? [{ label: 'Banco', value: binanceBank, field: 'bank', mono: false }] : []),
-                        ...(binanceBankAddr ? [{ label: 'Dirección del banco', value: binanceBankAddr, field: 'addr', mono: false }] : []),
-                      ].map((row: SEPAField) => (
-                        <div key={row.field}>
-                          <div className={styles['row-label']}>{row.label}</div>
+                  {binanceIBAN ? (
+                    <>
+                      <button
+                        onTouchEnd={/* v8 ignore next */ (e) => { e.preventDefault(); copyAllSepaDetails(); }}
+                        onClick={copyAllSepaDetails}
+                        className={copiedAll ? styles['copy-all-btn-active'] : styles['copy-all-btn-idle']}
+                      >
+                        {copiedAll ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar todos los datos</>}
+                      </button>
+
+                      <div className={styles['sepa-fields']}>
+                        {[
+                          { label: 'IBAN', value: binanceIBAN, copyVal: binanceIBAN.replace(/\s/g, ''), field: 'iban', mono: true },
+                          { label: 'Beneficiario', value: binanceName, field: 'name', mono: false },
+                          { label: 'BIC / SWIFT', value: binanceBIC, field: 'bic', mono: true },
+                          ...(binanceBank ? [{ label: 'Banco', value: binanceBank, field: 'bank', mono: false }] : []),
+                          ...(binanceBankAddr ? [{ label: 'Dirección del banco', value: binanceBankAddr, field: 'addr', mono: false }] : []),
+                        ].map((row: SEPAField) => (
+                          <div key={row.field}>
+                            <div className={styles['row-label']}>{row.label}</div>
+                            <div className={styles['sepa-field-row']}>
+                              <span className={row.mono ? styles['sepa-field-value-mono'] : styles['sepa-field-value-default']}>{row.value}</span>
+                              <button
+                                onClick={() => copyToClipboard(row.copyVal ?? row.value, row.field)}
+                                className={`${styles['copy-btn']} ${copiedField === row.field ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
+                              >
+                                {copiedField === row.field ? <Check size={12} /> : <Copy size={12} />}
+                                {copiedField === row.field ? '' : 'Copiar'}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        <div>
+                          <div className={styles['row-label']}>Monto</div>
                           <div className={styles['sepa-field-row']}>
-                            <span className={row.mono ? styles['sepa-field-value-mono'] : styles['sepa-field-value-default']}>{row.value}</span>
+                            <span className={styles['sepa-amount-value']}>
+                              {displayedEur.toFixed(2)} EUR
+                            </span>
                             <button
-                              onClick={() => copyToClipboard(row.copyVal ?? row.value, row.field)}
-                              className={`${styles['copy-btn']} ${copiedField === row.field ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
+                              onClick={() => copyToClipboard(displayedEur.toFixed(2), 'amount')}
+                              className={`${styles['copy-btn']} ${copiedField === 'amount' ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
                             >
-                              {copiedField === row.field ? <Check size={12} /> : <Copy size={12} />}
-                              {copiedField === row.field ? '' : 'Copiar'}
+                              {copiedField === 'amount' ? <Check size={12} /> : <Copy size={12} />}
+                              {copiedField === 'amount' ? '' : 'Copiar'}
                             </button>
                           </div>
                         </div>
-                      ))}
 
-                      <div>
-                        <div className={styles['row-label']}>Monto</div>
-                        <div className={styles['sepa-field-row']}>
-                          <span className={styles['sepa-amount-value']}>
-                            {displayedEur.toFixed(2)} EUR
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(displayedEur.toFixed(2), 'amount')}
-                            className={`${styles['copy-btn']} ${copiedField === 'amount' ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
-                          >
-                            {copiedField === 'amount' ? <Check size={12} /> : <Copy size={12} />}
-                            {copiedField === 'amount' ? '' : 'Copiar'}
-                          </button>
+                        <div>
+                          <div className={styles['row-label']}>Concepto</div>
+                          <div className={styles['sepa-field-row']}>
+                            <span className={styles['sepa-reference-value']}>
+                              {sepaReference}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(sepaReference, 'ref')}
+                              className={`${styles['copy-btn']} ${copiedField === 'ref' ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
+                            >
+                              {copiedField === 'ref' ? <Check size={12} /> : <Copy size={12} />}
+                              {copiedField === 'ref' ? '' : 'Copiar'}
+                            </button>
+                          </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className={styles['row-label']}>Concepto</div>
-                        <div className={styles['sepa-field-row']}>
-                          <span className={styles['sepa-reference-value']}>
-                            {sepaReference}
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(sepaReference, 'ref')}
-                            className={`${styles['copy-btn']} ${copiedField === 'ref' ? styles['copy-btn-copied'] : styles['copy-btn-idle']}`}
-                          >
-                            {copiedField === 'ref' ? <Check size={12} /> : <Copy size={12} />}
-                            {copiedField === 'ref' ? '' : 'Copiar'}
-                          </button>
-                        </div>
+                        <p className={styles['sepa-note']}>
+                          Solo transferencia SEPA — no SWIFT
+                        </p>
                       </div>
-
-                      <p className={styles['sepa-note']}>
-                        Solo transferencia SEPA — no SWIFT
-                      </p>
+                    </>
+                  ) : (
+                    <div className={styles['sepa-empty']}>
+                      No tenés cuenta SEPA configurada. Agregá tu IBAN en ⚙️ Configuración.
                     </div>
-                  </>
-                ) : (
-                  <div className={styles['sepa-empty']}>
-                    No tenés cuenta SEPA configurada. Agregá tu IBAN en ⚙️ Configuración.
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               <button onClick={advance} className={styles['done-btn']}>
                 Ya realicé la transferencia <ChevronRight size={16} style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '4px' }} />
@@ -415,7 +434,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           {activeStep === 2 && (
             <>
               <button onClick={retrocede} className={styles['back-btn']}>
-                ← Paso anterior
+                {'<'} Paso anterior
               </button>
               <Trade
                 data={data}
@@ -443,7 +462,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           {activeStep === 3 && (
             <>
               <button onClick={retrocede} className={styles['back-btn']}>
-                ← Paso anterior
+                {'<'} Paso anterior
               </button>
               <Withdraw
                 data={data}
@@ -466,7 +485,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
           {activeStep === 4 && (
             <div className={styles['step-content']}>
               <button onClick={retrocede} className={styles['back-btn']}>
-                ← Paso anterior
+                {'<'} Paso anterior
               </button>
               {data.nexoUsdcArsRate ? (
                 <>
