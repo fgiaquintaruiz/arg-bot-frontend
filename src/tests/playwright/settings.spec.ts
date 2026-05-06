@@ -71,4 +71,49 @@ test.describe('Settings Modal', () => {
     });
     await expect(page.getByText('Configuración de Binance')).toBeVisible();
   });
+
+  test('Alertas tab is present and navigable', async ({ authenticatedPage: page }) => {
+    await page.getByRole('button', { name: 'Alertas' }).click();
+    await expect(page.getByText('Alertas de tasa')).toBeVisible();
+  });
+
+  test('Alertas tab shows USDC/ARS override input', async ({ authenticatedPage: page }) => {
+    await page.getByRole('button', { name: 'Alertas' }).click();
+    await expect(page.getByPlaceholder(/Ej: 1464\.67/)).toBeVisible();
+  });
+
+  test('USDC/ARS override: typing a value updates the rate strip label via localStorage', async ({ authenticatedPage: page }) => {
+    // The wizard reads usdcArs from localStorage USDC_ARS_OVERRIDE at render time.
+    // We open Settings → Alertas, type an override, then close and reload to
+    // confirm the wizard fee-breakdown reflects the new rate.
+    await page.getByRole('button', { name: 'Alertas' }).click();
+    const overrideInput = page.getByPlaceholder(/Ej: 1464\.67/);
+    await overrideInput.fill('9999');
+    await page.getByRole('button', { name: 'Cerrar configuración' }).click();
+    // Reload to re-render wizard with the persisted override in localStorage
+    await page.reload();
+    await expect(page.getByText('ARGBOT')).toBeVisible({ timeout: 10_000 });
+    // The fee-breakdown label shows "USDC destino (9999)"
+    await expect(page.getByText(/USDC destino \(9999\)/)).toBeVisible();
+  });
+
+  test('USDC/ARS override: clearing the value falls back to market rate', async ({ authenticatedPage: page }) => {
+    // Pre-seed the override via localStorage, then clear it via Settings UI
+    await page.evaluate(() => localStorage.setItem('usdc_ars_override', '9999'));
+    await page.reload();
+    await expect(page.getByText('ARGBOT')).toBeVisible({ timeout: 10_000 });
+    // Confirm override is active
+    await expect(page.getByText(/USDC destino \(9999\)/)).toBeVisible();
+    // Now clear it through Settings
+    await page.getByRole('button', { name: 'Abrir configuración' }).click();
+    await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible();
+    await page.getByRole('button', { name: 'Alertas' }).click();
+    const overrideInput = page.getByPlaceholder(/Ej: 1464\.67/);
+    await overrideInput.fill('');
+    await page.getByRole('button', { name: 'Cerrar configuración' }).click();
+    await page.reload();
+    await expect(page.getByText('ARGBOT')).toBeVisible({ timeout: 10_000 });
+    // Falls back to market rate from MOCK_API_DATA.usdcArsRate = '1150.00' → shown as 1150
+    await expect(page.getByText(/USDC destino \(1150\)/)).toBeVisible();
+  });
 });

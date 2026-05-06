@@ -105,3 +105,161 @@ test.describe('Dashboard rate strip — responsive', () => {
     expect(box!.height).toBeLessThanOrEqual(22);
   });
 });
+
+test.describe('TradingWizard — step 1: Heuro bank account checkbox', () => {
+  test('SEPA block is visible by default at step 1 (no IBAN configured)', async ({ authenticatedPage: page }) => {
+    // Default arsAmount = '500000' → displayedEur > 0 → Continuar is enabled
+    await page.getByRole('button', { name: /Continuar con la transferencia/ }).click();
+    // Step 1 content appears — without IBAN the fallback "no account" message shows
+    await expect(page.getByText(/No tenés cuenta SEPA configurada/)).toBeVisible();
+  });
+
+  test('checking Heuro checkbox hides the SEPA data block', async ({ authenticatedPage: page }) => {
+    await page.getByRole('button', { name: /Continuar con la transferencia/ }).click();
+    // SEPA block is initially visible
+    await expect(page.getByText(/No tenés cuenta SEPA configurada/)).toBeVisible();
+    // Check the Heuro checkbox
+    const checkbox = page.getByRole('checkbox', { name: /Ya tengo mi cuenta de Heuro agendada en el banco/ });
+    await checkbox.check();
+    // SEPA block must disappear
+    await expect(page.getByText(/No tenés cuenta SEPA configurada/)).not.toBeVisible();
+  });
+
+  test('unchecking Heuro checkbox restores the SEPA data block', async ({ authenticatedPage: page }) => {
+    await page.getByRole('button', { name: /Continuar con la transferencia/ }).click();
+    const checkbox = page.getByRole('checkbox', { name: /Ya tengo mi cuenta de Heuro agendada en el banco/ });
+    await checkbox.check();
+    await expect(page.getByText(/No tenés cuenta SEPA configurada/)).not.toBeVisible();
+    await checkbox.uncheck();
+    await expect(page.getByText(/No tenés cuenta SEPA configurada/)).toBeVisible();
+  });
+
+  test('Heuro checkbox state persists to localStorage', async ({ authenticatedPage: page }) => {
+    await page.getByRole('button', { name: /Continuar con la transferencia/ }).click();
+    const checkbox = page.getByRole('checkbox', { name: /Ya tengo mi cuenta de Heuro agendada en el banco/ });
+    await checkbox.check();
+    const stored = await page.evaluate(() => localStorage.getItem('bank_account_saved'));
+    expect(stored).toBe('true');
+  });
+});
+
+test.describe('TradingWizard — step 3: Withdraw testnet mock', () => {
+  // Helper: navigate from step 0 to step 3 (Withdraw) using mocked API calls.
+  // Pre-conditions (injected by authenticatedPage fixture):
+  //   - argbot_testnet is absent → defaults to testnet mode
+  //   - /api/trade is mocked to return success
+  //   - address book is pre-seeded with one entry so Withdraw is enabled
+
+  async function navigateToWithdrawStep(page: import('@playwright/test').Page) {
+    // Seed address book so Withdraw button is enabled
+    await page.evaluate(() => {
+      const entry = { id: 'e2e-addr-1', name: 'Nexo E2E', address: '0xABCDEF1234567890ABCDEF1234567890ABCDEF12' };
+      localStorage.setItem('address_book', JSON.stringify([entry]));
+      localStorage.setItem('usdc_wallet_id', 'e2e-addr-1');
+    });
+    // Mock the trade API so step 2 can succeed
+    await page.route('**/api/trade', route => route.fulfill({ json: { success: true } }));
+    // Step 0 → 1
+    await page.getByRole('button', { name: /Continuar con la transferencia/ }).click();
+    // Step 1 → 2: "Ya realicé la transferencia"
+    await page.getByRole('button', { name: /Ya realicé la transferencia/ }).click();
+    // Step 2: fill EUR amount and confirm via Trade component
+    await page.getByPlaceholder('Monto en EUR').fill('100');
+    await page.getByRole('button', { name: 'Ejecutar cambio' }).click();
+    await page.getByRole('button', { name: 'Confirmar' }).click();
+    // Wait for trade success message then auto-advance (2s timeout in component)
+    await expect(page.getByText(/Cambio ejecutado con éxito/)).toBeVisible({ timeout: 10_000 });
+    // Step 3 (Withdraw) appears after the 2s auto-advance
+    await expect(page.getByText('Retirar USDC')).toBeVisible({ timeout: 5_000 });
+  }
+
+  test('testnet mode: initiating a withdraw shows TESTNET badge', async ({ authenticatedPage: page }) => {
+    // argbot_testnet defaults to absent → isTestnet = true
+    await navigateToWithdrawStep(page);
+    // Initiate the withdrawal
+    await page.getByRole('button', { name: 'Retirar' }).click();
+    // Confirmation dialog appears
+    await expect(page.getByRole('dialog', { name: 'Confirmar retiro' })).toBeVisible();
+    await page.getByRole('checkbox', { name: /Entiendo que esta operación es irreversible/ }).check();
+    await page.getByRole('button', { name: 'Confirmar retiro' }).click();
+    // Testnet mock waits 1s then shows the badge
+    await expect(page.getByText('TESTNET')).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('testnet mode: success message mentions testnet simulation', async ({ authenticatedPage: page }) => {
+    await navigateToWithdrawStep(page);
+    await page.getByRole('button', { name: 'Retirar' }).click();
+    await expect(page.getByRole('dialog', { name: 'Confirmar retiro' })).toBeVisible();
+    await page.getByRole('checkbox', { name: /Entiendo que esta operación es irreversible/ }).check();
+    await page.getByRole('button', { name: 'Confirmar retiro' }).click();
+    await expect(page.getByText(/Simulación testnet/)).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('testnet mode: confirmation dialog disappears after testnet mock completes', async ({ authenticatedPage: page }) => {
+    await navigateToWithdrawStep(page);
+    await page.getByRole('button', { name: 'Retirar' }).click();
+    await page.getByRole('checkbox', { name: /Entiendo que esta operación es irreversible/ }).check();
+    await page.getByRole('button', { name: 'Confirmar retiro' }).click();
+    // Confirmation overlay must close after testnet mock
+    await expect(page.getByRole('dialog', { name: 'Confirmar retiro' })).not.toBeVisible({ timeout: 5_000 });
+  });
+});
+
+test.describe('TradingWizard — step 4: broker language (not Nexo/Ripio)', () => {
+  async function navigateToStep4(page: import('@playwright/test').Page) {
+    // Seed address book
+    await page.evaluate(() => {
+      const entry = { id: 'e2e-addr-1', name: 'Destino E2E', address: '0xABCDEF1234567890ABCDEF1234567890ABCDEF12' };
+      localStorage.setItem('address_book', JSON.stringify([entry]));
+      localStorage.setItem('usdc_wallet_id', 'e2e-addr-1');
+      // Disable testnet so Withdraw.onSuccess fires and step advances to 4
+      localStorage.setItem('argbot_testnet', 'false');
+    });
+    await page.route('**/api/trade', route => route.fulfill({ json: { success: true } }));
+    await page.route('**/api/withdraw', route => route.fulfill({ json: { success: true } }));
+    await page.route('**/api/push/**', route => route.fulfill({ json: {} }));
+    // Step 0 → 1
+    await page.getByRole('button', { name: /Continuar con la transferencia/ }).click();
+    // Step 1 → 2
+    await page.getByRole('button', { name: /Ya realicé la transferencia/ }).click();
+    // Step 2: Trade
+    await page.getByPlaceholder('Monto en EUR').fill('100');
+    await page.getByRole('button', { name: 'Ejecutar cambio' }).click();
+    await page.getByRole('button', { name: 'Confirmar' }).click();
+    await expect(page.getByText(/Cambio ejecutado con éxito/)).toBeVisible({ timeout: 10_000 });
+    // Step 3: Withdraw
+    await expect(page.getByText('Retirar USDC')).toBeVisible({ timeout: 5_000 });
+    await page.getByRole('button', { name: 'Retirar' }).click();
+    await expect(page.getByRole('dialog', { name: 'Confirmar retiro' })).toBeVisible();
+    await page.getByRole('checkbox', { name: /Entiendo que esta operación es irreversible/ }).check();
+    await page.getByRole('button', { name: 'Confirmar retiro' }).click();
+    // Production path shows "¡Solicitud de retiro enviada!" then advances after 2s
+    await expect(page.getByText(/Solicitud de retiro enviada/)).toBeVisible({ timeout: 5_000 });
+    // Step 4 (broker) appears after the 2s auto-advance
+    await expect(page.getByText(/Convertir USDC → ARS en tu broker/)).toBeVisible({ timeout: 5_000 });
+  }
+
+  test('step 4 header uses "broker" label, not "Nexo" or "Ripio"', async ({ authenticatedPage: page }) => {
+    await navigateToStep4(page);
+    // The StepBadge for step 4 reads "5. Convertir USDC → ARS en tu broker"
+    await expect(page.getByText(/Convertir USDC → ARS en tu broker/)).toBeVisible();
+    // "Nexo" and "Ripio" must NOT appear as step labels
+    await expect(page.getByText('Nexo', { exact: true })).not.toBeVisible();
+    await expect(page.getByText('Ripio', { exact: true })).not.toBeVisible();
+  });
+
+  test('step 4 content uses "broker" terminology throughout', async ({ authenticatedPage: page }) => {
+    await navigateToStep4(page);
+    // Disclaimer text uses "broker"
+    await expect(page.getByText(/Las comisiones del broker no están incluidas/)).toBeVisible();
+    // CTA link says "broker cripto"
+    await expect(page.getByText(/Abrir tu broker cripto en Argentina/)).toBeVisible();
+  });
+
+  test('step 4 content does not reference "Nexo" or "Ripio" by name', async ({ authenticatedPage: page }) => {
+    await navigateToStep4(page);
+    // Regression guard: old text used "Nexo" and "Ripio" specifically — now replaced with "broker"
+    await expect(page.getByText(/Nexo/i)).not.toBeVisible();
+    await expect(page.getByText(/en Ripio/i)).not.toBeVisible();
+  });
+});

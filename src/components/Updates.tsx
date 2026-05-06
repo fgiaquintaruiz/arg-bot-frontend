@@ -5,15 +5,16 @@ import frontChangelog from '../../CHANGELOG.md?raw';
 export default function Updates({ onClose }: { onClose: () => void }) {
     const [activeTab, setActiveTab] = useState<'roadmap' | 'frontend' | 'backend'>('roadmap');
     const [backChangelog, setBackChangelog] = useState('Cargando changelog del servidor...');
+    const [backendLoaded, setBackendLoaded] = useState(false);
 
     useEffect(() => {
-        if (activeTab === 'backend') {
+        if (activeTab === 'backend' && !backendLoaded) {
             fetch(`${API_URL}/api/changelog`)
                 .then(res => res.text())
-                .then(text => setBackChangelog(text))
-                .catch(() => setBackChangelog('Error al cargar el historial del servidor.'));
+                .then(text => { setBackChangelog(text); setBackendLoaded(true); })
+                .catch(() => { setBackChangelog('Error al cargar el historial del servidor.'); setBackendLoaded(true); });
         }
-    }, [activeTab]);
+    }, [activeTab, backendLoaded]);
 
     const roadmapContent = `
 # 🗺️ Hoja de Ruta de ARGBOT

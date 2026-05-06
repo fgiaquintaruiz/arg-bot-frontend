@@ -73,7 +73,7 @@ describe('TradingWizard', () => {
     // Step 3 → 4 (Withdraw mock fires onSuccess)
     fireEvent.click(screen.getByText('Withdraw Success'));
 
-    expect(screen.getByText(/comisiones de Nexo no están incluidas/)).toBeInTheDocument();
+    expect(screen.getByText(/comisiones del broker no están incluidas/)).toBeInTheDocument();
   });
 
   it('muestra estado de carga cuando data es null', () => {
@@ -92,11 +92,13 @@ describe('TradingWizard', () => {
     const eurInput = screen.getByPlaceholderText('0.00');
     fireEvent.change(eurInput, { target: { value: '500' } });
     // El campo ARS ahora debería mostrar el valor calculado
+    // calcFromEur(500): netEur=499, grossUsdc=499*1.08=538.92, netUsdc≈538.38, ars≈619407
     const arsInput = screen.getByPlaceholderText('500000');
     expect(arsInput.value).not.toBe('500000');
+    expect(arsInput.value).toMatch(/^\d[\d.,]+$/);
   });
 
-  it('muestra datos SEPA en step 1 sin necesidad de expandir', async () => {
+  it('muestra datos SEPA en step 1 sin necesidad de expandir', () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
@@ -108,8 +110,11 @@ describe('TradingWizard', () => {
 
   it('click en Copiar del campo IBAN llama a copyToClipboard', async () => {
     localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
-    Object.assign(navigator, {
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+      writable: true,
     });
 
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
@@ -119,8 +124,9 @@ describe('TradingWizard', () => {
     const copyButtons = screen.getAllByText('Copiar');
     fireEvent.click(copyButtons[0]);
 
-    // No lanza excepción — copyToClipboard ejecutado
-    expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    expect(writeText).toHaveBeenCalledWith('ES1234567890123456789012');
+
+    delete navigator.clipboard;
   });
 
   it('click en "Configuración → Binance" despacha evento open-settings', () => {
@@ -150,27 +156,35 @@ describe('TradingWizard', () => {
   it('borrar el ARS input no rompe el cálculo (|| 0 branch en arsAmount)', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const arsInput = screen.getByPlaceholderText('500000');
-    // Limpiar el campo ARS → arsAmount = '' → parseFloat('') || 0
+    // Limpiar el campo ARS → arsAmount = '' → parseFloat('') || 0 → displayedEur = calcFromArs(0) = sepaFee = 1
     fireEvent.change(arsInput, { target: { value: '' } });
-    // El componente renderiza sin explotar — la rama || 0 fue ejecutada
+    // El botón "Continuar" debe deshabilitarse porque displayedEur <= 0 cuando ARS=0
+    // (calcFromArs(0) = sepaFee = 1.00 > 0, así que el botón sigue habilitado)
     expect(arsInput).toBeInTheDocument();
+    expect(arsInput.value).toBe('');
     expect(screen.getByText('1. Simulación')).toBeInTheDocument();
   });
 
   it('usar EUR input con valor vacío no rompe el cálculo (|| 0 branch)', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const eurInput = screen.getByPlaceholderText('0.00');
-    // Activar editMode=eur con valor vacío → parseFloat('') || 0
+    // Activar editMode=eur con valor vacío → parseFloat('') || 0 → displayedArs = 0
     fireEvent.change(eurInput, { target: { value: '' } });
-    expect(screen.getByPlaceholderText('500000')).toBeInTheDocument();
+    const arsInput = screen.getByPlaceholderText('500000');
+    // Con EUR=0, displayedArs debería ser 0 → el input muestra string vacío
+    expect(arsInput.value).toBe('');
+    expect(eurInput.value).toBe('');
   });
 
   it('EUR input con valor igual a sepaFee activa rama netEur <= 0 en calcFromEur', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     const eurInput = screen.getByPlaceholderText('0.00');
-    // sepaFee = 1.00 → netEur = 1 - 1 = 0 → branch netEur <= 0
+    // sepaFee = 1.00 → netEur = 1 - 1 = 0 → branch netEur <= 0 → ars = 0
     fireEvent.change(eurInput, { target: { value: '1' } });
-    expect(screen.getByPlaceholderText('500000')).toBeInTheDocument();
+    const arsInput = screen.getByPlaceholderText('500000');
+    // netEur=0 → {usdc:0, ars:0} → displayedArs=0 → ARS input muestra string vacío
+    expect(arsInput.value).toBe('');
+    expect(screen.getByText(/Monto muy bajo/i)).toBeInTheDocument();
   });
 
   it('sepaReference usa email cuando user_email está en localStorage', () => {
@@ -192,7 +206,7 @@ describe('TradingWizard', () => {
     fireEvent.click(screen.getByText('Trade Success'));
     fireEvent.click(screen.getByText('Withdraw Success'));
 
-    expect(screen.getByText('Rate de Nexo no disponible. Verificá en la app de Nexo.')).toBeInTheDocument();
+    expect(screen.getByText('Rate del broker no disponible. Verificá en la app de tu broker cripto.')).toBeInTheDocument();
   });
 
   it('step 1: cuando IBAN está configurado, muestra el IBAN con botón copiar (sin QR)', () => {
