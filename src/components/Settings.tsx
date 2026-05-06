@@ -63,7 +63,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
       await navigator.clipboard.writeText(text);
       setCopiedField(field);
       setTimeout(/* v8 ignore next */ () => setCopiedField(null), 2000);
-    } catch { /* fallback */ }
+    } catch {}
   };
 
   // Google Drive Sync

@@ -478,10 +478,10 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
         </>
       )}
 
-      {/* ── Paso 4: Ripio USDC → ARS ── */}
+      {/* ── Paso 4: broker USDC → ARS ── */}
       {activeStep >= 4 && (
         <div className={styles.card}>
-          <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en Ripio" activeStep={activeStep} onStepClick={setActiveStep} />
+          <StepBadge step={4} icon={Banknote} label="Convertir USDC → ARS en tu broker" activeStep={activeStep} onStepClick={setActiveStep} />
           {activeStep === 4 && (
             <div className={styles['step-content']}>
               <button onClick={retrocede} className={styles['back-btn']}>
@@ -490,27 +490,21 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               {data.nexoUsdcArsRate ? (
                 <>
                   <div className={styles['ripio-box']}>
-                    <div className={styles['ripio-row']}>
-                      <span className={styles['ripio-label']}>USDC/ARS Nexo</span>
-                      <span className={styles['ripio-rate']}>
-                        {parseFloat(data.nexoUsdcArsRate).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
                     <div className={styles['ripio-total-row']}>
                       <span className={styles['ripio-total-label']}>Estimado a recibir</span>
                       <span className={styles['ripio-total-value']}>
-                        {(usdcForBroker * parseFloat(data.nexoUsdcArsRate)).toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
+                        {(usdcForBroker * usdcArs).toLocaleString('es-AR', { maximumFractionDigits: 0 })} ARS
                       </span>
                     </div>
                   </div>
 
                   <div className={styles['ripio-disclaimer']}>
-                    El monto estimado se calcula usando la tasa de Nexo en tiempo real. Las comisiones de Nexo no están incluidas — el ARS final recibido será menor.
+                    El monto estimado se calcula usando la tasa del broker en tiempo real. Las comisiones del broker no están incluidas — el ARS final recibido será menor.
                   </div>
                 </>
               ) : (
                 <div className={styles['ripio-no-rate']}>
-                  Rate de Nexo no disponible. Verificá en la app de Nexo.
+                  Rate del broker no disponible. Verificá en la app de tu broker cripto.
                 </div>
               )}
 
@@ -521,7 +515,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
                 className={styles['ripio-link']}
               >
                 <Banknote size={16} />
-                Abrir Ripio USDC/ARS
+                Abrir tu broker cripto en Argentina
               </a>
             </div>
           )}

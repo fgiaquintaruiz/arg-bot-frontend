@@ -35,6 +35,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     const [showAddressBook, setShowAddressBook] = useState<boolean>(false);
     const [isConfirming, setIsConfirming] = useState<boolean>(false);
     const [irreversibleAccepted, setIrreversibleAccepted] = useState<boolean>(false);
+    const [isTestnetMock, setIsTestnetMock] = useState<boolean>(false);
 
     // Run once on mount: migrate legacy usdc_wallet string to usdc_wallet_id
     useEffect(() => {
@@ -127,9 +128,20 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
         setErrorMsg('');
         setSuccessMsg('');
         try {
-            const isTestnet = localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) !== 'false';
-            const apiKey = localStorage.getItem(isTestnet ? STORAGE_KEYS.BINANCE_KEY_TESTNET : STORAGE_KEYS.BINANCE_KEY) || '';
-            const apiSecret = localStorage.getItem(isTestnet ? STORAGE_KEYS.BINANCE_SECRET_TESTNET : STORAGE_KEYS.BINANCE_SECRET) || '';
+            const isTestnet = localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) === 'true';
+
+            if (isTestnet) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const mockTxId = `TESTNET-MOCK-${Date.now()}`;
+                setSuccessMsg(`Simulación testnet — retiro no ejecutado en Binance real | TX: ${mockTxId}`);
+                setIsTestnetMock(true);
+                setIsConfirming(false);
+                setIrreversibleAccepted(false);
+                return;
+            }
+
+            const apiKey = localStorage.getItem(STORAGE_KEYS.BINANCE_KEY) || '';
+            const apiSecret = localStorage.getItem(STORAGE_KEYS.BINANCE_SECRET) || '';
             const res = await fetch(`${API_URL}/api/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, apiSecret, address, amountUsdc: amount }) });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Fallo en el retiro');
@@ -248,8 +260,15 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
                     </div>
                 )}
                 {successMsg && (
-                    <div className={styles['success-msg']}>
-                        ✓ {successMsg}
+                    <div className={styles['success-msg']} style={isTestnetMock ? { borderLeft: '3px solid #F0B90B', background: 'rgba(240,185,11,0.08)' } : undefined}>
+                        {isTestnetMock ? (
+                            <>
+                                <span style={{ background: '#F0B90B', color: '#1E2026', fontWeight: 700, fontSize: '10px', borderRadius: '3px', padding: '1px 5px', marginRight: '6px', letterSpacing: '0.5px' }}>TESTNET</span>
+                                {successMsg}
+                            </>
+                        ) : (
+                            <>✓ {successMsg}</>
+                        )}
                     </div>
                 )}
 
