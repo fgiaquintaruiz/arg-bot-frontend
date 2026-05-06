@@ -42,4 +42,5 @@ test-results/
 # Tooling local config
 .claude/
 .gga
+.atl/
 AGENTS.md
