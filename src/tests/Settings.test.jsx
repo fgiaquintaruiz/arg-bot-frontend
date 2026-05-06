@@ -134,8 +134,7 @@ describe('Settings Component', () => {
     localStorage.setItem('binance_bank_address', 'Vilnius, Lithuania');
     render(<Settings onClose={() => {}} user={mockUser} />);
     fireEvent.click(screen.getByText('↑ Subir a Drive'));
-    await new Promise(r => setTimeout(r, 50));
-    expect(uploadToDrive).toHaveBeenCalledWith(
+    await waitFor(() => expect(uploadToDrive).toHaveBeenCalledWith(
       expect.objectContaining({
         binanceEurIban: 'LT96323000000001',
         binanceEurName: 'Test User',
@@ -143,7 +142,7 @@ describe('Settings Component', () => {
         binanceBankName: 'Revolut Bank UAB',
         binanceBankAddress: 'Vilnius, Lithuania',
       })
-    );
+    ));
   });
 
   it('should open to specified initial tab', () => {
@@ -404,13 +403,12 @@ describe('Settings Component', () => {
     localStorage.setItem('binance_secret_testnet', 'tn-secret-456');
     render(<Settings onClose={() => {}} user={mockUser} />);
     fireEvent.click(screen.getByText('↑ Subir a Drive'));
-    await new Promise(r => setTimeout(r, 50));
-    expect(uploadToDrive).toHaveBeenCalledWith(
+    await waitFor(() => expect(uploadToDrive).toHaveBeenCalledWith(
       expect.objectContaining({
         apiKeyTestnet: 'tn-key-123',
         apiSecretTestnet: 'tn-secret-456',
       })
-    );
+    ));
   });
 
   it('Drive download restores binance_key_testnet and binance_secret_testnet', async () => {
@@ -593,7 +591,7 @@ describe('Settings Component', () => {
     localStorage.setItem('argbot_notif_banner_enabled', 'true');
     render(<Settings onClose={() => {}} user={mockUser} />);
     fireEvent.click(screen.getByText('Notif'));
-    const toggleDiv = screen.getByText(/Mostrar banner/).closest('label').querySelector('div[style]');
+    const toggleDiv = screen.getByText(/Mostrar banner/).closest('label').querySelector('div');
     fireEvent.click(toggleDiv);
     expect(localStorage.setItem).toHaveBeenCalledWith('argbot_notif_banner_enabled', 'false');
   });
@@ -602,7 +600,7 @@ describe('Settings Component', () => {
     localStorage.setItem('argbot_notif_banner_enabled', 'false');
     render(<Settings onClose={() => {}} user={mockUser} />);
     fireEvent.click(screen.getByText('Notif'));
-    const toggleDiv = screen.getByText(/Mostrar banner/).closest('label').querySelector('div[style]');
+    const toggleDiv = screen.getByText(/Mostrar banner/).closest('label').querySelector('div');
     fireEvent.click(toggleDiv);
     expect(localStorage.setItem).toHaveBeenCalledWith('argbot_notif_banner_enabled', 'true');
   });

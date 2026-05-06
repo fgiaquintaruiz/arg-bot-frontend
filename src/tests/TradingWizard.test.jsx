@@ -130,9 +130,7 @@ describe('TradingWizard', () => {
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     // El link de Ajustes aparece en step 0 cuando no hay IBAN
-    const configLink = screen.getByText((content, element) =>
-      element?.tagName === 'SPAN' && /Configuraci/.test(element.textContent || '') && /Binance/.test(element.textContent || '') && element.style?.cursor === 'pointer'
-    );
+    const configLink = screen.getByTestId('open-settings-link');
     fireEvent.click(configLink);
 
     expect(eventSpy).toHaveBeenCalledTimes(1);

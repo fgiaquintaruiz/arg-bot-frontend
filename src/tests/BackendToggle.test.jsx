@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('../config', () => ({
   getApiUrl: () => 'http://localhost:8080',
@@ -68,7 +68,7 @@ describe('BackendToggle Component', () => {
       expect(screen.getByText('1.0.0')).toBeInTheDocument();
     });
     const dot = screen.getByText('Kotlin').parentElement.querySelector('span:first-child');
-    expect(dot).toHaveStyle({ backgroundColor: '#0ECB81' });
+    expect(dot.className).toContain('dot-online');
   });
 
   it('primera carga no dispara navegación aunque la versión sea nueva', async () => {
@@ -91,13 +91,14 @@ describe('BackendToggle Component', () => {
     // Branch: if (!url) → { version: '—', online: false }
     // Override the config mock to return empty string for this test only
     vi.doMock('../config', () => ({ getApiUrl: () => '', API_URL: '' }));
+    vi.resetModules();
     const { default: BackendToggleEmpty } = await import('../components/BackendToggle?empty-url');
     render(<BackendToggleEmpty />);
     await waitFor(() => {
       expect(screen.getByText('—')).toBeInTheDocument();
     });
     const dot = screen.getByText('Kotlin').parentElement.querySelector('span:first-child');
-    expect(dot).toHaveStyle({ backgroundColor: '#F6465D' });
+    expect(dot.className).toContain('dot-offline');
     vi.doUnmock('../config');
   });
 
@@ -112,7 +113,7 @@ describe('BackendToggle Component', () => {
       expect(screen.getByText('—')).toBeInTheDocument();
     });
     const dot = screen.getByText('Kotlin').parentElement.querySelector('span:first-child');
-    expect(dot).toHaveStyle({ backgroundColor: '#F6465D' });
+    expect(dot.className).toContain('dot-offline');
   });
 
   it('extrae versión desde data.info.build.version como fallback', async () => {
@@ -180,7 +181,7 @@ describe('BackendToggle Component', () => {
     vi.spyOn(window, 'fetch').mockImplementation(() => new Promise(() => {})); // never resolves
     render(<BackendToggle />);
     const dot = screen.getByText('Kotlin').parentElement.querySelector('span:first-child');
-    expect(dot).toHaveStyle({ backgroundColor: '#F6465D' });
+    expect(dot.className).toContain('dot-offline');
   });
 
   // --- Branches de detección de cambio de versión (lines 33-35, 69, 72) ---
@@ -189,6 +190,7 @@ describe('BackendToggle Component', () => {
     let locationStub;
 
     beforeEach(() => {
+      sessionStorage.clear();
       locationStub = { pathname: '/app', href: '/app' };
       Object.defineProperty(window, 'location', {
         value: locationStub,
@@ -204,9 +206,9 @@ describe('BackendToggle Component', () => {
       //   Branch 6 (cond-expr line 69) → updating ? '#F0B90B' : '#848E9C' → TRUE
       //   Branch 7 (cond-expr line 72) → updating ? {animation} : {} → TRUE
       //
-      // Estrategia: pre-populamos prevVersionRef con '1.0.0' vía _mockPrevVersionRef,
+      // Estrategia: pre-populamos sessionStorage con '1.0.0',
       // luego fetch devuelve '2.0.0' → condición es verdadera → setUpdating(true)
-      _mockPrevVersionRef = '1.0.0';
+      sessionStorage.setItem('argbot_last_version', '1.0.0');
 
       vi.spyOn(window, 'fetch').mockResolvedValue({
         ok: true,
@@ -219,14 +221,14 @@ describe('BackendToggle Component', () => {
         expect(screen.getByText('2.0.0')).toBeInTheDocument();
       });
 
-      // El componente debe estar en estado updating=true → color amarillo
+      // El componente debe estar en estado updating=true → clase version-updating
       const versionSpan = screen.getByText('2.0.0');
-      expect(versionSpan).toHaveStyle({ color: '#F0B90B' });
+      expect(versionSpan.className).toContain('version-updating');
     });
 
     it('detecta cambio de versión: anima el span de versión con pulse cuando updating=true', async () => {
       // Branch 7 (cond-expr line 72) → updating ? { animation: 'pulse ...' } : {} → TRUE path
-      _mockPrevVersionRef = '1.0.0';
+      sessionStorage.setItem('argbot_last_version', '1.0.0');
 
       vi.spyOn(window, 'fetch').mockResolvedValue({
         ok: true,
@@ -240,13 +242,13 @@ describe('BackendToggle Component', () => {
       });
 
       const versionSpan = screen.getByText('3.0.0');
-      expect(versionSpan).toHaveStyle({ animation: 'pulse 0.5s ease-in-out infinite' });
+      expect(versionSpan.className).toContain('version-updating');
     });
 
     it('NO dispara actualización cuando la versión es "—" (backend sin versión, mismo prevRef)', async () => {
       // Branch 4 (binary-expr line 33) → segunda condición result.version !== '—' es FALSE → short-circuit
-      // Esto cubre el caso donde prevRef tiene valor pero la nueva versión es '—'
-      _mockPrevVersionRef = '1.0.0';
+      // Esto cubre el caso donde sessionStorage tiene valor pero la nueva versión es '—'
+      sessionStorage.setItem('argbot_last_version', '1.0.0');
 
       vi.spyOn(window, 'fetch').mockResolvedValue({
         ok: true,
@@ -259,15 +261,15 @@ describe('BackendToggle Component', () => {
         expect(screen.getByText('—')).toBeInTheDocument();
       });
 
-      // updating NO debe ser true → color gris
+      // updating NO debe ser true → clase version-idle
       const versionSpan = screen.getByText('—');
-      expect(versionSpan).toHaveStyle({ color: '#848E9C' });
+      expect(versionSpan.className).toContain('version-idle');
     });
 
-    it('NO dispara actualización cuando la versión no cambió (misma versión en prevRef)', async () => {
-      // Branch 4 (binary-expr line 33) → tercera condición result.version !== prevVersionRef.current es FALSE
+    it('NO dispara actualización cuando la versión no cambió (misma versión en sessionStorage)', async () => {
+      // Branch 4 (binary-expr line 33) → tercera condición prev !== result.version es FALSE
       const sameVersion = '1.0.0';
-      _mockPrevVersionRef = sameVersion;
+      sessionStorage.setItem('argbot_last_version', sameVersion);
 
       vi.spyOn(window, 'fetch').mockResolvedValue({
         ok: true,
@@ -280,9 +282,9 @@ describe('BackendToggle Component', () => {
         expect(screen.getByText(sameVersion)).toBeInTheDocument();
       });
 
-      // updating NO debe ser true → color gris (versión no cambió)
+      // updating NO debe ser true → clase version-idle (versión no cambió)
       const versionSpan = screen.getByText(sameVersion);
-      expect(versionSpan).toHaveStyle({ color: '#848E9C' });
+      expect(versionSpan.className).toContain('version-idle');
     });
   });
 });

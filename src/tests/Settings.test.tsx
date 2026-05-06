@@ -422,11 +422,11 @@ describe('Settings — Tab Notif', () => {
   it('click en toggle → deshabilita banner y guarda false en localStorage', () => {
     renderSettings({ initialTab: 'notif' });
 
-    // El toggle no tiene role="checkbox", es un div clickable.
-    // Lo localizamos por su contenedor label.
+    // El toggle no tiene role="checkbox", es un div clickable con clase CSS module.
+    // No tiene atributo style inline — usamos el primer div dentro del label.
     const toggleDiv = screen.getByText('Mostrar banner de notificaciones')
       .closest('label')!
-      .querySelector('div[style]')!;
+      .querySelector('div')!;
 
     fireEvent.click(toggleDiv);
 
@@ -438,7 +438,7 @@ describe('Settings — Tab Notif', () => {
 
     const toggleDiv = screen.getByText('Mostrar banner de notificaciones')
       .closest('label')!
-      .querySelector('div[style]')!;
+      .querySelector('div')!;
 
     fireEvent.click(toggleDiv);
     fireEvent.click(toggleDiv);
@@ -452,9 +452,9 @@ describe('Settings — Tab Notif', () => {
 
     const toggleDiv = screen.getByText('Mostrar banner de notificaciones')
       .closest('label')!
-      .querySelector('div[style]')!;
+      .querySelector('div')!;
 
-    // El estilo del toggle tiene backgroundColor diferente según estado
-    expect(toggleDiv).toHaveStyle({ backgroundColor: '#2B3139' });
+    // CSS modules hash class names in JSDOM — verify the module key is present in className
+    expect(toggleDiv.className).toContain('notif-toggle-track-off');
   });
 });

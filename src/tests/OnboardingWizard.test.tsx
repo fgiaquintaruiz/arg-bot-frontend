@@ -35,7 +35,7 @@ describe('OnboardingWizard', () => {
     it('renders as a modal overlay (position fixed, zIndex high)', () => {
       const { container } = render(<OnboardingWizard onClose={vi.fn()} />);
       const overlay = container.firstChild as HTMLElement;
-      expect(overlay).toHaveStyle({ position: 'fixed' });
+      expect(overlay.className).toContain('overlay');
     });
   });
 

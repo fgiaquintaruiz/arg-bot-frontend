@@ -58,9 +58,10 @@ describe('AddressBook Component', () => {
 
   it('should delete an address after confirmation', () => {
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<AddressBook />);
     fireEvent.click(screen.getByText('🗑️ Eliminar'));
+    // Modal should appear — click confirm button
+    fireEvent.click(screen.getByText('Sí, eliminar'));
     expect(screen.queryByText('Mi Lemon Wallet')).not.toBeInTheDocument();
   });
 
@@ -144,15 +145,16 @@ describe('AddressBook Component', () => {
   });
 
   it('handleAddAddress sin nombre: muestra alert y no agrega', () => {
-    const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
     render(<AddressBook />);
     fireEvent.click(screen.getByText(/Add New Address/));
     fireEvent.change(screen.getByPlaceholderText(/0x\.\.\./), {
       target: { value: '0x742d35cc6634c0532925a3b844bc9e7595f2bd38' }
     });
     fireEvent.click(screen.getByText('Save Address'));
-    expect(alertMock).toHaveBeenCalledWith('Ingresá un nombre para esta dirección');
-    alertMock.mockRestore();
+    // Component now shows inline error instead of window.alert
+    expect(screen.getByText(/Ingresá un nombre para esta dirección/)).toBeInTheDocument();
+    // Form stays open (no address was added, Save Address button is replaced by form)
+    expect(screen.getByText('Save Address')).toBeInTheDocument();
   });
 
   it('handleAddAddress con address inválida: no llama a alert y muestra error inline', () => {
@@ -221,14 +223,15 @@ describe('AddressBook Component', () => {
   });
 
   it('handleSaveEdit sin nombre: muestra alert y no guarda', () => {
-    const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
     render(<AddressBook />);
     fireEvent.click(screen.getByText('✏️ Editar'));
     fireEvent.change(screen.getByDisplayValue('Mi Lemon Wallet'), { target: { value: '' } });
     fireEvent.click(screen.getByText('Save Changes'));
-    expect(alertMock).toHaveBeenCalledWith('Ingresá un nombre para esta dirección');
-    alertMock.mockRestore();
+    // Component now shows inline error instead of window.alert
+    expect(screen.getByText(/Ingresá un nombre para esta dirección/)).toBeInTheDocument();
+    // Address should not have been saved (form is still open)
+    expect(screen.getByText('✏️ Edit Address')).toBeInTheDocument();
   });
 
   it('handleSaveEdit con address inválida: muestra error', () => {
@@ -246,9 +249,10 @@ describe('AddressBook Component', () => {
 
   it('delete con confirm=false: la dirección sigue en la lista', () => {
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
     render(<AddressBook />);
     fireEvent.click(screen.getByText('🗑️ Eliminar'));
+    // Modal appears — click "No" to cancel
+    fireEvent.click(screen.getByText('No'));
     expect(screen.getByText('Mi Lemon Wallet')).toBeInTheDocument();
   });
 
@@ -363,10 +367,11 @@ describe('AddressBook Component', () => {
 
   it('onTouchEnd en botón Eliminar solicita confirmación', () => {
     localStorage.setItem('address_book', JSON.stringify([mockAddress]));
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
     render(<AddressBook />);
     const deleteBtn = screen.getByText('🗑️ Eliminar');
     fireEvent.touchEnd(deleteBtn);
-    expect(window.confirm).toHaveBeenCalledTimes(1);
+    // Component now shows a confirmation modal instead of window.confirm
+    expect(screen.getByText('¿Eliminar esta dirección?')).toBeInTheDocument();
+    expect(screen.getByText('Sí, eliminar')).toBeInTheDocument();
   });
 });

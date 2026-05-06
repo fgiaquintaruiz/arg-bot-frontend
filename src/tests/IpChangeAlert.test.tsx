@@ -79,16 +79,16 @@ describe('IpChangeAlert', () => {
   // ─── Styles — Binance palette ────────────────────────────────────────────────
 
   describe('styles — Binance palette', () => {
-    it('primary button has backgroundColor #F0B90B', () => {
+    it('primary button has confirm-button class (Binance yellow)', () => {
       render(<IpChangeAlert {...defaultProps} />);
       const btn = screen.getByText('Actualizar en Binance');
-      expect(btn).toHaveStyle({ backgroundColor: '#F0B90B' });
+      expect(btn.className).toContain('confirm-button');
     });
 
-    it('secondary button has transparent background', () => {
+    it('secondary button has dismiss-button class (transparent)', () => {
       render(<IpChangeAlert {...defaultProps} />);
       const btn = screen.getByText('Ignorar');
-      expect(btn).toHaveStyle({ background: 'transparent' });
+      expect(btn.className).toContain('dismiss-button');
     });
   });
 });

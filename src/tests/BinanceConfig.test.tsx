@@ -161,7 +161,9 @@ describe('BinanceConfig — copy IP button', () => {
     fireEvent.click(screen.getByText('Copiar'));
 
     expect(writeText).toHaveBeenCalledWith('1.2.3.4');
-    expect(screen.getByText('✓ Copiada')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('✓ Copiada')).toBeInTheDocument();
+    });
   });
 
   it('after 2000ms the copy button reverts back to "Copiar"', async () => {
@@ -171,11 +173,18 @@ describe('BinanceConfig — copy IP button', () => {
 
     render(<BinanceConfig onSave={() => {}} onCancel={() => {}} />);
 
+    // Flush all pending microtasks/promises (IP fetch + state updates)
     await act(async () => {
+      await Promise.resolve();
       await Promise.resolve();
     });
 
-    fireEvent.click(screen.getByText('Copiar'));
+    await act(async () => {
+      fireEvent.click(screen.getByText('Copiar'));
+      // Flush the clipboard.writeText().then(() => setCopied(true)) microtask
+      await Promise.resolve();
+    });
+
     expect(screen.getByText('✓ Copiada')).toBeInTheDocument();
 
     act(() => {
