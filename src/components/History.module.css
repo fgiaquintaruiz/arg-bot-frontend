@@ -85,12 +85,110 @@
   border: 1px solid #2B3139;
 }
 
+.card-testnet {
+  background-color: #1c1a14;
+  border-color: #5c4a00;
+  opacity: 0.85;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
 .card-date {
   display: block;
-  color: #474D57;
+  color: #848E9C;
   font-size: 11px;
-  margin-bottom: 6px;
   font-family: 'IBM Plex Mono', monospace;
+}
+
+.testnet-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #F0B90B;
+  background-color: #2a2200;
+  border: 1px solid #5c4a00;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.4;
+}
+
+.delete-button {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #474D57;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 3px;
+  transition: color 0.15s;
+}
+
+.delete-button:hover {
+  color: #F6465D;
+}
+
+.delete-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.delete-dialog {
+  background: #1E2329;
+  border: 1px solid #2B3139;
+  border-radius: 10px;
+  padding: 24px;
+  max-width: 340px;
+  width: 90%;
+}
+
+.delete-dialog-text {
+  color: #EAECEF;
+  font-size: 14px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.delete-dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.delete-cancel-button {
+  background: transparent;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  color: #848E9C;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.delete-confirm-button {
+  background: #F6465D;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 
 .card-amount-row {
@@ -112,27 +210,27 @@
 }
 
 .card-ars {
-  color: #848E9C;
+  color: #b0b0b0;
   font-size: 12px;
   font-family: 'IBM Plex Mono', monospace;
 }
 
 .card-rate {
-  color: #474D57;
+  color: #aaaaaa;
   font-size: 11px;
   font-family: 'IBM Plex Mono', monospace;
 }
 
 .card-meta {
   font-size: 11px;
-  color: #474D57;
+  color: #aaaaaa;
   font-family: 'IBM Plex Mono', monospace;
   margin-bottom: 4px;
 }
 
 .card-meta-last {
   font-size: 11px;
-  color: #474D57;
+  color: #aaaaaa;
   font-family: 'IBM Plex Mono', monospace;
   margin-bottom: 6px;
 }
@@ -142,7 +240,7 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #474D57;
+  color: #aaaaaa;
   font-family: 'IBM Plex Mono', monospace;
 }
 
