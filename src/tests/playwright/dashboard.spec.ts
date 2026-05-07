@@ -156,6 +156,7 @@ test.describe('TradingWizard — step 3: Withdraw testnet mock', () => {
       const entry = { id: 'e2e-addr-1', name: 'Nexo E2E', address: '0xABCDEF1234567890ABCDEF1234567890ABCDEF12' };
       localStorage.setItem('address_book', JSON.stringify([entry]));
       localStorage.setItem('usdc_wallet_id', 'e2e-addr-1');
+      localStorage.setItem('argbot_testnet', 'true');
     });
     // Mock the trade API so step 2 can succeed
     await page.route('**/api/trade', route => route.fulfill({ json: { success: true } }));
@@ -170,7 +171,8 @@ test.describe('TradingWizard — step 3: Withdraw testnet mock', () => {
     // Wait for trade success message then auto-advance (2s timeout in component)
     await expect(page.getByText(/Cambio ejecutado con éxito/)).toBeVisible({ timeout: 10_000 });
     // Step 3 (Withdraw) appears after the 2s auto-advance
-    await expect(page.getByText('Retirar USDC')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('heading', { name: 'Retirar USDC' })).toBeVisible({ timeout: 5_000 });
+    await page.getByPlaceholder('Monto a retirar').fill('10');
   }
 
   test('testnet mode: initiating a withdraw shows TESTNET badge', async ({ authenticatedPage: page }) => {
@@ -183,7 +185,7 @@ test.describe('TradingWizard — step 3: Withdraw testnet mock', () => {
     await page.getByRole('checkbox', { name: /Entiendo que esta operación es irreversible/ }).check();
     await page.getByRole('button', { name: 'Confirmar retiro' }).click();
     // Testnet mock waits 1s then shows the badge
-    await expect(page.getByText('TESTNET')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('span').getByText('TESTNET')).toBeVisible({ timeout: 5_000 });
   });
 
   test('testnet mode: success message mentions testnet simulation', async ({ authenticatedPage: page }) => {
@@ -228,7 +230,8 @@ test.describe('TradingWizard — step 4: broker language (not Nexo/Ripio)', () =
     await page.getByRole('button', { name: 'Confirmar' }).click();
     await expect(page.getByText(/Cambio ejecutado con éxito/)).toBeVisible({ timeout: 10_000 });
     // Step 3: Withdraw
-    await expect(page.getByText('Retirar USDC')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('heading', { name: 'Retirar USDC' })).toBeVisible({ timeout: 5_000 });
+    await page.getByPlaceholder('Monto a retirar').fill('10');
     await page.getByRole('button', { name: 'Retirar' }).click();
     await expect(page.getByRole('dialog', { name: 'Confirmar retiro' })).toBeVisible();
     await page.getByRole('checkbox', { name: /Entiendo que esta operación es irreversible/ }).check();

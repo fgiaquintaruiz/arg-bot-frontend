@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Building2, User, Pencil, AlertTriangle, X, ChevronRight } from 'lucide-react';
 import { API_URL } from '../config';
 import AddressBook, { AddressEntry } from './AddressBook';
@@ -36,6 +36,16 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
     const [isConfirming, setIsConfirming] = useState<boolean>(false);
     const [irreversibleAccepted, setIrreversibleAccepted] = useState<boolean>(false);
     const [isTestnetMock, setIsTestnetMock] = useState<boolean>(false);
+    const onSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Cancel pending onSuccess timer on unmount to prevent state updates on dead components
+    useEffect(() => {
+        return () => {
+            if (onSuccessTimerRef.current !== null) {
+                clearTimeout(onSuccessTimerRef.current);
+            }
+        };
+    }, []);
 
     // Run once on mount: migrate legacy usdc_wallet string to usdc_wallet_id
     useEffect(() => {
@@ -137,6 +147,8 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
                 setIsTestnetMock(true);
                 setIsConfirming(false);
                 setIrreversibleAccepted(false);
+                setLoading(false);
+                onSuccessTimerRef.current = setTimeout(() => onSuccess?.(), 2000);
                 return;
             }
 
@@ -153,7 +165,7 @@ export default function Withdraw({ data, onClose, onSuccess }: WithdrawProps) {
             }).catch(() => {});
             setIsConfirming(false);
             setIrreversibleAccepted(false);
-            setTimeout(() => onSuccess && onSuccess(), 2000);
+            onSuccessTimerRef.current = setTimeout(() => onSuccess?.(), 2000);
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             setErrorMsg(msg);

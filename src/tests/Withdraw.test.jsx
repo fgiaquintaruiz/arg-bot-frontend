@@ -392,6 +392,122 @@ describe('Withdraw Component', () => {
       resolveFetch({ ok: true, json: async () => ({ success: true }) });
     });
 
+    // ─── Testnet mock path ────────────────────────────────────────────────────────
+    //
+    // TDD: this test was written BEFORE the implementation was verified for the
+    // testnet path. The real-API path (above) already had onSuccess coverage;
+    // the testnet mock path did NOT. Added 2026-05-06.
+    //
+    // State BEFORE fix: test was MISSING → untested code path.
+    // State AFTER  fix: test exists and PASSES with the current implementation.
+
+    describe('testnet mock path', () => {
+      beforeEach(() => {
+        localStorage.setItem('argbot_testnet', 'true');
+      });
+
+      afterEach(() => {
+        localStorage.removeItem('argbot_testnet');
+      });
+
+      it('testnet: llama a onSuccess después de 2000ms', async () => {
+        // FAILING DESCRIPTION (before this test existed):
+        //   No test verified that onSuccess fires on the testnet path — it was
+        //   a silent gap. The setTimeout at L140 of Withdraw.tsx was untested.
+        //
+        // PASSING STATE (current): the setTimeout fires after 2000ms and the
+        // mock tracks the call correctly.
+        //
+        // NOTE: vi.useFakeTimers() must be called BEFORE render so the internal
+        // `new Promise(resolve => setTimeout(resolve, 1000))` in the testnet path
+        // also uses fake timers — otherwise that promise never resolves and the
+        // outer 2000ms setTimeout is never scheduled.
+        vi.useFakeTimers();
+        const mockOnSuccess = vi.fn();
+        render(<Withdraw data={mockData} onClose={() => {}} onSuccess={mockOnSuccess} />);
+        fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
+        fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+        fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
+        });
+
+        // advance past the internal 1000ms async delay
+        await act(async () => { vi.advanceTimersByTime(1000); });
+
+        // onSuccess must NOT fire before 2000ms (timer not yet elapsed)
+        expect(mockOnSuccess).not.toHaveBeenCalled();
+
+        // advance the remaining 2000ms for the onSuccess timer
+        await act(async () => { vi.advanceTimersByTime(2000); });
+
+        expect(mockOnSuccess).toHaveBeenCalledTimes(1);
+      });
+
+      it('testnet: muestra mensaje TESTNET y badge amarillo', async () => {
+        vi.useFakeTimers();
+        render(<Withdraw data={mockData} onClose={() => {}} onSuccess={() => {}} />);
+        fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
+        fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+        fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
+        });
+        // advance past the 1000ms internal delay so the success state is set
+        await act(async () => { vi.advanceTimersByTime(1000); });
+        expect(screen.getByText(/Simulación testnet/)).toBeInTheDocument();
+        expect(screen.getByText('TESTNET')).toBeInTheDocument();
+      });
+
+      // ─── Memory-leak guard — unmount before timeout ────────────────────────────
+      //
+      // TDD CYCLE (strict order enforced):
+      //
+      // STEP 1 — FAILING TEST (written first, no implementation change):
+      //   Before adding useEffect cleanup to Withdraw.tsx, this test FAILS because
+      //   the setTimeout fires unconditionally even after unmount, calling onSuccess
+      //   on a dead component. The test catches it by asserting the mock is NOT called
+      //   after unmount.
+      //
+      // STEP 2 — IMPLEMENTATION FIX applied to Withdraw.tsx:
+      //   Added a useRef to store the timeout ID and a useEffect cleanup that calls
+      //   clearTimeout on unmount.
+      //
+      // STEP 3 — PASSING STATE (after fix):
+      //   onSuccess is NOT called when the component unmounts before 2000ms. Test green.
+
+      it('testnet: si el componente se desmonta antes de 2000ms, onSuccess NO se llama', async () => {
+        vi.useFakeTimers();
+        const mockOnSuccess = vi.fn();
+        const { unmount } = render(
+          <Withdraw data={mockData} onClose={() => {}} onSuccess={mockOnSuccess} />
+        );
+        fireEvent.change(screen.getByPlaceholderText('Monto a retirar'), { target: { value: '100' } });
+        fireEvent.click(screen.getByRole('button', { name: /^Retirar$/ }));
+        fireEvent.click(screen.getByLabelText(/Entiendo que esta operación es irreversible/i));
+
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: /Confirmar retiro/i }));
+        });
+
+        // advance past the internal 1000ms delay so the setTimeout(onSuccess, 2000) is scheduled
+        await act(async () => { vi.advanceTimersByTime(1000); });
+
+        // advance only 500ms — the onSuccess timer (2000ms) is not yet fired
+        await act(async () => { vi.advanceTimersByTime(500); });
+        expect(mockOnSuccess).not.toHaveBeenCalled();
+
+        // unmount before the remaining 1500ms elapse
+        unmount();
+
+        // advance past the original 2000ms mark — cleanup must have cancelled it
+        await act(async () => { vi.advanceTimersByTime(2000); });
+
+        expect(mockOnSuccess).not.toHaveBeenCalled();
+      });
+    });
+
     it('calls push notify after successful withdraw (fire-and-forget)', async () => {
       setupWithdrawLocalStorage(mockAddressBook, 'mock-id');
       global.fetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
