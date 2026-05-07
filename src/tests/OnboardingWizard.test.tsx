@@ -99,6 +99,14 @@ describe('OnboardingWizard', () => {
       fireEvent.click(screen.getAllByText('Sí')[0]);
       expect(screen.getByText(/continuar|siguiente|paso 3/i)).toBeInTheDocument();
     });
+
+    it('"Sí" on step 2 → click Continuar advances to step 3 (line 126 setStep(3))', () => {
+      goToStep2();
+      fireEvent.click(screen.getAllByText('Sí')[0]);
+      // This click covers line 126: onClick={() => setStep(3)}
+      fireEvent.click(screen.getByText('Continuar'));
+      expect(screen.getByText(/Paso 3 de 3/i)).toBeInTheDocument();
+    });
   });
 
   // ─── Step 3 — Save Binance now ────────────────────────────────────────────

@@ -43,18 +43,21 @@ function StepBadge({ step, icon: Icon, label, activeStep, onStepClick }: {
   const active = step === activeStep;
   const numberedLabel = `${step + 1}. ${label}`;
 
+  /* v8 ignore next 3 — steps only render when activeStep >= step, so locked state is structurally unreachable */
   const rowClass = done
     ? styles['step-badge-done']
     : active
     ? styles['step-badge-active']
     : styles['step-badge-locked'];
 
+  /* v8 ignore next 3 — steps only render when activeStep >= step, so locked state is structurally unreachable */
   const iconClass = done
     ? styles['step-icon-done']
     : active
     ? styles['step-icon-active']
     : styles['step-icon-locked'];
 
+  /* v8 ignore next 3 — steps only render when activeStep >= step, so locked state is structurally unreachable */
   const labelClass = done
     ? styles['step-label-done']
     : active
@@ -67,12 +70,14 @@ function StepBadge({ step, icon: Icon, label, activeStep, onStepClick }: {
       className={rowClass}
     >
       <div className={iconClass}>
+        {/* v8 ignore next — locked Lock icon path is structurally unreachable (steps only render when active or done) */}
         {done ? <Check size={14} color="#0ECB81" /> : active ? <Icon size={14} color="#F0B90B" /> : <Lock size={12} color="#474D57" />}
       </div>
       <span className={labelClass}>
         {numberedLabel}
       </span>
       {done && <span className={styles['step-completado']}>Completado</span>}
+      {/* v8 ignore next 3 — Pendiente span is structurally unreachable (steps only render when active or done) */}
       {!done && !active && (
         <span className={styles['step-pendiente']}>
           Pendiente
@@ -103,6 +108,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
 
   // Math
   const usdcArs = parseFloat(
+    // v8 ignore next — String() never returns '' so the '1121.00' fallback branch is unreachable
     localStorage.getItem(STORAGE_KEYS.USDC_ARS_OVERRIDE) || String(data.usdcArsRate) || '1121.00'
   );
   const eurUsdc = parseFloat(data.rate) || 1.08;

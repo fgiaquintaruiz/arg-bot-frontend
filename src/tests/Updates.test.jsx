@@ -81,6 +81,23 @@ describe('Updates', () => {
         });
     });
 
+    it('renderiza un bloque de código cuando el markdown del backend contiene triple-backtick (líneas 72-83)', async () => {
+        // This test covers the inCodeBlock toggling path (renderMarkdown lines 72-83):
+        // opening ``` sets inCodeBlock=true, closing ``` pushes a <pre> element.
+        const codeBlockContent = '# Título\n\n```\nconst x = 1;\n```\n\nFin';
+        global.fetch = vi.fn(() =>
+            Promise.resolve({ text: () => Promise.resolve(codeBlockContent) })
+        );
+
+        render(<Updates onClose={onClose} />);
+        fireEvent.click(screen.getByText('Backend'));
+
+        // The <pre> element rendered from the code block should contain the code line
+        await waitFor(() => {
+            expect(screen.getByText('const x = 1;')).toBeInTheDocument();
+        });
+    });
+
     it('NO vuelve a hacer fetch si ya se cargó el backend y se cambia de tab', async () => {
         const backendContent = '# Backend Changelog\n';
         global.fetch = vi.fn(() =>

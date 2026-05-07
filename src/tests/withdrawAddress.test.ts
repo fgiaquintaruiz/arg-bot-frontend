@@ -49,6 +49,12 @@ describe('getSelectedWithdrawEntry', () => {
     localStorage.setItem('address_book', '{invalid-json}');
     expect(getSelectedWithdrawEntry()).toBe(null);
   });
+
+  it('returns null when usdc_wallet_id is set but address_book key is absent (raw === null branch)', () => {
+    // address_book NOT set at all → readAddressBook returns [] via the falsy raw branch
+    localStorage.setItem('usdc_wallet_id', 'entry-1');
+    expect(getSelectedWithdrawEntry()).toBe(null);
+  });
 });
 
 // ─── setSelectedWithdrawAddressId ─────────────────────────────────────────────

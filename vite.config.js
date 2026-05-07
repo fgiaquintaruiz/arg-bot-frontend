@@ -26,6 +26,9 @@ export default defineConfig({
         '**/node_modules/**',
         '**/dist/**',
         'src/components/Trade.tsx',
+        '**/*.module.css',
+        '**/*.d.ts',
+        '**/public/**',
       ],
       thresholds: {
         statements: 98,

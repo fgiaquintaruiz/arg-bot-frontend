@@ -40,6 +40,7 @@ export function isPeriodicSyncSupported(): boolean {
       'periodicSync' in ServiceWorkerRegistration.prototype
     );
   } catch {
+    /* v8 ignore next — ServiceWorkerRegistration.prototype access throws only in exotic environments not reproducible in jsdom */
     return false;
   }
 }
