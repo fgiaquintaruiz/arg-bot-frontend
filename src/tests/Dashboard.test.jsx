@@ -124,7 +124,7 @@ const mockApiResponse = {
   rate: '1.08',
   usdcArsRate: '1150.50',
   ripioUsdcArsRate: '1200.00',
-  nexoUsdcArsRate: '1100.00',
+  argCriptoBrokerUsdcArsRate: '1100.00',
   fees: { tradingRate: 0.001 },
 };
 
@@ -188,7 +188,7 @@ describe('Dashboard', () => {
     global.fetch.mockReturnValueOnce(new Promise(r => { resolveFetch = r; }));
     render(<Dashboard user={mockUser} />);
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBe(4); // EUR/USDC y los tres slots que dependen de nexoUsdcArsRate
+    expect(dashes.length).toBe(4); // EUR/USDC y los tres slots que dependen de argCriptoBrokerUsdcArsRate
     await act(async () => {
       resolveFetch({ ok: true, json: async () => mockApiResponse });
     });

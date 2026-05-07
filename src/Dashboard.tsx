@@ -32,9 +32,9 @@ export default function Dashboard({ user }: { user: User }) {
     const rateAlertConfig = useMemo(() => getRateAlertConfig(), []);
 
     const eurArsRate = useMemo(() => {
-        if (!data?.rate || !data?.nexoUsdcArsRate) return null;
-        return parseFloat(data.rate) * parseFloat(data.nexoUsdcArsRate);
-    }, [data?.rate, data?.nexoUsdcArsRate]);
+        if (!data?.rate || !data?.argCriptoBrokerUsdcArsRate) return null;
+        return parseFloat(data.rate) * parseFloat(data.argCriptoBrokerUsdcArsRate);
+    }, [data?.rate, data?.argCriptoBrokerUsdcArsRate]);
 
     const eurArsAlert = useRateAlert(eurArsRate, rateAlertConfig.eurArs);
     const eurUsdcAlert = useRateAlert(data?.rate, rateAlertConfig.eurUsdc);
@@ -266,8 +266,8 @@ export default function Dashboard({ user }: { user: User }) {
                     const overrideRaw = localStorage.getItem(STORAGE_KEYS.USDC_ARS_OVERRIDE);
                     const displayedUsdcArs = overrideRaw
                         ? parseFloat(overrideRaw)
-                        : data?.nexoUsdcArsRate
-                        ? parseFloat(data.nexoUsdcArsRate)
+                        : data?.argCriptoBrokerUsdcArsRate
+                        ? parseFloat(data.argCriptoBrokerUsdcArsRate)
                         : null;
                     return (
                         <>

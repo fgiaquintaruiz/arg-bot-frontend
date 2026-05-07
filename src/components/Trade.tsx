@@ -60,10 +60,10 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       }).catch(() => {});
       let history: TradeHistoryEntry[] = [];
       try { history = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || "[]"); } catch { history = []; }
-      const usdcArs = parseFloat(data.usdcArsRate || '0');
+      const brokerRate = parseFloat(data.argCriptoBrokerUsdcArsRate || data.usdcArsRate || '0');
       const eurUsdc = parseFloat(data.rate || '0');
-      const eurArsRate = usdcArs > 0 && eurUsdc > 0 ? (eurUsdc * usdcArs).toFixed(2) : undefined;
-      const arsAmount = usdcArs > 0 ? (netUsdc * usdcArs).toFixed(0) : undefined;
+      const eurArsRate = brokerRate > 0 && eurUsdc > 0 ? (eurUsdc * brokerRate).toFixed(2) : undefined;
+      const arsAmount = brokerRate > 0 ? (netUsdc * brokerRate).toFixed(0) : undefined;
       // Binance no cobra fee de retiro para USDC BEP20 — siempre 0
       const binanceFeeEur = '0';
       const usdcDestAddress = getSelectedWithdrawEntry()?.address || undefined;

@@ -2,7 +2,7 @@ export interface CoreData {
   balances: { eur: string; usdc: string };
   rate: string;
   usdcArsRate?: string;
-  nexoUsdcArsRate?: string;
+  argCriptoBrokerUsdcArsRate?: string;
   fees: { tradingRate: number };
 }
 

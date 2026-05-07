@@ -25,7 +25,7 @@ const mockData = {
   rate: '1.08',
   usdcArsRate: '1150.50',
   ripioUsdcArsRate: '1200.00',
-  nexoUsdcArsRate: '1100.00',
+  argCriptoBrokerUsdcArsRate: '1100.00',
   fees: { tradingRate: 0.001 },
 };
 
@@ -197,8 +197,8 @@ describe('TradingWizard', () => {
     expect(screen.getByText('test@example.com Binance Deposit')).toBeInTheDocument();
   });
 
-  it('step 4 muestra mensaje fallback cuando nexoUsdcArsRate es nulo', () => {
-    const dataWithoutNexo = { ...mockData, nexoUsdcArsRate: null };
+  it('step 4 muestra mensaje fallback cuando argCriptoBrokerUsdcArsRate es nulo', () => {
+    const dataWithoutNexo = { ...mockData, argCriptoBrokerUsdcArsRate: null };
     render(<TradingWizard data={dataWithoutNexo} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText(/Continuar con la transferencia/));

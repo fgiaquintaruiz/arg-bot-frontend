@@ -11,7 +11,7 @@ export const MOCK_API_DATA = {
   rate: '1.0850',
   usdcArsRate: '1150.00',
   ripioUsdcArsRate: '1200.00',
-  nexoUsdcArsRate: '1100.00',
+  argCriptoBrokerUsdcArsRate: '1100.00',
   fees: { tradingRate: 0.001 },
 };
 

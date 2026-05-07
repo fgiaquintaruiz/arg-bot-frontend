@@ -493,7 +493,7 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               <button onClick={retrocede} className={styles['back-btn']}>
                 {'<'} Paso anterior
               </button>
-              {data.nexoUsdcArsRate ? (
+              {data.argCriptoBrokerUsdcArsRate ? (
                 <>
                   <div className={styles['ripio-box']}>
                     <div className={styles['ripio-total-row']}>

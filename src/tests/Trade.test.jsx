@@ -239,6 +239,82 @@ describe('Trade Component', () => {
     });
   });
 
+  // ─── arsAmount uses broker rate (argCriptoBrokerUsdcArsRate) over Binance rate ─
+  //
+  // TDD CYCLE (strict order enforced):
+  //
+  // STEP 1 — FAILING TEST (written first, no implementation change):
+  //   Trade.tsx line 66 uses `data.usdcArsRate` for arsAmount. When
+  //   `argCriptoBrokerUsdcArsRate` is also present, the history entry should
+  //   use the broker rate (1460), NOT the Binance spot rate (1400).
+  //   Before fix: arsAmount = netUsdc * 1400 → test FAILS.
+  //
+  // STEP 2 — IMPLEMENTATION FIX in Trade.tsx (step 4):
+  //   Replace `usdcArs = parseFloat(data.usdcArsRate)` with
+  //   `brokerRate = parseFloat(data.argCriptoBrokerUsdcArsRate || data.usdcArsRate)`.
+  //
+  // STEP 3 — PASSING STATE (after fix):
+  //   arsAmount uses 1460 → test GREEN.
+
+  describe('arsAmount en localStorage usa broker rate', () => {
+    it('usa argCriptoBrokerUsdcArsRate (1460) en lugar de usdcArsRate (1400) al guardar historial', async () => {
+      const dataWithBrokerRate = {
+        ...mockData,
+        usdcArsRate: '1400',
+        argCriptoBrokerUsdcArsRate: '1460',
+      };
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true, data: { orderId: 12345 } }),
+      });
+      render(<Trade data={dataWithBrokerRate} onClose={() => {}} onSuccess={() => {}} />);
+      const input = screen.getByPlaceholderText('Monto en EUR');
+      fireEvent.change(input, { target: { value: '100' } });
+      fireEvent.click(screen.getByText('Ejecutar cambio'));
+      fireEvent.click(screen.getByText('Confirmar'));
+      await waitFor(() => {
+        const history = JSON.parse(localStorage.getItem('trade_history') || '[]');
+        expect(history.length).toBeGreaterThan(0);
+        const entry = history[0];
+        // netUsdc ≈ 100 * 1.0850 * (1 - 0.001) = 108.3915
+        const rate = parseFloat(dataWithBrokerRate.rate);
+        const feeRate = dataWithBrokerRate.fees.tradingRate;
+        const netUsdc = rate * 100 * (1 - feeRate);
+        const expectedArsAmount = (netUsdc * 1460).toFixed(0);
+        const wrongArsAmount = (netUsdc * 1400).toFixed(0);
+        expect(entry.arsAmount).toBe(expectedArsAmount);
+        expect(entry.arsAmount).not.toBe(wrongArsAmount);
+      });
+    });
+
+    it('fallback a usdcArsRate cuando argCriptoBrokerUsdcArsRate no está definido', async () => {
+      const dataFallback = {
+        ...mockData,
+        usdcArsRate: '1400',
+        argCriptoBrokerUsdcArsRate: undefined,
+      };
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true, data: { orderId: 12345 } }),
+      });
+      render(<Trade data={dataFallback} onClose={() => {}} onSuccess={() => {}} />);
+      const input = screen.getByPlaceholderText('Monto en EUR');
+      fireEvent.change(input, { target: { value: '100' } });
+      fireEvent.click(screen.getByText('Ejecutar cambio'));
+      fireEvent.click(screen.getByText('Confirmar'));
+      await waitFor(() => {
+        const history = JSON.parse(localStorage.getItem('trade_history') || '[]');
+        expect(history.length).toBeGreaterThan(0);
+        const entry = history[0];
+        const rate = parseFloat(dataFallback.rate);
+        const feeRate = dataFallback.fees.tradingRate;
+        const netUsdc = rate * 100 * (1 - feeRate);
+        const expectedArsAmount = (netUsdc * 1400).toFixed(0);
+        expect(entry.arsAmount).toBe(expectedArsAmount);
+      });
+    });
+  });
+
   it('calls push notify after successful trade (fire-and-forget)', async () => {
     global.fetch.mockResolvedValue({
       ok: true,
