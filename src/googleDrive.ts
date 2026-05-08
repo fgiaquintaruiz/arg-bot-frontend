@@ -157,20 +157,25 @@ export const uploadToDrive = async (data: DriveData): Promise<boolean> => {
     form.append('file', blob);
 
     if (fileId) {
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
+      const patchRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form,
       });
+      if (!patchRes.ok) throw new Error(`Drive PATCH error ${patchRes.status}`);
     } else {
       const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form,
       });
+      if (!response.ok) throw new Error(`Drive POST error ${response.status}`);
       const result = await response.json();
       localStorage.setItem(STORAGE_KEYS.DRIVE_FILE_ID, result.id);
     }
+
+    localStorage.setItem(STORAGE_KEYS.DRIVE_LAST_BACKUP_AT, new Date().toISOString());
+    localStorage.setItem(STORAGE_KEYS.DRIVE_LAST_BACKUP_FILE, BACKUP_FILENAME);
 
     return true;
   } catch (err) {
