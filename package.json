@@ -1,7 +1,7 @@
 {
   "name": "client",
   "private": true,
-  "version": "1.8.204",
+  "version": "1.8.205",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,6 +42,8 @@
     "vitest": "^4.0.18"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
