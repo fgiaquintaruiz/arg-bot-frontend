@@ -6,8 +6,8 @@ import { getRateAlertConfig, setRateAlertConfig } from '../utils/rateAlertStorag
 import { STORAGE_KEYS } from '../utils/storageKeys';
 import styles from './Settings.module.css';
 
-export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: User; initialTab?: 'sync' | 'binance' | 'alerts' | 'notif' }) {
-  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts' | 'notif'>(() => {
+export default function Settings({ onClose, user, initialTab }: { onClose: () => void; user: User; initialTab?: 'sync' | 'binance' | 'alerts' | 'notif' | 'broker' }) {
+  const [activeTab, setActiveTab] = useState<'sync' | 'binance' | 'alerts' | 'notif' | 'broker'>(() => {
     return initialTab ?? 'sync';
   });
   const [syncStatus, setSyncStatus] = useState<'none' | 'loading' | 'success' | 'error' | 'uploading' | 'downloading'>('none');
@@ -29,10 +29,21 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
   const [binanceCleared, setBinanceCleared] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  // Drive last backup state
+  const [lastBackupAt, setLastBackupAt] = useState<string | null>(() =>
+    localStorage.getItem(STORAGE_KEYS.DRIVE_LAST_BACKUP_AT)
+  );
+  const [lastBackupFile, setLastBackupFile] = useState<string | null>(() =>
+    localStorage.getItem(STORAGE_KEYS.DRIVE_LAST_BACKUP_FILE)
+  );
+
   // Notif tab state
   const [notifBannerEnabled, setNotifBannerEnabled] = useState<boolean>(() =>
     localStorage.getItem(STORAGE_KEYS.ARGBOT_NOTIF_BANNER_ENABLED) !== 'false'
   );
+
+  // Broker tab state
+  const [brokerName, setBrokerName] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.BROKER_NAME) || '');
 
   // Alerts tab state
   const [eurArsUpper, setEurArsUpper] = useState<string>(() => String(getRateAlertConfig().eurArs.upper ?? ''));
@@ -94,6 +105,11 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
         const success = await uploadToDrive(dataToSync);
 
         if (success) {
+          const now = new Date().toISOString();
+          localStorage.setItem(STORAGE_KEYS.DRIVE_LAST_BACKUP_AT, now);
+          localStorage.setItem(STORAGE_KEYS.DRIVE_LAST_BACKUP_FILE, 'argbot-backup.json');
+          setLastBackupAt(now);
+          setLastBackupFile('argbot-backup.json');
           setSyncStatus('success');
           setSyncMessage('✅ Datos subidos a tu Google Drive correctamente. Ya podés descargarlos desde cualquier dispositivo.');
         } else {
@@ -247,6 +263,7 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
           <button className={activeTab === 'binance' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('binance')}>Binance</button>
           <button className={activeTab === 'alerts' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('alerts')}>Alertas</button>
           <button className={activeTab === 'notif' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('notif')}>Notif</button>
+          <button className={activeTab === 'broker' ? styles['tab-btn-active'] : styles['tab-btn-inactive']} onClick={() => setActiveTab('broker')}>Broker</button>
         </div>
 
         {/* Content */}
@@ -299,6 +316,12 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                 }>
                   {syncMessage}
                 </div>
+              )}
+
+              {lastBackupAt && (
+                <p className={styles['sync-last-backup']}>
+                  {`Último backup: ${lastBackupFile ?? ''} — ${new Date(lastBackupAt).toLocaleString('es-AR')}`}
+                </p>
               )}
             </div>
           )}
@@ -559,6 +582,32 @@ export default function Settings({ onClose, user, initialTab }: { onClose: () =>
                 >
                   {binanceCleared ? '✓ Borrado' : 'Borrar todo'}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* BROKER TAB */}
+          {activeTab === 'broker' && (
+            <div>
+              <h4 className={styles['notif-title']}>Mi broker cripto</h4>
+              <div className={styles['notif-box']}>
+                <label htmlFor="broker-name-input" className={styles['field-label']}>Mi broker cripto argentino</label>
+                <input
+                  id="broker-name-input"
+                  type="text"
+                  value={brokerName}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setBrokerName(val);
+                    if (val) {
+                      localStorage.setItem(STORAGE_KEYS.BROKER_NAME, val);
+                    } else {
+                      localStorage.removeItem(STORAGE_KEYS.BROKER_NAME);
+                    }
+                  }}
+                  placeholder="Ej: Nexo, Ripio, Buenbit..."
+                  className={`${styles['field-input']} ${styles['field-input-sans']}`}
+                />
               </div>
             </div>
           )}

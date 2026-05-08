@@ -617,3 +617,15 @@
   color: #848E9C;
   font-size: 14px;
 }
+
+/* Broker config banner — step 4 */
+.broker-config-banner {
+  background-color: rgba(14, 203, 129, 0.06);
+  border: 1px solid rgba(14, 203, 129, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #848E9C;
+  line-height: 1.5;
+}

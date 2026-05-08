@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TradingWizard from '../components/TradingWizard';
+import { STORAGE_KEYS } from '../utils/storageKeys';
 
 vi.mock('../components/Trade', () => ({
   default: ({ onSuccess }) => (
@@ -44,7 +45,7 @@ describe('TradingWizard', () => {
   });
 
   it('step 1 con IBAN: muestra datos SEPA directamente (sin QR)', () => {
-    localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText(/Continuar con la transferencia/));
@@ -99,7 +100,7 @@ describe('TradingWizard', () => {
   });
 
   it('muestra datos SEPA en step 1 sin necesidad de expandir', () => {
-    localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText(/Continuar con la transferencia/));
@@ -109,7 +110,7 @@ describe('TradingWizard', () => {
   });
 
   it('click en Copiar del campo IBAN llama a copyToClipboard', async () => {
-    localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, 'ES1234567890123456789012');
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText },
@@ -188,8 +189,8 @@ describe('TradingWizard', () => {
   });
 
   it('sepaReference usa email cuando user_email está en localStorage', () => {
-    localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
-    localStorage.setItem('user_email', 'test@example.com');
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, 'ES1234567890123456789012');
+    localStorage.setItem(STORAGE_KEYS.USER_EMAIL, 'test@example.com');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
 
     fireEvent.click(screen.getByText(/Continuar con la transferencia/));
@@ -210,7 +211,7 @@ describe('TradingWizard', () => {
   });
 
   it('step 1: cuando IBAN está configurado, muestra el IBAN con botón copiar (sin QR)', () => {
-    localStorage.setItem('binance_eur_iban', 'ES1234567890123456789012');
+    localStorage.setItem(STORAGE_KEYS.BINANCE_EUR_IBAN, 'ES1234567890123456789012');
     render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
     fireEvent.click(screen.getByText(/Continuar con la transferencia/));
 
@@ -253,6 +254,29 @@ describe('TradingWizard', () => {
     fireEvent.click(screen.getByText('1. Simulación'));
     // El botón "Continuar" sigue visible (sigue en step 0)
     expect(screen.getByText(/Continuar con la transferencia/)).toBeInTheDocument();
+  });
+
+  it('step 4: muestra banner de configuración de broker cuando argbot_broker_name NO está configurado', () => {
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
+    fireEvent.click(screen.getByText(/Ya realicé la transferencia/));
+    fireEvent.click(screen.getByText('Trade Success'));
+    fireEvent.click(screen.getByText('Withdraw Success'));
+
+    expect(screen.getByText(/Configurá tu broker en Ajustes/)).toBeInTheDocument();
+  });
+
+  it('step 4: NO muestra el banner cuando argbot_broker_name está configurado', () => {
+    localStorage.setItem(STORAGE_KEYS.BROKER_NAME, 'Ripio');
+    render(<TradingWizard data={mockData} onRefreshData={onRefreshData} />);
+
+    fireEvent.click(screen.getByText(/Continuar con la transferencia/));
+    fireEvent.click(screen.getByText(/Ya realicé la transferencia/));
+    fireEvent.click(screen.getByText('Trade Success'));
+    fireEvent.click(screen.getByText('Withdraw Success'));
+
+    expect(screen.queryByText(/Configurá tu broker en Ajustes/)).not.toBeInTheDocument();
   });
 
 });

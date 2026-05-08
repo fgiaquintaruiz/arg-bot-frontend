@@ -45,6 +45,8 @@ vi.mock('../utils/storageKeys', () => ({
     ARGBOT_NOTIF_OPT_IN_DISMISSED: 'argbot_notif_opt_in_dismissed',
     ARGBOT_NOTIFICATIONS_ENABLED: 'argbot_notifications_enabled',
     DRIVE_FILE_ID: 'drive_file_id',
+    DRIVE_LAST_BACKUP_AT: 'drive_last_backup_at',
+    DRIVE_LAST_BACKUP_FILE: 'drive_last_backup_file',
   },
 }));
 
@@ -456,5 +458,79 @@ describe('Settings — Tab Notif', () => {
 
     // CSS modules hash class names in JSDOM — verify the module key is present in className
     expect(toggleDiv.className).toContain('notif-toggle-track-off');
+  });
+});
+
+// ─── Tab Sync — last backup info ─────────────────────────────────────────────
+
+describe('Settings — Tab Sync — último backup', () => {
+  it('muestra "Último backup:" con filename y fecha si drive_last_backup_at está en localStorage', async () => {
+    const isoDate = '2026-05-07T10:30:00.000Z';
+    localStorage.setItem('drive_last_backup_at', isoDate);
+    localStorage.setItem('drive_last_backup_file', 'argbot-backup.json');
+
+    renderSettings({ initialTab: 'sync' });
+
+    const formatted = new Date(isoDate).toLocaleString('es-AR');
+    await waitFor(() => {
+      expect(screen.getByText(`Último backup: argbot-backup.json — ${formatted}`)).toBeInTheDocument();
+    });
+  });
+
+  it('NO muestra sección de último backup si drive_last_backup_at no está en localStorage', () => {
+    renderSettings({ initialTab: 'sync' });
+    expect(screen.queryByText(/Último backup:/)).not.toBeInTheDocument();
+  });
+
+  it('actualiza el último backup tras un upload exitoso', async () => {
+    (uploadToDrive as any).mockResolvedValue(true);
+    renderSettings({ initialTab: 'sync' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Subir a Drive/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Último backup:/)).toBeInTheDocument();
+    });
+  });
+});
+
+// ─── Tab Broker ───────────────────────────────────────────────────────────────
+
+describe('Settings — Tab Broker', () => {
+  it('click en tab Broker → muestra el campo de broker cripto', () => {
+    renderSettings();
+    fireEvent.click(screen.getByRole('button', { name: 'Broker' }));
+    expect(screen.getByLabelText('Mi broker cripto argentino')).toBeInTheDocument();
+  });
+
+  it('renderiza con initialTab=broker → muestra el input de broker', () => {
+    renderSettings({ initialTab: 'broker' });
+    expect(screen.getByLabelText('Mi broker cripto argentino')).toBeInTheDocument();
+  });
+
+  it('input de broker tiene el placeholder correcto', () => {
+    renderSettings({ initialTab: 'broker' });
+    expect(screen.getByPlaceholderText('Ej: Nexo, Ripio, Buenbit...')).toBeInTheDocument();
+  });
+
+  it('carga el valor inicial desde localStorage', () => {
+    localStorage.setItem('argbot_broker_name', 'Ripio');
+    renderSettings({ initialTab: 'broker' });
+    expect(screen.getByDisplayValue('Ripio')).toBeInTheDocument();
+  });
+
+  it('cambiar el input guarda en localStorage inmediatamente', () => {
+    renderSettings({ initialTab: 'broker' });
+    const input = screen.getByLabelText('Mi broker cripto argentino');
+    fireEvent.change(input, { target: { value: 'Buenbit' } });
+    expect(localStorage.getItem('argbot_broker_name')).toBe('Buenbit');
+  });
+
+  it('limpiar el input remueve la clave de localStorage', () => {
+    localStorage.setItem('argbot_broker_name', 'Nexo');
+    renderSettings({ initialTab: 'broker' });
+    const input = screen.getByLabelText('Mi broker cripto argentino');
+    fireEvent.change(input, { target: { value: '' } });
+    expect(localStorage.getItem('argbot_broker_name')).toBeNull();
   });
 });

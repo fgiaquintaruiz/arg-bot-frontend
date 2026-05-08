@@ -20,7 +20,10 @@ export const STORAGE_KEYS = {
   ARGBOT_NOTIF_OPT_IN_DISMISSED: 'argbot_notif_opt_in_dismissed',
   ARGBOT_NOTIFICATIONS_ENABLED: 'argbot_notifications_enabled',
   DRIVE_FILE_ID: 'drive_file_id',
+  DRIVE_LAST_BACKUP_AT: 'drive_last_backup_at',
+  DRIVE_LAST_BACKUP_FILE: 'drive_last_backup_file',
   RATE_ALERT_CONFIG: 'rate_alert_config',
   BANK_ACCOUNT_SAVED: 'bank_account_saved',
   USDC_ARS_OVERRIDE: 'usdc_ars_override',
+  BROKER_NAME: 'argbot_broker_name',
 } as const;

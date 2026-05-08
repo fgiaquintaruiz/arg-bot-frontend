@@ -493,6 +493,11 @@ export default function TradingWizard({ data, onRefreshData }: TradingWizardProp
               <button onClick={retrocede} className={styles['back-btn']}>
                 {'<'} Paso anterior
               </button>
+              {!localStorage.getItem(STORAGE_KEYS.BROKER_NAME) && (
+                <div className={styles['broker-config-banner']}>
+                  💡 Configurá tu broker en Ajustes → pestaña Broker para personalizar esta pantalla.
+                </div>
+              )}
               {data.argCriptoBrokerUsdcArsRate ? (
                 <>
                   <div className={styles['ripio-box']}>
