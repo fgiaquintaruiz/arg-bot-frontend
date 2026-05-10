@@ -5,6 +5,37 @@ import { STORAGE_KEYS } from '../utils/storageKeys';
 import { TradeHistoryEntry } from '../types';
 import styles from './History.module.css';
 
+export interface EurArsRateDisplay {
+  value: string;
+  estimated: boolean;
+}
+
+export function calculateDisplayEurArsRate(
+  entry: { eurArsRate?: string; eurUsdcRate?: string },
+  usdcArsRate: number | null
+): EurArsRateDisplay | null {
+  // PRIORITY 1 — stored rate is the real rate at the time of the operation
+  const storedRate = parseFloat(entry.eurArsRate ?? '');
+  if (!isNaN(storedRate) && storedRate > 0) {
+    return { value: storedRate.toFixed(2), estimated: false };
+  }
+
+  // PRIORITY 2 — estimate using eurUsdcRate × today's usdc/ars override
+  const eurUsdc = parseFloat(entry.eurUsdcRate ?? '');
+  if (
+    !isNaN(eurUsdc) &&
+    eurUsdc > 0 &&
+    usdcArsRate !== null &&
+    !isNaN(usdcArsRate) &&
+    usdcArsRate > 0
+  ) {
+    return { value: (eurUsdc * usdcArsRate).toFixed(2), estimated: true };
+  }
+
+  // PRIORITY 3 — not enough data
+  return null;
+}
+
 const BROKER_NAME_KEY = 'argbot_broker_name';
 
 function truncateAddress(addr: string): string {
@@ -24,6 +55,7 @@ export default function History({ onClose }: { onClose: () => void }) {
   const [editValue, setEditValue] = useState<string>('');
   const [brokerName, setBrokerName] = useState<string>('broker');
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
+  const [usdcArsRate, setUsdcArsRate] = useState<number | null>(null);
 
   useEffect(() => {
     try {
@@ -36,6 +68,10 @@ export default function History({ onClose }: { onClose: () => void }) {
 
     const storedBroker = localStorage.getItem(BROKER_NAME_KEY);
     if (storedBroker) setBrokerName(storedBroker);
+
+    const override = localStorage.getItem(STORAGE_KEYS.USDC_ARS_OVERRIDE) || '';
+    const parsed = parseFloat(override);
+    setUsdcArsRate(!isNaN(parsed) && parsed > 0 ? parsed : null);
   }, []);
 
   const handleSaveRipioFee = (reversedIndex: number) => {
@@ -105,6 +141,19 @@ export default function History({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
+      {usdcArsRate === null && (
+        <div className={styles['usdc-ars-warning']}>
+          ⚠ Verificá la tasa de venta de USDC en tu broker argentino para ver tasas precisas.{' '}
+          <button
+            aria-label="Configurar"
+            className={styles['usdc-ars-warning-link']}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-settings', { detail: { tab: 'alerts' } }))}
+          >
+            Configurar
+          </button>
+        </div>
+      )}
+
       <div className={styles.body}>
 
         {/* Delete confirmation dialog */}
@@ -140,6 +189,7 @@ export default function History({ onClose }: { onClose: () => void }) {
           <div className={styles['cards-list']}>
             {history.map((h, i) => {
               const testnet = isTestnetEntry(h);
+              const displayEurArsRate = calculateDisplayEurArsRate(h, usdcArsRate);
               return (
                 <div
                   key={h.date + '-' + h.eur + '-' + i}
@@ -178,9 +228,14 @@ export default function History({ onClose }: { onClose: () => void }) {
                     <span className={styles['card-ars']}>
                       {h.arsAmount ? `${h.arsAmount} ARS` : '—'}
                     </span>
-                    {h.eurArsRate && (
+                    {displayEurArsRate !== null ? (
                       <span className={styles['card-rate']}>
-                        1 EUR = {h.eurArsRate} ARS
+                        {displayEurArsRate.estimated ? '1 EUR ≈ ' : '1 EUR = '}
+                        {parseFloat(displayEurArsRate.value).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARS
+                      </span>
+                    ) : (
+                      <span className={styles['card-rate-unavailable']}>
+                        Tasa EUR/ARS no disponible
                       </span>
                     )}
                   </div>

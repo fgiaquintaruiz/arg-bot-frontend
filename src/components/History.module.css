@@ -292,3 +292,32 @@
   margin-top: 16px;
   font-family: 'IBM Plex Sans', sans-serif;
 }
+
+.usdc-ars-warning {
+  margin: 0 20px 12px;
+  padding: 10px 14px;
+  background-color: #2B2200;
+  border: 1px solid #F0B90B44;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #F0B90B;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.usdc-ars-warning-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #F0B90B;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.card-rate-unavailable {
+  color: #474D57;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-style: italic;
+}

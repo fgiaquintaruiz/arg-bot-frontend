@@ -127,6 +127,7 @@ describe('History Component', () => {
   });
 
   it('muestra arsAmount y eurArsRate cuando la entrada los tiene', () => {
+    // Registro con eurArsRate guardado → PRIORIDAD 1: mostrar ese valor directo (tasa real de la operación)
     const trades = [
       {
         date: '2024-01-01T10:00:00.000Z',
@@ -141,7 +142,9 @@ describe('History Component', () => {
     render(<History onClose={() => {}} />);
 
     expect(screen.getByText(/120000 ARS/)).toBeInTheDocument();
-    expect(screen.getByText(/1 EUR = 1200\.00 ARS/)).toBeInTheDocument();
+    // Prioridad 1: usar eurArsRate guardado, sin sufijo ≈
+    expect(screen.getByText(/1 EUR = 1\.200,00 ARS/)).toBeInTheDocument();
+    expect(screen.queryByText(/Tasa EUR\/ARS no disponible/)).not.toBeInTheDocument();
   });
 
   it('muestra "—" cuando la entrada NO tiene arsAmount (entrada vieja)', () => {
@@ -578,5 +581,103 @@ describe('Export CSV button', () => {
     expect(() => {
       fireEvent.click(screen.getByRole('button', { name: 'Exportar historial como CSV' }));
     }).not.toThrow();
+  });
+});
+
+// ─── Change 3.5: Tasa EUR/ARS correcta en historial ───────────────────────────
+
+describe('EUR/ARS rate via USDC/ARS override', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('Test 1: muestra tasa EUR/ARS calculada cuando eurUsdcRate y usdc_ars_override están disponibles', () => {
+    // Arrange: USDC/ARS = 1000, eurUsdcRate = 1.05 → EUR/ARS = 1050.00
+    localStorage.setItem(STORAGE_KEYS.USDC_ARS_OVERRIDE, '1000');
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        eurUsdcRate: '1.05',
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+
+    render(<History onClose={() => {}} />);
+
+    // P2 (estimado): 1.05 * 1000 = 1050 — sin eurArsRate guardado → muestra con ≈
+    expect(screen.getByText(/1 EUR ≈ 1\.050,00 ARS/)).toBeInTheDocument();
+    // NO debe aparecer el warning de configuración
+    expect(screen.queryByText(/Verificá la tasa de venta de USDC/)).not.toBeInTheDocument();
+  });
+
+  it('Test 2: muestra warning cuando usdc_ars_override está vacío o ausente', () => {
+    // Arrange: usdc_ars_override vacío (no seteado)
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        eurUsdcRate: '1.05',
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+
+    render(<History onClose={() => {}} />);
+
+    // Debe mostrar el banner de warning
+    expect(screen.getByText(/Verificá la tasa de venta de USDC/)).toBeInTheDocument();
+    // El link "Configurar" debe estar presente
+    expect(screen.getByRole('button', { name: /Configurar/i })).toBeInTheDocument();
+  });
+
+  it('Test 3: muestra "Tasa EUR/ARS no disponible" en cada card cuando falta usdc_ars_override', () => {
+    // Arrange: no hay usdc_ars_override
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        eurUsdcRate: '1.05',
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+
+    render(<History onClose={() => {}} />);
+
+    // El card debe mostrar "no disponible" para la tasa EUR/ARS
+    expect(screen.getByText(/Tasa EUR\/ARS no disponible/)).toBeInTheDocument();
+    // No debe mostrar una tasa calculada
+    expect(screen.queryByText(/1 EUR = .* ARS/)).not.toBeInTheDocument();
+  });
+
+  it('Test 4 (P2): sin eurArsRate guardado, con eurUsdcRate y override, muestra tasa estimada con ≈', () => {
+    // P2: no hay eurArsRate en el registro → se estima con eurUsdcRate × usdc_ars_override
+    localStorage.setItem(STORAGE_KEYS.USDC_ARS_OVERRIDE, '1000');
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        eurUsdcRate: '1.05',
+        // eurArsRate intencionalmente ausente
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+
+    render(<History onClose={() => {}} />);
+
+    // Debe mostrar el prefijo ≈ indicando que es una tasa estimada (no real)
+    expect(screen.getByText(/1 EUR ≈ 1\.050,00 ARS/)).toBeInTheDocument();
+    // No debe mostrar "no disponible"
+    expect(screen.queryByText(/Tasa EUR\/ARS no disponible/)).not.toBeInTheDocument();
+    // No debe mostrar "=" (solo "≈" para estimados)
+    expect(screen.queryByText(/1 EUR = 1\.050,00 ARS/)).not.toBeInTheDocument();
   });
 });
