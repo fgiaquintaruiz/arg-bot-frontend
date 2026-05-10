@@ -321,3 +321,133 @@
   font-family: 'IBM Plex Mono', monospace;
   font-style: italic;
 }
+
+/* ─── New entry button ───────────────────────────────────────────────────── */
+
+.new-entry-button {
+  background: transparent;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  cursor: pointer;
+  color: #0ECB81;
+}
+
+/* ─── New entry modal ────────────────────────────────────────────────────── */
+
+.new-entry-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.new-entry-dialog {
+  background: #1E2329;
+  border: 1px solid #2B3139;
+  border-radius: 10px;
+  padding: 24px;
+  max-width: 420px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.new-entry-title {
+  color: #EAECEF;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 0 0 20px;
+}
+
+.new-entry-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.new-entry-label {
+  color: #848E9C;
+  font-size: 11px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.new-entry-input {
+  background-color: #181A20;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  color: #EAECEF;
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.new-entry-input:focus {
+  border-color: #F0B90B;
+}
+
+.new-entry-select {
+  background-color: #181A20;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  color: #EAECEF;
+  font-size: 13px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.new-entry-error {
+  color: #F6465D;
+  font-size: 11px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin-top: 2px;
+}
+
+.new-entry-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.new-entry-cancel {
+  background: transparent;
+  border: 1px solid #2B3139;
+  border-radius: 6px;
+  color: #848E9C;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.new-entry-save {
+  background: #0ECB81;
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}

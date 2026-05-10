@@ -737,3 +737,125 @@ describe('mode field migration on load', () => {
     expect(screen.getByText(/100 EUR → 107\.50 USDC/)).toBeInTheDocument();
   });
 });
+
+// ─── Commit 2: manual creation modal ─────────────────────────────────────────
+
+describe('New entry modal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('botón "+ Nueva operación" es visible en el header', () => {
+    render(<History onClose={() => {}} />);
+    expect(screen.getByRole('button', { name: /Nueva operación/i })).toBeInTheDocument();
+  });
+
+  it('modal de creación aparece al hacer click en "+ Nueva operación"', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('validación: fecha futura → error visible', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+
+    // Setear fecha futura
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const futureDateStr = tomorrow.toISOString().slice(0, 10);
+    const dateInput = screen.getByLabelText(/Fecha/i);
+    fireEvent.change(dateInput, { target: { value: futureDateStr } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar nueva operación/i }));
+    // Verify at least one error alert appeared and it mentions "fecha"
+    const alerts = screen.getAllByRole('alert');
+    expect(alerts.some(a => /fecha/i.test(a.textContent))).toBe(true);
+  });
+
+  it('validación: modo no seleccionado → error visible al intentar guardar', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+
+    // Llenar campos requeridos excepto mode
+    const today = new Date().toISOString().slice(0, 10);
+    fireEvent.change(screen.getByLabelText(/Fecha/i), { target: { value: today } });
+    fireEvent.change(screen.getByLabelText(/Monto EUR/i), { target: { value: '100' } });
+    fireEvent.change(screen.getByLabelText(/USDC recibido/i), { target: { value: '107.5' } });
+    // No seleccionar modo
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar nueva operación/i }));
+    // Verify at least one error alert appeared and it mentions "modo"
+    const alerts = screen.getAllByRole('alert');
+    expect(alerts.some(a => /modo/i.test(a.textContent))).toBe(true);
+  });
+
+  it('validación: EUR negativo → error visible', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+
+    const today = new Date().toISOString().slice(0, 10);
+    fireEvent.change(screen.getByLabelText(/Fecha/i), { target: { value: today } });
+
+    const modeSelect = screen.getByLabelText(/Modo/i);
+    fireEvent.change(modeSelect, { target: { value: 'prod' } });
+
+    fireEvent.change(screen.getByLabelText(/Monto EUR/i), { target: { value: '-50' } });
+    fireEvent.change(screen.getByLabelText(/USDC recibido/i), { target: { value: '107.5' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar nueva operación/i }));
+    // Verify at least one error alert appeared and it mentions "EUR"
+    const alerts = screen.getAllByRole('alert');
+    expect(alerts.some(a => /EUR/i.test(a.textContent))).toBe(true);
+  });
+
+  it('submit con datos válidos → registro aparece en la lista', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+
+    const today = new Date().toISOString().slice(0, 10);
+    fireEvent.change(screen.getByLabelText(/Fecha/i), { target: { value: today } });
+    fireEvent.change(screen.getByLabelText(/Modo/i), { target: { value: 'prod' } });
+    fireEvent.change(screen.getByLabelText(/Monto EUR/i), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText(/USDC recibido/i), { target: { value: '215' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar nueva operación/i }));
+
+    expect(screen.getByText(/200 EUR → 215 USDC/)).toBeInTheDocument();
+  });
+
+  it('submit válido → modal se cierra', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+
+    const today = new Date().toISOString().slice(0, 10);
+    fireEvent.change(screen.getByLabelText(/Fecha/i), { target: { value: today } });
+    fireEvent.change(screen.getByLabelText(/Modo/i), { target: { value: 'prod' } });
+    fireEvent.change(screen.getByLabelText(/Monto EUR/i), { target: { value: '150' } });
+    fireEvent.change(screen.getByLabelText(/USDC recibido/i), { target: { value: '160' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar nueva operación/i }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('registro nuevo sobrevive reload (está en localStorage)', () => {
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /Nueva operación/i }));
+
+    const today = new Date().toISOString().slice(0, 10);
+    fireEvent.change(screen.getByLabelText(/Fecha/i), { target: { value: today } });
+    fireEvent.change(screen.getByLabelText(/Modo/i), { target: { value: 'testnet' } });
+    fireEvent.change(screen.getByLabelText(/Monto EUR/i), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText(/USDC recibido/i), { target: { value: '53.5' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar nueva operación/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved).toHaveLength(1);
+    expect(saved[0].eur).toBe('50');
+    expect(saved[0].usdcReceived).toBe('53.5');
+    expect(saved[0].mode).toBe('testnet');
+  });
+});
