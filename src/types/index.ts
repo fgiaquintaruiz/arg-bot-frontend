@@ -18,4 +18,5 @@ export interface TradeHistoryEntry {
   binanceFeeEur?: string;
   usdcDestAddress?: string;
   ripioFeeArs?: string;
+  mode?: 'testnet' | 'prod' | 'unknown';
 }

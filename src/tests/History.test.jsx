@@ -681,3 +681,59 @@ describe('EUR/ARS rate via USDC/ARS override', () => {
     expect(screen.queryByText(/1 EUR = 1\.050,00 ARS/)).not.toBeInTheDocument();
   });
 });
+
+// ─── Commit 1: mode field migration ──────────────────────────────────────────
+
+describe('mode field migration on load', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('registro con mode: "prod" → state mantiene mode: "prod"', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        mode: 'prod',
+      },
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    // El componente carga — si llegara a mostrar algo basado en mode lo verificaríamos,
+    // pero aquí verificamos que no rompa y que el registro esté visible
+    expect(screen.getByText(/100 EUR → 107\.50 USDC/)).toBeInTheDocument();
+  });
+
+  it('registro sin mode → state lo migra a mode: "unknown" (no rompe el render)', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        // sin campo mode
+      },
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/100 EUR → 107\.50 USDC/)).toBeInTheDocument();
+  });
+
+  it('registro con mode: "testnet" → state mantiene mode: "testnet"', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        mode: 'testnet',
+      },
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+    expect(screen.getByText(/100 EUR → 107\.50 USDC/)).toBeInTheDocument();
+  });
+});

@@ -49,7 +49,11 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       const testnet = localStorage.getItem(STORAGE_KEYS.ARGBOT_TESTNET) !== 'false';
       const apiKey = localStorage.getItem(testnet ? STORAGE_KEYS.BINANCE_KEY_TESTNET : STORAGE_KEYS.BINANCE_KEY) || '';
       const apiSecret = localStorage.getItem(testnet ? STORAGE_KEYS.BINANCE_SECRET_TESTNET : STORAGE_KEYS.BINANCE_SECRET) || '';
-      const res = await fetch(`${API_URL}/api/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, apiSecret, amountEur: eurInput, testnet }) });
+      const res = await fetch(`${API_URL}/api/trade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey, apiSecret, amountEur: eurInput, testnet }),
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error en el cambio');
       setSuccessMsg('¡Cambio ejecutado con éxito!');
@@ -59,7 +63,11 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
         body: JSON.stringify({}),
       }).catch(() => {});
       let history: TradeHistoryEntry[] = [];
-      try { history = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || "[]"); } catch { history = []; }
+      try {
+        history = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+      } catch {
+        history = [];
+      }
       const brokerRate = parseFloat(data.argCriptoBrokerUsdcArsRate || data.usdcArsRate || '0');
       const eurUsdc = parseFloat(data.rate || '0');
       const eurArsRate = brokerRate > 0 && eurUsdc > 0 ? (eurUsdc * brokerRate).toFixed(2) : undefined;
@@ -67,9 +75,22 @@ export default function Trade({ data, onClose, onSuccess }: TradeProps) {
       // Binance no cobra fee de retiro para USDC BEP20 — siempre 0
       const binanceFeeEur = '0';
       const usdcDestAddress = getSelectedWithdrawEntry()?.address || undefined;
-      history.push({ date: new Date().toISOString(), eur: eurInput, savings: "0", usdcReceived: netUsdc.toFixed(2), serviceFee: effectiveFee.toFixed(2), arsAmount, eurArsRate, eurUsdcRate: eurUsdc > 0 ? eurUsdc.toFixed(4) : undefined, binanceFeeEur, usdcDestAddress });
+      history.push({
+        date: new Date().toISOString(),
+        eur: eurInput,
+        savings: '0',
+        usdcReceived: netUsdc.toFixed(2),
+        serviceFee: effectiveFee.toFixed(2),
+        arsAmount,
+        eurArsRate,
+        eurUsdcRate: eurUsdc > 0 ? eurUsdc.toFixed(4) : undefined,
+        binanceFeeEur,
+        usdcDestAddress,
+        mode: testnet ? 'testnet' : 'prod',
+      });
       localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(history));
-      setEurInput(''); setIsConfirming(false);
+      setEurInput('');
+      setIsConfirming(false);
       setTimeout(() => onSuccess(), 2000);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

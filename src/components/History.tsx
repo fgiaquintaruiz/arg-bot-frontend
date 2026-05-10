@@ -61,7 +61,13 @@ export default function History({ onClose }: { onClose: () => void }) {
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]';
       const data = JSON.parse(raw);
-      setHistory(Array.isArray(data) ? [...data].reverse() : []);
+      if (Array.isArray(data)) {
+        // Migration: legacy entries without `mode` get 'unknown' — in-memory only, not persisted
+        const migrated = data.map(entry => ({ ...entry, mode: entry.mode ?? 'unknown' }));
+        setHistory([...migrated].reverse());
+      } else {
+        setHistory([]);
+      }
     } catch {
       setHistory([]);
     }
