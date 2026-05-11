@@ -293,7 +293,8 @@ describe('History Component', () => {
     expect(screen.getByText(/Comisión Ripio: — ARS/)).toBeInTheDocument();
   });
 
-  it('flujo editar/guardar comisión Ripio actualiza el valor mostrado y el localStorage', async () => {
+  it('flujo editar/guardar comisión Ripio vía modal actualiza el valor mostrado y el localStorage', async () => {
+    // Replaced: inline pencil edit removed — now editing happens via the card-tap edit modal
     localStorage.setItem('argbot_broker_name', 'Ripio');
     const trades = [
       { date: '2024-01-01T10:00:00.000Z', eur: '100', usdcReceived: '107.50', savings: '0' }
@@ -301,20 +302,20 @@ describe('History Component', () => {
     localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
     render(<History onClose={() => {}} />);
 
-    // click en ícono lápiz
-    fireEvent.click(screen.getByLabelText(/editar comisión ripio/i));
+    // abrir modal de edición tocando la card
+    fireEvent.click(screen.getByTestId('history-card'));
 
-    // aparece el input
-    const input = screen.getByPlaceholderText(/monto/i);
-    expect(input).toBeInTheDocument();
+    // aparece el input de comisión
+    const feeInput = screen.getByLabelText(/Comisión.*ARS/i);
+    expect(feeInput).toBeInTheDocument();
 
     // ingresar valor
-    fireEvent.change(input, { target: { value: '2500' } });
+    fireEvent.change(feeInput, { target: { value: '2500' } });
 
     // guardar
-    fireEvent.click(screen.getByLabelText(/guardar comisión ripio/i));
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
 
-    // el valor actualizado se muestra
+    // el valor actualizado se muestra en la card
     expect(screen.getByText(/Comisión Ripio: 2500 ARS/)).toBeInTheDocument();
 
     // y se persiste en localStorage
@@ -857,5 +858,160 @@ describe('New entry modal', () => {
     expect(saved[0].eur).toBe('50');
     expect(saved[0].usdcReceived).toBe('53.5');
     expect(saved[0].mode).toBe('testnet');
+  });
+});
+
+// ─── Edit modal (card-tappable) ───────────────────────────────────────────────
+
+describe('Edit modal (card-tappable)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  const sampleTrade = {
+    date: '2024-03-15T14:30:00.000Z',
+    eur: '100',
+    usdcReceived: '107.50',
+    savings: '0',
+    mode: 'prod',
+    arsAmount: '120000',
+    eurUsdcRate: '1.075',
+    binanceFeeEur: '0.90',
+    ripioFeeArs: '1500',
+    eurArsRate: '1200.00',
+  };
+
+  it('cada card del historial tiene role="button"', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    const card = screen.getByTestId('history-card');
+    expect(card).toHaveAttribute('role', 'button');
+  });
+
+  it('click en card abre el modal de edición', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    const card = screen.getByTestId('history-card');
+    fireEvent.click(card);
+    expect(screen.getByRole('dialog', { name: /Editar operación/i })).toBeInTheDocument();
+  });
+
+  it('modal de edición muestra datos del registro (fecha, EUR, USDC)', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+    // fecha formateada (15 mar. 2024 o similar)
+    expect(screen.getByRole('dialog', { name: /Editar operación/i })).toBeInTheDocument();
+    // EUR amount visible en el modal
+    expect(screen.getAllByText(/100/).length).toBeGreaterThan(0);
+    // USDC visible en el modal
+    expect(screen.getAllByText(/107\.50/).length).toBeGreaterThan(0);
+  });
+
+  it('los campos arsAmount y ripioFeeArs son editables (input type="number")', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    const feeInput = screen.getByLabelText(/Comisión.*ARS/i);
+    expect(arsInput).toHaveAttribute('type', 'number');
+    expect(feeInput).toHaveAttribute('type', 'number');
+  });
+
+  it('los campos no editables son readonly (ej: EUR amount)', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+    // El campo EUR debe ser readonly — no debe ser un input editable
+    // Verificamos que no haya un input con label "EUR" en el modal
+    // (el valor se muestra como texto estático)
+    const dialog = screen.getByRole('dialog', { name: /Editar operación/i });
+    const editableInputs = dialog.querySelectorAll('input:not([readonly])');
+    // Solo arsAmount y ripioFeeArs son editables — máximo 2 inputs no-readonly
+    expect(editableInputs.length).toBeLessThanOrEqual(2);
+  });
+
+  it('submit con arsAmount válido guarda en localStorage', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '135000' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar.*edición|Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].arsAmount).toBe('135000');
+  });
+
+  it('submit con arsAmount negativo muestra error y no cierra el modal', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '-5000' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar.*edición|Guardar cambios/i }));
+
+    // Modal debe seguir abierto
+    expect(screen.getByRole('dialog', { name: /Editar operación/i })).toBeInTheDocument();
+    // Debe haber un mensaje de error
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('cancelar modal no guarda cambios', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '999999' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancelar/i }));
+
+    // Modal cerrado
+    expect(screen.queryByRole('dialog', { name: /Editar operación/i })).not.toBeInTheDocument();
+    // localStorage sin cambios
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].arsAmount).toBe('120000');
+  });
+
+  it('click en botón eliminar (tacho) NO abre el modal de edición', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+
+    const deleteBtn = screen.getByRole('button', { name: /Eliminar operación/i });
+    fireEvent.click(deleteBtn);
+
+    // Debe abrir diálogo de confirmación de borrado, NO el modal de edición
+    expect(screen.getByText(/Eliminar esta operación del historial/)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /Editar operación/i })).not.toBeInTheDocument();
+  });
+
+  it('submit válido con ripioFeeArs guarda el nuevo valor en localStorage', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const feeInput = screen.getByLabelText(/Comisión.*ARS/i);
+    fireEvent.change(feeInput, { target: { value: '2500' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar.*edición|Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].ripioFeeArs).toBe('2500');
+  });
+
+  it('submit válido cierra el modal', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar.*edición|Guardar cambios/i }));
+
+    expect(screen.queryByRole('dialog', { name: /Editar operación/i })).not.toBeInTheDocument();
   });
 });

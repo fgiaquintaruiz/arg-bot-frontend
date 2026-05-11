@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, Check, X, ClipboardList, Download, Trash2, Plus } from 'lucide-react';
+import { X, ClipboardList, Download, Trash2, Plus } from 'lucide-react';
 import { tradeHistoryToCsv, downloadCsv } from '../utils/csvExport';
 import { STORAGE_KEYS } from '../utils/storageKeys';
 import { TradeHistoryEntry } from '../types';
@@ -60,6 +60,11 @@ interface NewEntryForm {
   ripioFeeArs: string;
 }
 
+interface EditEntryForm {
+  arsAmount: string;
+  ripioFeeArs: string;
+}
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -79,14 +84,15 @@ function blankForm(): NewEntryForm {
 
 export default function History({ onClose }: { onClose: () => void }) {
   const [history, setHistory] = useState<(TradeHistoryEntry & { txId?: string })[]>([]);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState<string>('');
   const [brokerName, setBrokerName] = useState<string>('broker');
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
   const [usdcArsRate, setUsdcArsRate] = useState<number | null>(null);
   const [showNewEntryModal, setShowNewEntryModal] = useState<boolean>(false);
   const [newEntryForm, setNewEntryForm] = useState<NewEntryForm>(blankForm());
   const [newEntryErrors, setNewEntryErrors] = useState<Partial<Record<keyof NewEntryForm, string>>>({});
+  const [editingEntry, setEditingEntry] = useState<(TradeHistoryEntry & { txId?: string; _reversedIndex: number }) | null>(null);
+  const [editEntryForm, setEditEntryForm] = useState<EditEntryForm>({ arsAmount: '', ripioFeeArs: '' });
+  const [editEntryErrors, setEditEntryErrors] = useState<Partial<Record<keyof EditEntryForm, string>>>({});
 
   useEffect(() => {
     try {
@@ -111,24 +117,67 @@ export default function History({ onClose }: { onClose: () => void }) {
     setUsdcArsRate(!isNaN(parsed) && parsed > 0 ? parsed : null);
   }, []);
 
-  const handleSaveRipioFee = (reversedIndex: number) => {
-    // history is reversed — map back to original array
+  const handleOpenEditModal = (entry: TradeHistoryEntry & { txId?: string }, reversedIndex: number) => {
+    setEditingEntry({ ...entry, _reversedIndex: reversedIndex });
+    setEditEntryForm({
+      arsAmount: entry.arsAmount ?? '',
+      ripioFeeArs: entry.ripioFeeArs ?? '',
+    });
+    setEditEntryErrors({});
+  };
+
+  const handleSaveEditEntry = () => {
+    const errors: Partial<Record<keyof EditEntryForm, string>> = {};
+
+    if (editEntryForm.arsAmount !== '') {
+      const val = parseFloat(editEntryForm.arsAmount);
+      if (isNaN(val) || val <= 0) {
+        errors.arsAmount = 'El monto ARS debe ser positivo.';
+      }
+    }
+
+    if (editEntryForm.ripioFeeArs !== '') {
+      const val = parseFloat(editEntryForm.ripioFeeArs);
+      if (isNaN(val) || val <= 0) {
+        errors.ripioFeeArs = 'La comisión debe ser positiva.';
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setEditEntryErrors(errors);
+      return;
+    }
+
+    if (editingEntry === null) return;
+
     let original: TradeHistoryEntry[] = [];
     try {
       original = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
     } catch {
       return;
     }
+
+    const reversedIndex = editingEntry._reversedIndex;
     const originalIndex = original.length - 1 - reversedIndex;
-    original[originalIndex] = { ...original[originalIndex], ripioFeeArs: editValue };
+
+    original[originalIndex] = {
+      ...original[originalIndex],
+      arsAmount: editEntryForm.arsAmount || undefined,
+      ripioFeeArs: editEntryForm.ripioFeeArs || undefined,
+    };
     localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(original));
+
     setHistory(prev => {
       const updated = [...prev];
-      updated[reversedIndex] = { ...updated[reversedIndex], ripioFeeArs: editValue };
+      updated[reversedIndex] = {
+        ...updated[reversedIndex],
+        arsAmount: editEntryForm.arsAmount || undefined,
+        ripioFeeArs: editEntryForm.ripioFeeArs || undefined,
+      };
       return updated;
     });
-    setEditingIndex(null);
-    setEditValue('');
+
+    setEditingEntry(null);
   };
 
   const handleDeleteEntry = (reversedIndex: number) => {
@@ -444,6 +493,127 @@ export default function History({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
+        {/* Edit entry modal */}
+        {editingEntry !== null && (
+          <div className={styles['edit-entry-overlay']}>
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Editar operación"
+              className={styles['edit-entry-dialog']}
+            >
+              <p className={styles['edit-entry-title']}>Editar operación</p>
+
+              {/* Readonly fields */}
+              <div className={styles['edit-entry-field']}>
+                <span className={styles['edit-entry-label']}>Fecha</span>
+                <div className={styles['edit-entry-readonly']}>
+                  {new Date(editingEntry.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
+              </div>
+
+              <div className={styles['edit-entry-field']}>
+                <span className={styles['edit-entry-label']}>Modo</span>
+                <div className={styles['edit-entry-readonly']}>{editingEntry.mode ?? '—'}</div>
+              </div>
+
+              <div className={styles['edit-entry-field']}>
+                <span className={styles['edit-entry-label']}>Monto EUR</span>
+                <div className={styles['edit-entry-readonly']}>{editingEntry.eur} EUR</div>
+              </div>
+
+              <div className={styles['edit-entry-field']}>
+                <span className={styles['edit-entry-label']}>USDC recibido</span>
+                <div className={styles['edit-entry-readonly']}>{editingEntry.usdcReceived || '—'} USDC</div>
+              </div>
+
+              {editingEntry.eurUsdcRate && (
+                <div className={styles['edit-entry-field']}>
+                  <span className={styles['edit-entry-label']}>Tasa EUR/USDC</span>
+                  <div className={styles['edit-entry-readonly']}>{editingEntry.eurUsdcRate}</div>
+                </div>
+              )}
+
+              {editingEntry.binanceFeeEur && (
+                <div className={styles['edit-entry-field']}>
+                  <span className={styles['edit-entry-label']}>Fee Binance EUR</span>
+                  <div className={styles['edit-entry-readonly']}>{editingEntry.binanceFeeEur} EUR</div>
+                </div>
+              )}
+
+              {editingEntry.usdcDestAddress && (
+                <div className={styles['edit-entry-field']}>
+                  <span className={styles['edit-entry-label']}>Dirección USDC</span>
+                  <div className={styles['edit-entry-readonly']}>{truncateAddress(editingEntry.usdcDestAddress)}</div>
+                </div>
+              )}
+
+              {(() => {
+                const displayRate = calculateDisplayEurArsRate(editingEntry, usdcArsRate);
+                return displayRate ? (
+                  <div className={styles['edit-entry-field']}>
+                    <span className={styles['edit-entry-label']}>Tasa EUR/ARS</span>
+                    <div className={styles['edit-entry-readonly']}>
+                      {displayRate.estimated ? '≈ ' : ''}{parseFloat(displayRate.value).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ARS
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              <hr className={styles['edit-entry-divider']} />
+
+              {/* Editable fields */}
+              <div className={styles['edit-entry-field']}>
+                <label htmlFor="ee-ars" aria-hidden="true" className={styles['edit-entry-label']}>Monto ARS (editable)</label>
+                <input
+                  id="ee-ars"
+                  aria-label="Monto ARS"
+                  type="number"
+                  value={editEntryForm.arsAmount}
+                  onChange={e => setEditEntryForm(f => ({ ...f, arsAmount: e.target.value }))}
+                  placeholder="ej: 120000"
+                  className={styles['edit-entry-input']}
+                />
+                {editEntryErrors.arsAmount && (
+                  <span role="alert" className={styles['edit-entry-error']}>{editEntryErrors.arsAmount}</span>
+                )}
+              </div>
+
+              <div className={styles['edit-entry-field']}>
+                <label htmlFor="ee-fee" aria-hidden="true" className={styles['edit-entry-label']}>Comisión {brokerName} ARS (editable)</label>
+                <input
+                  id="ee-fee"
+                  aria-label={`Comisión ${brokerName} ARS`}
+                  type="number"
+                  value={editEntryForm.ripioFeeArs}
+                  onChange={e => setEditEntryForm(f => ({ ...f, ripioFeeArs: e.target.value }))}
+                  placeholder="ej: 1500"
+                  className={styles['edit-entry-input']}
+                />
+                {editEntryErrors.ripioFeeArs && (
+                  <span role="alert" className={styles['edit-entry-error']}>{editEntryErrors.ripioFeeArs}</span>
+                )}
+              </div>
+
+              <div className={styles['edit-entry-actions']}>
+                <button
+                  onClick={() => setEditingEntry(null)}
+                  className={styles['edit-entry-cancel']}
+                >
+                  Cancelar
+                </button>
+                <button
+                  aria-label="Guardar cambios"
+                  onClick={handleSaveEditEntry}
+                  className={styles['edit-entry-save']}
+                >
+                  Guardar cambios
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Delete confirmation dialog */}
         {deleteConfirmIndex !== null && (
           <div className={styles['delete-dialog-overlay']}>
@@ -482,7 +652,16 @@ export default function History({ onClose }: { onClose: () => void }) {
                 <div
                   key={h.date + '-' + h.eur + '-' + i}
                   data-testid="history-card"
-                  className={`${styles.card} ${testnet ? styles['card-testnet'] : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  className={`${styles.card} ${styles['card-tappable']} ${testnet ? styles['card-testnet'] : ''}`}
+                  onClick={() => handleOpenEditModal(h, i)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleOpenEditModal(h, i);
+                    }
+                  }}
                 >
                   {/* Fecha + testnet badge row */}
                   <div className={styles['card-header-row']}>
@@ -497,7 +676,7 @@ export default function History({ onClose }: { onClose: () => void }) {
                     )}
                     <button
                       aria-label="Eliminar operación"
-                      onClick={() => setDeleteConfirmIndex(i)}
+                      onClick={e => { e.stopPropagation(); setDeleteConfirmIndex(i); }}
                       className={styles['delete-button']}
                     >
                       <Trash2 size={11} />
@@ -543,41 +722,11 @@ export default function History({ onClose }: { onClose: () => void }) {
                     Fee Binance: {h.binanceFeeEur ? `${h.binanceFeeEur} EUR` : '— EUR'}
                   </div>
 
-                  {/* Comisión broker — editable */}
+                  {/* Comisión broker */}
                   <div className={styles['ripio-row']}>
-                    {editingIndex === i ? (
-                      <>
-                        <span>Comisión {brokerName}:</span>
-                        <input
-                          type="number"
-                          value={editValue}
-                          onChange={e => setEditValue(e.target.value)}
-                          placeholder="monto"
-                          className={styles['ripio-input']}
-                        />
-                        <span>ARS</span>
-                        <button
-                          aria-label="guardar comisión ripio"
-                          onClick={() => handleSaveRipioFee(i)}
-                          className={styles['ripio-save-button']}
-                        >
-                          <Check size={12} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span>
-                          Comisión {brokerName}: {h.ripioFeeArs ? `${h.ripioFeeArs} ARS` : '— ARS'}
-                        </span>
-                        <button
-                          aria-label="editar comisión ripio"
-                          onClick={() => { setEditingIndex(i); setEditValue(h.ripioFeeArs || ''); }}
-                          className={styles['ripio-edit-button']}
-                        >
-                          <Pencil size={10} />
-                        </button>
-                      </>
-                    )}
+                    <span>
+                      Comisión {brokerName}: {h.ripioFeeArs ? `${h.ripioFeeArs} ARS` : '— ARS'}
+                    </span>
                   </div>
                 </div>
               );
