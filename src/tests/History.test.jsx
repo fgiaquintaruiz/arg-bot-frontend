@@ -1175,3 +1175,73 @@ describe('Edit modal — eurArsRate recalculation (B.2)', () => {
     expect(saved[0].eurArsRate).toBe('1200.00');
   });
 });
+
+// ─── Delete entry — testnet vs real mode ─────────────────────────────────────
+
+describe('Delete entry — testnet vs real mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('Test A: entrada TESTNET se elimina inmediatamente sin diálogo de confirmación', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '100',
+        usdcReceived: '107.50',
+        savings: '0',
+        txId: 'TESTNET-abc123',
+      },
+      {
+        date: '2024-01-02T10:00:00.000Z',
+        eur: '200',
+        usdcReceived: '215.00',
+        savings: '0',
+        txId: '0xREAL1234',
+      },
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+
+    // History is displayed in reverse: index 0 = last entry (real), index 1 = first entry (testnet)
+    const deleteButtons = screen.getAllByRole('button', { name: /Eliminar operación/i });
+    // The testnet entry is the second card (reversed display) — deleteButtons[1]
+    fireEvent.click(deleteButtons[1]);
+
+    // Confirmation dialog must NOT appear
+    expect(screen.queryByText(/Eliminar esta operación del historial/)).not.toBeInTheDocument();
+
+    // The testnet entry must be removed from the DOM immediately
+    expect(screen.queryByText(/100 EUR → 107\.50 USDC/)).not.toBeInTheDocument();
+
+    // localStorage must reflect the deletion (only the real entry remains)
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved).toHaveLength(1);
+    expect(saved[0].txId).toBe('0xREAL1234');
+  });
+
+  it('Test B: entrada REAL muestra diálogo de confirmación (regression guard)', () => {
+    const trades = [
+      {
+        date: '2024-01-01T10:00:00.000Z',
+        eur: '150',
+        usdcReceived: '160.00',
+        savings: '0',
+        txId: '0xREAL5678',
+      },
+    ];
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(trades));
+    render(<History onClose={() => {}} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Eliminar operación/i }));
+
+    // Confirmation dialog MUST appear
+    expect(screen.getByText(/Eliminar esta operación del historial/)).toBeInTheDocument();
+
+    // localStorage must NOT be modified yet (entry still present until confirmed)
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved).toHaveLength(1);
+    expect(saved[0].txId).toBe('0xREAL5678');
+  });
+});

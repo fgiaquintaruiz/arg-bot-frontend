@@ -714,7 +714,14 @@ export default function History({ onClose }: { onClose: () => void }) {
                     )}
                     <button
                       aria-label="Eliminar operación"
-                      onClick={e => { e.stopPropagation(); setDeleteConfirmIndex(i); }}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (testnet) {
+                          handleDeleteEntry(i);
+                        } else {
+                          setDeleteConfirmIndex(i);
+                        }
+                      }}
                       className={styles['delete-button']}
                     >
                       <Trash2 size={11} />
