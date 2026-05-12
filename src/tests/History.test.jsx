@@ -1015,3 +1015,163 @@ describe('Edit modal (card-tappable)', () => {
     expect(screen.queryByRole('dialog', { name: /Editar operación/i })).not.toBeInTheDocument();
   });
 });
+
+// ─── B.2: eurArsRate recalculation on arsAmount edit ─────────────────────────
+
+describe('Edit modal — eurArsRate recalculation (B.2)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  const sampleTrade = {
+    date: '2024-03-15T14:30:00.000Z',
+    eur: '100',
+    usdcReceived: '107.50',
+    savings: '0',
+    mode: 'prod',
+    arsAmount: '120000',
+    eurUsdcRate: '1.075',
+    eurArsRate: '1200.00',
+  };
+
+  it('recalcula eurArsRate cuando arsAmount cambia y eurUsdcRate existe', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '135000' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    // 1.075 * (135000 / 107.50) = 1350.00
+    expect(saved[0].eurArsRate).toBe('1350.00');
+    expect(saved[0].arsAmount).toBe('135000');
+  });
+
+  it('NO recalcula eurArsRate cuando solo ripioFeeArs cambia', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const feeInput = screen.getByLabelText(/Comisión.*ARS/i);
+    fireEvent.change(feeInput, { target: { value: '2500' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].eurArsRate).toBe('1200.00');
+  });
+
+  it('NO recalcula eurArsRate cuando arsAmount NO cambió', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    // Only change ripioFeeArs, arsAmount stays as '120000'
+    const feeInput = screen.getByLabelText(/Comisión.*ARS/i);
+    fireEvent.change(feeInput, { target: { value: '3000' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].eurArsRate).toBe('1200.00');
+  });
+
+  it('muestra mensaje de éxito después de guardar con recálculo', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '135000' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    // The success message contains the full text — use a partial match that's unique to it
+    expect(screen.getByText(/Tasa EUR\/ARS actualizada/)).toBeInTheDocument();
+    // Verify the success message contains the formatted rate (multiple elements may match 1.350,00)
+    expect(screen.getAllByText(/1\.350,00 ARS/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('mensaje de éxito NO aparece cuando solo ripioFeeArs cambia', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const feeInput = screen.getByLabelText(/Comisión.*ARS/i);
+    fireEvent.change(feeInput, { target: { value: '2500' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    expect(screen.queryByText(/Tasa EUR\/ARS actualizada/)).not.toBeInTheDocument();
+  });
+
+  it('muestra advertencia cuando eurUsdcRate falta y arsAmount cambia', () => {
+    const tradeWithoutEurUsdc = { ...sampleTrade, eurUsdcRate: undefined, eurArsRate: undefined };
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([tradeWithoutEurUsdc]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '135000' } });
+
+    expect(screen.getByText(/No se puede recalcular la tasa/)).toBeInTheDocument();
+  });
+
+  it('NO persiste eurArsRate cuando eurUsdcRate falta', () => {
+    const tradeWithoutEurUsdc = { ...sampleTrade, eurUsdcRate: undefined, eurArsRate: undefined };
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([tradeWithoutEurUsdc]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '135000' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].eurArsRate).toBeUndefined();
+    expect(saved[0].arsAmount).toBe('135000');
+  });
+
+  it('después del recálculo, la card muestra tasa sin "≈"', () => {
+    // Trade with eurUsdcRate but NO eurArsRate — estimated display before edit
+    const tradeEstimated = { ...sampleTrade, eurArsRate: undefined };
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([tradeEstimated]));
+    localStorage.setItem(STORAGE_KEYS.USDC_ARS_OVERRIDE, '1100');
+    render(<History onClose={() => {}} />);
+
+    // Before edit — should show ≈ (estimated from eurUsdcRate * usdcArsRate)
+    expect(screen.getByText(/1 EUR ≈/)).toBeInTheDocument();
+
+    // Open edit modal, change arsAmount
+    fireEvent.click(screen.getByTestId('history-card'));
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '135000' } });
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    // After save — the card-rate span should show "1 EUR =" (no ≈)
+    const card = screen.getByTestId('history-card');
+    // card-rate span contains the rate display — after recalc it must NOT contain ≈
+    expect(card.innerHTML).not.toContain('≈');
+    // The card should display the new exact rate (not estimated)
+    expect(screen.queryByText(/1 EUR ≈/)).not.toBeInTheDocument();
+  });
+
+  it('NO recalcula cuando arsAmount se vacía', () => {
+    localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify([sampleTrade]));
+    render(<History onClose={() => {}} />);
+    fireEvent.click(screen.getByTestId('history-card'));
+
+    const arsInput = screen.getByLabelText(/Monto ARS/i);
+    fireEvent.change(arsInput, { target: { value: '' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar cambios/i }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
+    expect(saved[0].eurArsRate).toBe('1200.00');
+  });
+});

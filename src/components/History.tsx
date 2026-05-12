@@ -93,6 +93,7 @@ export default function History({ onClose }: { onClose: () => void }) {
   const [editingEntry, setEditingEntry] = useState<(TradeHistoryEntry & { txId?: string; _reversedIndex: number }) | null>(null);
   const [editEntryForm, setEditEntryForm] = useState<EditEntryForm>({ arsAmount: '', ripioFeeArs: '' });
   const [editEntryErrors, setEditEntryErrors] = useState<Partial<Record<keyof EditEntryForm, string>>>({});
+  const [editSuccessMsg, setEditSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -124,6 +125,7 @@ export default function History({ onClose }: { onClose: () => void }) {
       ripioFeeArs: entry.ripioFeeArs ?? '',
     });
     setEditEntryErrors({});
+    setEditSuccessMsg(null);
   };
 
   const handleSaveEditEntry = () => {
@@ -150,6 +152,18 @@ export default function History({ onClose }: { onClose: () => void }) {
 
     if (editingEntry === null) return;
 
+    // Recalculation logic
+    const arsAmountChanged = editEntryForm.arsAmount !== (editingEntry.arsAmount ?? '');
+    const canRecalculate = arsAmountChanged && editEntryForm.arsAmount !== '' && !!editingEntry.eurUsdcRate;
+
+    let newEurArsRate: string | undefined;
+    if (canRecalculate) {
+      const eurUsdc = parseFloat(editingEntry.eurUsdcRate!);
+      const arsAmt = parseFloat(editEntryForm.arsAmount);
+      const usdcRec = parseFloat(editingEntry.usdcReceived);
+      newEurArsRate = (eurUsdc * arsAmt / usdcRec).toFixed(2);
+    }
+
     let original: TradeHistoryEntry[] = [];
     try {
       original = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRADE_HISTORY) || '[]');
@@ -164,6 +178,7 @@ export default function History({ onClose }: { onClose: () => void }) {
       ...original[originalIndex],
       arsAmount: editEntryForm.arsAmount || undefined,
       ripioFeeArs: editEntryForm.ripioFeeArs || undefined,
+      ...(newEurArsRate !== undefined ? { eurArsRate: newEurArsRate } : {}),
     };
     localStorage.setItem(STORAGE_KEYS.TRADE_HISTORY, JSON.stringify(original));
 
@@ -173,9 +188,18 @@ export default function History({ onClose }: { onClose: () => void }) {
         ...updated[reversedIndex],
         arsAmount: editEntryForm.arsAmount || undefined,
         ripioFeeArs: editEntryForm.ripioFeeArs || undefined,
+        ...(newEurArsRate !== undefined ? { eurArsRate: newEurArsRate } : {}),
       };
       return updated;
     });
+
+    if (newEurArsRate !== undefined) {
+      const formatted = parseFloat(newEurArsRate).toLocaleString('es-AR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      setEditSuccessMsg(`Tasa EUR/ARS actualizada: 1 EUR = ${formatted} ARS`);
+    }
 
     setEditingEntry(null);
   };
@@ -336,6 +360,12 @@ export default function History({ onClose }: { onClose: () => void }) {
       )}
 
       <div className={styles.body}>
+
+        {editSuccessMsg && (
+          <div className={styles['edit-success-msg']}>
+            {editSuccessMsg}
+          </div>
+        )}
 
         {/* New entry modal */}
         {showNewEntryModal && (
@@ -576,6 +606,14 @@ export default function History({ onClose }: { onClose: () => void }) {
                 />
                 {editEntryErrors.arsAmount && (
                   <span role="alert" className={styles['edit-entry-error']}>{editEntryErrors.arsAmount}</span>
+                )}
+                {editingEntry !== null &&
+                  editEntryForm.arsAmount !== (editingEntry.arsAmount ?? '') &&
+                  editEntryForm.arsAmount !== '' &&
+                  !editingEntry.eurUsdcRate && (
+                  <span className={styles['edit-recalc-warning']}>
+                    No se puede recalcular la tasa (falta EUR/USDC del momento de la operación)
+                  </span>
                 )}
               </div>
 

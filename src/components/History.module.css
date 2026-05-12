@@ -589,3 +589,25 @@
   cursor: pointer;
   font-family: 'IBM Plex Sans', sans-serif;
 }
+
+/* ─── Edit success message ───────────────────────────────────────────────── */
+
+.edit-success-msg {
+  background-color: #0f2318;
+  border: 1px solid #0ECB81;
+  border-radius: 6px;
+  color: #0ECB81;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+/* ─── Edit recalc warning ────────────────────────────────────────────────── */
+
+.edit-recalc-warning {
+  color: #F0B90B;
+  font-size: 11px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin-top: 4px;
+}
